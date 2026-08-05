@@ -386,17 +386,29 @@ function shuffled(items) {
   return result;
 }
 
-function buildPracticeQuestions(config) {
-  const candidates = config.type === "mock"
-    ? feQuestions
-    : feQuestions.filter((question) => question.domain === config.domain);
-  return shuffled(candidates).slice(0, config.type === "mock" ? 10 : 5);
+function buildPracticeQuestions(config, questionBank = feQuestions) {
+  const candidates = questionBank.filter((question) => (
+    (config.type === "mock" || question.domain === config.domain)
+    && (config.periodId === "all" || question.periodId === config.periodId)
+  ));
+  return shuffled(candidates).slice(0, Math.min(config.count || 10, candidates.length));
 }
 
-function ExamPractice({ startSession }) {
+function ExamPractice({ startSession, questionBank, bankStatus }) {
   const [sessionType, setSessionType] = useState("topic");
   const [domain, setDomain] = useState("technology");
-  const domainQuestionCount = feQuestions.filter((question) => question.domain === domain).length;
+  const [periodId, setPeriodId] = useState("all");
+  const [questionCount, setQuestionCount] = useState(10);
+  const periodOptions = [...new Map(questionBank.map((question) => [question.periodId, question.periodLabel])).entries()];
+  const availableQuestions = questionBank.filter((question) => (
+    (sessionType === "mock" || question.domain === domain)
+    && (periodId === "all" || question.periodId === periodId)
+  ));
+  const actualQuestionCount = Math.min(questionCount, availableQuestions.length);
+  const isLoading = bankStatus === "idle" || bankStatus === "loading";
+  const periodLabel = periodId === "all"
+    ? "すべての開催回"
+    : periodOptions.find(([id]) => id === periodId)?.[1] || "選択した開催回";
 
   return (
     <section className="practice-surface">
@@ -409,7 +421,9 @@ function ExamPractice({ startSession }) {
       <div className="official-source-note">
         <span className="source-note-icon"><ShieldCheck size={24} weight="fill" /></span>
         <span><strong>収録問題は公式過去問のみ</strong><small>出典を問題ごとに表示し、IPAの問題冊子と解答へ移動できます。</small></span>
-        <span className="source-count">{feQuestions.length}<small>問収録</small></span>
+        <span className={`source-count ${isLoading ? "is-loading" : ""}`}>
+          {isLoading ? "—" : questionBank.length}<small>{isLoading ? "読込中" : "問収録"}</small>
+        </span>
       </div>
 
       <div className="practice-builder">
@@ -418,12 +432,12 @@ function ExamPractice({ startSession }) {
           <div className="session-type-grid">
             <button className={sessionType === "topic" ? "is-selected" : ""} onClick={() => setSessionType("topic")}>
               <span className="practice-icon"><ListChecks size={26} /></span>
-              <span><strong>分野別演習</strong><small>選んだ分野から5問</small></span>
+              <span><strong>分野別演習</strong><small>選んだ分野を集中して演習</small></span>
               <CheckCircle size={21} weight={sessionType === "topic" ? "fill" : "regular"} />
             </button>
             <button className={sessionType === "mock" ? "is-selected" : ""} onClick={() => setSessionType("mock")}>
               <span className="practice-icon"><Trophy size={26} /></span>
-              <span><strong>模擬セッション</strong><small>3分野を横断して10問</small></span>
+              <span><strong>模擬セッション</strong><small>3分野を横断して出題</small></span>
               <CheckCircle size={21} weight={sessionType === "mock" ? "fill" : "regular"} />
             </button>
           </div>
@@ -433,7 +447,7 @@ function ExamPractice({ startSession }) {
           <div className="builder-heading"><span>02</span><div><p className="section-kicker">Exam domain</p><h2 id="practice-domain-heading">出題分野を選ぶ</h2></div></div>
           <div className="domain-option-list">
             {Object.entries(feDomains).map(([key, value]) => {
-              const count = feQuestions.filter((question) => question.domain === key).length;
+              const count = questionBank.filter((question) => question.domain === key && (periodId === "all" || question.periodId === periodId)).length;
               return (
                 <button key={key} className={domain === key ? "is-selected" : ""} disabled={sessionType === "mock"} onClick={() => setDomain(key)}>
                   <span><strong>{value.label}</strong><small>{value.description}</small></span>
@@ -446,13 +460,33 @@ function ExamPractice({ startSession }) {
 
         <aside className="session-summary" aria-label="出題設定">
           <div><SlidersHorizontal size={22} /><span><small>出題設定</small><strong>{sessionType === "mock" ? "模擬セッション" : feDomains[domain].label}</strong></span></div>
+          <label className="session-field">
+            <span>開催回</span>
+            <select value={periodId} onChange={(event) => setPeriodId(event.target.value)} disabled={isLoading}>
+              <option value="all">すべての開催回</option>
+              {periodOptions.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+            </select>
+          </label>
+          <fieldset className="question-count-field">
+            <legend>問題数</legend>
+            <div>
+              {[10, 20, 30].map((count) => (
+                <button key={count} type="button" className={questionCount === count ? "is-selected" : ""} onClick={() => setQuestionCount(count)}>{count}問</button>
+              ))}
+            </div>
+          </fieldset>
           <dl>
-            <div><dt>問題数</dt><dd>{sessionType === "mock" ? 10 : Math.min(5, domainQuestionCount)}問</dd></div>
-            <div><dt>問題形式</dt><dd>四肢択一</dd></div>
+            <div><dt>出題範囲</dt><dd>{periodLabel}</dd></div>
+            <div><dt>出題可能</dt><dd>{availableQuestions.length}問</dd></div>
+            <div><dt>今回の問題数</dt><dd>{actualQuestionCount}問</dd></div>
             <div><dt>出典</dt><dd>IPA公式過去問</dd></div>
           </dl>
-          <button className="button button-primary" onClick={() => startSession({ type: sessionType === "mock" ? "mock" : "topic", domain })}>
-            演習を開始する <ArrowRight size={19} />
+          <button
+            className="button button-primary"
+            disabled={isLoading || actualQuestionCount === 0}
+            onClick={() => startSession({ type: sessionType === "mock" ? "mock" : "topic", domain, periodId, count: questionCount })}
+          >
+            {isLoading ? "問題を読み込んでいます" : "演習を開始する"} {!isLoading && <ArrowRight size={19} />}
           </button>
         </aside>
       </div>
@@ -596,13 +630,13 @@ function CourseSiteIntro({ go, title, eyebrow, description }) {
   );
 }
 
-function ExamHome({ mode, view, go, notify, startSession, sessionQuestions, restartSession, sessionId }) {
+function ExamHome({ mode, view, go, notify, startSession, sessionQuestions, restartSession, sessionId, questionBank, bankStatus }) {
   return (
     <main className="page page-dashboard course-site-page">
       <CourseSiteIntro go={go} title="FE Learning Lab" eyebrow="Fundamental Information Technology Engineer" description="試験範囲を体系的に学び、知識の定着を確認できます。" />
       <StudyModeNav route="exam" mode={mode} go={go} />
       {mode === "lesson" && <ExamLesson notify={notify} />}
-      {mode === "practice" && view !== "session" && <ExamPractice startSession={startSession} />}
+      {mode === "practice" && view !== "session" && <ExamPractice startSession={startSession} questionBank={questionBank} bankStatus={bankStatus} />}
       {mode === "practice" && view === "session" && (
         <ExamSession
           key={sessionId}
@@ -671,7 +705,9 @@ export function App() {
   const [mode, setMode] = useState(initial.mode);
   const [view, setView] = useState(initial.view);
   const [notice, setNotice] = useState("");
-  const initialSessionConfig = { type: "mock", domain: "technology" };
+  const initialSessionConfig = { type: "mock", domain: "technology", periodId: "all", count: 10 };
+  const [feQuestionBank, setFeQuestionBank] = useState(feQuestions);
+  const [feBankStatus, setFeBankStatus] = useState("idle");
   const [sessionConfig, setSessionConfig] = useState(initialSessionConfig);
   const [sessionQuestions, setSessionQuestions] = useState(() => initial.view === "session" ? buildPracticeQuestions(initialSessionConfig) : []);
   const [sessionId, setSessionId] = useState(0);
@@ -689,13 +725,13 @@ export function App() {
 
   const startSession = (config) => {
     setSessionConfig(config);
-    setSessionQuestions(buildPracticeQuestions(config));
+    setSessionQuestions(buildPracticeQuestions(config, feQuestionBank));
     setSessionId((current) => current + 1);
     go("exam", "practice", "session");
   };
 
   const restartSession = () => {
-    setSessionQuestions(buildPracticeQuestions(sessionConfig));
+    setSessionQuestions(buildPracticeQuestions(sessionConfig, feQuestionBank));
     setSessionId((current) => current + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -721,6 +757,32 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (route !== "exam") return undefined;
+    const controller = new AbortController();
+    setFeBankStatus("loading");
+    fetch("/data/fe-official-past-questions.json", { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`FE question bank request failed: ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        const questions = payload?.questions;
+        const isValid = Array.isArray(questions) && questions.length > 0 && questions.every((question) => (
+          question.sourceType === "official-past-question"
+          && question.choices?.length === 4
+          && question.choices.some((choice) => choice.id === question.correctAnswer)
+        ));
+        if (!isValid) throw new Error("FE question bank validation failed");
+        setFeQuestionBank(questions);
+        setFeBankStatus("ready");
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") setFeBankStatus("error");
+      });
+    return () => controller.abort();
+  }, [route]);
+
   return (
     <div className={`app-shell theme-${siteMeta(route).accent} ${isQaCapture ? "qa-capture" : ""}`}>
       <Header route={route} mode={mode} go={go} notify={notify} />
@@ -737,6 +799,8 @@ export function App() {
           sessionQuestions={sessionQuestions}
           restartSession={restartSession}
           sessionId={sessionId}
+          questionBank={feQuestionBank}
+          bankStatus={feBankStatus}
         />
       )}
       {route === "java" && <JavaHome mode={mode} go={go} notify={notify} />}

@@ -30,5 +30,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Treat `https://github.com/Shota-Zaki/Engineer-License-Lab` as the source repository for FE question data.
 - Treat the shared Google Drive LAB catalog as the implementation-candidate backlog: `https://drive.google.com/drive/folders/12kS9I7VlZ4zS3FviurYMXX-_hy8WGKCP?usp=drive_link`.
 - Implement the initial Engineer Learning Lab courses in this order: `FE Learning Lab` first, then `Java Learning Lab`.
-- The first FE implementation uses 18 exact official past questions from `Engineer-License-Lab/docs/labs/fe/data/question-bank.json` at commit `1402da68e2e74945bc8fa4add829458220917512`. Keep question text, choices, and correct answers byte-stable; explanations may be adapted for this product.
+- FE practice loads the image-free, four-choice, subject-A official past-question collection generated from `Engineer-License-Lab/docs/labs/fe/data/question-bank.json` at commit `1402da68e2e74945bc8fa4add829458220917512` and blob `82e64654a22d706a168563883752add70e70ad71`. Regenerate it with `npm run sync:fe`; keep question text, choices, and correct answers byte-stable.
+- Keep the 18-question FE seed in `src/data/feQuestions.js` as a byte-stable direct-session and load-failure fallback.
 - FE practice supports a setup screen at `/engineer/it-exam/practice/` and an answer session at `/engineer/it-exam/practice/session/`, including source links and results. Do not add time estimates or countdowns.
