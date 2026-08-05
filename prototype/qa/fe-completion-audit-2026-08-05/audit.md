@@ -44,5 +44,5 @@ Accepted captures:
 - Browser flow: setup, answer, immutable feedback, official links, question jump, review mark, reload recovery, early-finish confirmation, saved result, history, incorrect review, pause, and resume.
 - Responsive widths: 375px, 768px, 1280px. Measured document width did not exceed the viewport.
 - Browser console: no warnings or errors during the accepted local flow.
-- Automated suite: 20 tests passed.
+- Automated suite: 21 tests passed.
 - Static gates: TypeScript check, ESLint, and production build passed without warnings.
