@@ -22,8 +22,8 @@ export default {
 const SESSION_STATUSES = new Set(["in_progress", "paused", "completed", "abandoned"]);
 const SAFE_ID = /^[a-zA-Z0-9_-]{8,160}$/;
 const SESSION_ROUTES = Object.freeze({
-  fe: Object.freeze({ prefix: "/api/fe/sessions", table: "fe_sessions", requireLab: false }),
-  java: Object.freeze({ prefix: "/api/java/sessions", table: "java_sessions", requireLab: true }),
+  fe: Object.freeze({ prefix: "/api/fe/sessions", table: "fe_sessions", requireLab: false, schemaVersions: new Set([1, 2]) }),
+  java: Object.freeze({ prefix: "/api/java/sessions", table: "java_sessions", requireLab: true, schemaVersions: new Set([1]) }),
 });
 
 function resolveSessionRoute(pathname) {
@@ -57,13 +57,13 @@ function jsonResponse(payload, status = 200) {
 }
 
 function validSessionPayload(session, expectedId, route) {
-  const requiresLab = SESSION_ROUTES[route].requireLab;
+  const routeConfig = SESSION_ROUTES[route];
   return Boolean(
     session
     && typeof session === "object"
-    && session.schemaVersion === 1
+    && routeConfig.schemaVersions.has(session.schemaVersion)
     && session.id === expectedId
-    && (!requiresLab || session.lab === route)
+    && (!routeConfig.requireLab || session.lab === route)
     && SESSION_STATUSES.has(session.status)
     && Array.isArray(session.questionIds)
     && session.questionIds.length > 0
