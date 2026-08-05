@@ -1,7 +1,8 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === "/api/fe/sessions" || url.pathname.startsWith("/api/fe/sessions/")) return handleFeSessions(request, env, url);
+    const sessionRoute = resolveSessionRoute(url.pathname);
+    if (sessionRoute) return handleLearningSessions(request, env, url, sessionRoute);
 
     const response = await env.ASSETS.fetch(request);
     const acceptsHtml = request.headers.get("accept")?.includes("text/html");
@@ -20,10 +21,19 @@ export default {
 
 const SESSION_STATUSES = new Set(["in_progress", "paused", "completed", "abandoned"]);
 const SAFE_ID = /^[a-zA-Z0-9_-]{8,160}$/;
+const SESSION_ROUTES = Object.freeze({
+  fe: Object.freeze({ prefix: "/api/fe/sessions", table: "fe_sessions", requireLab: false }),
+  java: Object.freeze({ prefix: "/api/java/sessions", table: "java_sessions", requireLab: true }),
+});
 
-async function ensureFeSchema(db) {
+function resolveSessionRoute(pathname) {
+  return Object.entries(SESSION_ROUTES).find(([, route]) => pathname === route.prefix || pathname.startsWith(`${route.prefix}/`))?.[0] || null;
+}
+
+async function ensureSessionSchema(db, route) {
+  const table = SESSION_ROUTES[route].table;
   await db.batch([
-    db.prepare(`CREATE TABLE IF NOT EXISTS fe_sessions (
+    db.prepare(`CREATE TABLE IF NOT EXISTS ${table} (
       id TEXT PRIMARY KEY,
       device_id TEXT NOT NULL,
       status TEXT NOT NULL,
@@ -32,7 +42,7 @@ async function ensureFeSchema(db) {
       updated_at TEXT NOT NULL,
       completed_at TEXT
     )`),
-    db.prepare("CREATE INDEX IF NOT EXISTS idx_fe_sessions_device_updated ON fe_sessions(device_id, updated_at DESC)"),
+    db.prepare(`CREATE INDEX IF NOT EXISTS idx_${table}_device_updated ON ${table}(device_id, updated_at DESC)`),
   ]);
 }
 
@@ -46,12 +56,14 @@ function jsonResponse(payload, status = 200) {
   });
 }
 
-function validSessionPayload(session, expectedId) {
+function validSessionPayload(session, expectedId, route) {
+  const requiresLab = SESSION_ROUTES[route].requireLab;
   return Boolean(
     session
     && typeof session === "object"
     && session.schemaVersion === 1
     && session.id === expectedId
+    && (!requiresLab || session.lab === route)
     && SESSION_STATUSES.has(session.status)
     && Array.isArray(session.questionIds)
     && session.questionIds.length > 0
@@ -63,18 +75,20 @@ function validSessionPayload(session, expectedId) {
   );
 }
 
-async function handleFeSessions(request, env, url) {
+async function handleLearningSessions(request, env, url, route) {
   if (!env.DB) return jsonResponse({ error: "保存サービスを利用できません。" }, 503);
+  const routeConfig = SESSION_ROUTES[route];
+  const table = routeConfig.table;
   const deviceId = url.searchParams.get("deviceId") || "";
   if (!SAFE_ID.test(deviceId)) return jsonResponse({ error: "端末識別子が不正です。" }, 400);
-  await ensureFeSchema(env.DB);
+  await ensureSessionSchema(env.DB, route);
 
-  const prefix = "/api/fe/sessions/";
-  const sessionId = url.pathname.startsWith(prefix) ? decodeURIComponent(url.pathname.slice(prefix.length)) : "";
+  const itemPrefix = `${routeConfig.prefix}/`;
+  const sessionId = url.pathname.startsWith(itemPrefix) ? decodeURIComponent(url.pathname.slice(itemPrefix.length)) : "";
 
   if (request.method === "GET" && !sessionId) {
     const result = await env.DB.prepare(
-      "SELECT payload_json FROM fe_sessions WHERE device_id = ? ORDER BY updated_at DESC LIMIT 100",
+      `SELECT payload_json FROM ${table} WHERE device_id = ? ORDER BY updated_at DESC LIMIT 100`,
     ).bind(deviceId).all();
     const sessions = (result.results || []).flatMap((row) => {
       try { return [JSON.parse(row.payload_json)]; } catch { return []; }
@@ -84,7 +98,7 @@ async function handleFeSessions(request, env, url) {
 
   if (request.method === "GET" && SAFE_ID.test(sessionId)) {
     const row = await env.DB.prepare(
-      "SELECT payload_json FROM fe_sessions WHERE id = ? AND device_id = ? LIMIT 1",
+      `SELECT payload_json FROM ${table} WHERE id = ? AND device_id = ? LIMIT 1`,
     ).bind(sessionId, deviceId).first();
     if (!row) return jsonResponse({ error: "セッションが見つかりません。" }, 404);
     try { return jsonResponse({ session: JSON.parse(row.payload_json) }); }
@@ -95,12 +109,12 @@ async function handleFeSessions(request, env, url) {
     let session;
     try { session = await request.json(); }
     catch { return jsonResponse({ error: "保存内容が不正です。" }, 400); }
-    if (!validSessionPayload(session, sessionId)) return jsonResponse({ error: "保存内容が不正です。" }, 400);
+    if (!validSessionPayload(session, sessionId, route)) return jsonResponse({ error: "保存内容が不正です。" }, 400);
 
-    const existing = await env.DB.prepare("SELECT device_id FROM fe_sessions WHERE id = ? LIMIT 1").bind(sessionId).first();
+    const existing = await env.DB.prepare(`SELECT device_id FROM ${table} WHERE id = ? LIMIT 1`).bind(sessionId).first();
     if (existing && existing.device_id !== deviceId) return jsonResponse({ error: "このセッションは更新できません。" }, 409);
 
-    await env.DB.prepare(`INSERT INTO fe_sessions (
+    await env.DB.prepare(`INSERT INTO ${table} (
       id, device_id, status, payload_json, started_at, updated_at, completed_at
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
@@ -121,7 +135,7 @@ async function handleFeSessions(request, env, url) {
   }
 
   if (request.method === "DELETE" && !sessionId) {
-    await env.DB.prepare("DELETE FROM fe_sessions WHERE device_id = ?").bind(deviceId).run();
+    await env.DB.prepare(`DELETE FROM ${table} WHERE device_id = ?`).bind(deviceId).run();
     return jsonResponse({ deleted: true });
   }
 
