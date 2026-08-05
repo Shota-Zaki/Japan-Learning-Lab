@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Learning Lab - Design QA comparison</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #eef1ef; color: #17201d; font-family: system-ui, sans-serif; }
+      main { width: 800px; margin: 0; padding: 28px 16px 60px; }
+      h1 { margin: 0 0 20px; font-size: 24px; }
+      h2 { margin: 36px 0 12px; font-size: 18px; }
+      p { color: #5e6964; font-size: 13px; }
+      figure { margin: 0; padding: 12px; background: #fff; border: 1px solid #cfd7d3; }
+      img { display: block; width: 100%; height: auto; }
+      figcaption { margin-top: 9px; color: #56615c; font-size: 12px; }
+      .implementation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Design QA: source and implementation</h1>
+      <p>Source flow board and browser-rendered implementation, updated with the approved pale-blue platform system, independent course sites, and separate lesson / practice modes.</p>
+      <h2>Source visual truth</h2>
+      <figure>
+        <img src="source-flow.png" alt="Selected navigation flow design" />
+        <figcaption>Selected ImageGen navigation-flow board</figcaption>
+      </figure>
+      <h2>Rendered implementation</h2>
+      <div class="implementation-grid">
+        <figure><img src="top-desktop.png" alt="Japan Learning Lab top" /><figcaption>Japan Learning Lab top</figcaption></figure>
+        <figure><img src="engineer-desktop.png" alt="Engineer Learning Lab hub" /><figcaption>Engineer Learning Lab hub</figcaption></figure>
+        <figure><img src="exam-desktop.png" alt="Information technology exam home" /><figcaption>情報技術者試験</figcaption></figure>
+        <figure><img src="exam-practice-desktop.png" alt="Information technology exam practice" /><figcaption>情報技術者試験 — 演習・模試</figcaption></figure>
+        <figure><img src="java-desktop.png" alt="Java learning home" /><figcaption>Java — レッスン</figcaption></figure>
+        <figure><img src="java-practice-desktop.png" alt="Java certification practice" /><figcaption>Java — 演習・模試</figcaption></figure>
+      </div>
+    </main>
+  </body>
+</html>

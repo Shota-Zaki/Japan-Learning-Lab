@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Japan Learning Lab - Responsive QA</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #e9eeeb; color: #17201d; font-family: system-ui, sans-serif; }
+      main { width: 800px; padding: 24px 16px 60px; }
+      h1 { margin: 0 0 28px; font-size: 25px; }
+      h2 { margin: 34px 0 10px; font-size: 18px; }
+      p { margin: 0 0 12px; color: #5c6762; font-size: 13px; }
+      .frame-shell { overflow: hidden; background: #fff; border: 1px solid #bcc7c2; }
+      iframe { display: block; border: 0; transform-origin: top left; }
+      .mobile { width: 375px; height: 780px; }
+      .mobile iframe { width: 375px; height: 780px; }
+      .tablet { width: 768px; height: 760px; }
+      .tablet iframe { width: 768px; height: 760px; }
+      .desktop-small { width: 768px; height: 650px; }
+      .desktop-small iframe { width: 1024px; height: 867px; transform: scale(.75); }
+      .desktop-wide { width: 720px; height: 500px; }
+      .desktop-wide iframe { width: 1280px; height: 889px; transform: scale(.5625); }
+      section[hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Responsive browser QA</h1>
+      <section data-view="375">
+        <h2>375px — Japan Learning Lab</h2>
+        <p>Mobile lab selection and navigation.</p>
+        <div class="frame-shell mobile"><iframe title="375px top" src="/?screen=japan"></iframe></div>
+      </section>
+      <section data-view="768">
+        <h2>768px — Engineer Learning Lab</h2>
+        <p>Tablet learning-path selection.</p>
+        <div class="frame-shell tablet"><iframe title="768px engineer" src="/?screen=engineer"></iframe></div>
+      </section>
+      <section data-view="1024">
+        <h2>1024px — 情報技術者試験</h2>
+        <p>Small-desktop dashboard, scaled to fit this QA board.</p>
+        <div class="frame-shell desktop-small"><iframe title="1024px exam" src="/?screen=exam"></iframe></div>
+      </section>
+      <section data-view="1280">
+        <h2>1280px — Java</h2>
+        <p>Wide-desktop course selection, scaled to fit this QA board.</p>
+        <div class="frame-shell desktop-wide"><iframe title="1280px java" src="/?screen=java"></iframe></div>
+      </section>
+    </main>
+    <script>
+      const selectedView = new URLSearchParams(location.search).get("view");
+      if (selectedView) {
+        document.querySelectorAll("[data-view]").forEach((section) => {
+          section.hidden = section.dataset.view !== selectedView;
+        });
+      }
+    </script>
+  </body>
+</html>
