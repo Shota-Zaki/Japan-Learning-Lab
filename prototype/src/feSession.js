@@ -1,10 +1,16 @@
-export const FE_SESSION_SCHEMA_VERSION = 1;
+export const FE_SESSION_SCHEMA_VERSION = 2;
 export const FE_SESSION_STATUSES = new Set(["in_progress", "paused", "completed", "abandoned"]);
 export const FE_PRACTICE_SCOPES = new Set(["all", "incorrect", "unanswered", "review"]);
 export const FE_QUESTION_COUNTS = new Set([10, 20, 30, "all"]);
 
 function unique(values) {
-  return [...new Set(values)];
+  return [...new Set((values || []).filter((value) => value !== null && value !== undefined && value !== ""))];
+}
+
+function normalizedList(value, fallback = []) {
+  if (Array.isArray(value)) return unique(value.map(String));
+  if (value === null || value === undefined || value === "" || value === "all") return [...fallback];
+  return [String(value)];
 }
 
 function shuffled(items, random = Math.random) {
@@ -23,6 +29,28 @@ function nowIso(now) {
 function createId() {
   if (globalThis.crypto?.randomUUID) return `fe-${globalThis.crypto.randomUUID()}`;
   return `fe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export function correctAnswerIds(question) {
+  return unique(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : [])).map(String).sort();
+}
+
+export function selectedAnswerIds(value) {
+  const selected = Array.isArray(value) ? value : value === null || value === undefined || value === "" ? [] : [value];
+  return unique(selected).map(String).sort();
+}
+
+export function isCorrectAnswer(question, selected) {
+  const expected = correctAnswerIds(question);
+  const actual = selectedAnswerIds(selected);
+  return expected.length > 0 && expected.length === actual.length && expected.every((value, index) => value === actual[index]);
+}
+
+function validSelection(question, selected) {
+  const selectedIds = selectedAnswerIds(selected);
+  if (selectedIds.length === 0) return false;
+  if (question.answerMode !== "multiple" && correctAnswerIds(question).length <= 1 && selectedIds.length !== 1) return false;
+  return selectedIds.every((selectedId) => question.choices.some((choice) => String(choice.id) === selectedId));
 }
 
 export function buildReviewQuestionIds(sessions, scope) {
@@ -45,12 +73,29 @@ export function buildReviewQuestionIds(sessions, scope) {
   return unique(ids);
 }
 
+function configFilters(config) {
+  return {
+    subjects: normalizedList(config.subjects ?? config.sections ?? config.subject),
+    domains: normalizedList(config.domains ?? config.domain),
+    unitIds: normalizedList(config.unitIds ?? config.unitId),
+    periodIds: normalizedList(config.periodIds ?? config.periodId),
+  };
+}
+
+function matchesSelected(value, selected) {
+  return selected.length === 0 || selected.includes(String(value));
+}
+
 export function filterPracticeQuestions(questionBank, config, sessions = []) {
-  const reviewIds = new Set(buildReviewQuestionIds(sessions, config.scope || "all"));
+  const scope = FE_PRACTICE_SCOPES.has(config.scope) ? config.scope : "all";
+  const reviewIds = new Set(buildReviewQuestionIds(sessions, scope));
+  const filters = configFilters(config);
   return questionBank.filter((question) => (
-    (config.type === "mock" || question.domain === config.domain)
-    && (config.periodId === "all" || question.periodId === config.periodId)
-    && ((config.scope || "all") === "all" || reviewIds.has(question.id))
+    matchesSelected(question.subject || "A", filters.subjects)
+    && matchesSelected(question.domain, filters.domains)
+    && matchesSelected(question.unitId, filters.unitIds)
+    && matchesSelected(question.periodId, filters.periodIds)
+    && (scope === "all" || reviewIds.has(question.id))
   ));
 }
 
@@ -60,20 +105,30 @@ export function selectPracticeQuestions(config, questionBank, sessions = [], ran
   return shuffled(candidates, random).slice(0, Math.min(requestedCount, candidates.length));
 }
 
+function normalizeConfig(config = {}) {
+  const filters = configFilters(config);
+  return {
+    type: config.type === "mock" ? "mock" : "topic",
+    subjects: filters.subjects,
+    domains: filters.domains,
+    unitIds: filters.unitIds,
+    periodIds: filters.periodIds,
+    subject: filters.subjects.length === 1 ? filters.subjects[0] : "all",
+    domain: filters.domains.length === 1 ? filters.domains[0] : "all",
+    periodId: filters.periodIds.length === 1 ? filters.periodIds[0] : "all",
+    periodLabel: config.periodLabel || (filters.periodIds.length > 1 ? `${filters.periodIds.length}開催回` : "すべての開催回"),
+    scope: FE_PRACTICE_SCOPES.has(config.scope) ? config.scope : "all",
+    count: config.count === "all" ? "all" : Number(config.count || 10),
+  };
+}
+
 export function createFeSession({ config, questions, id = createId(), now = new Date() }) {
   const timestamp = nowIso(now);
   return {
     schemaVersion: FE_SESSION_SCHEMA_VERSION,
     id,
     status: "in_progress",
-    config: {
-      type: config.type === "mock" ? "mock" : "topic",
-      domain: config.domain,
-      periodId: config.periodId || "all",
-      periodLabel: config.periodLabel || "すべての開催回",
-      scope: FE_PRACTICE_SCOPES.has(config.scope) ? config.scope : "all",
-      count: config.count === "all" ? "all" : Number(config.count || 10),
-    },
+    config: normalizeConfig(config),
     questionIds: questions.map((question) => question.id),
     answers: {},
     drafts: {},
@@ -90,15 +145,29 @@ function withUpdatedAt(session, now) {
 }
 
 export function updateSessionDraft(session, question, selected, now = new Date()) {
+  if (session.status !== "in_progress" || session.answers[question.id] || !validSelection(question, selected)) return session;
+  const selectedIds = selectedAnswerIds(selected);
+  const draft = selectedIds.length === 1 && question.answerMode !== "multiple" ? selectedIds[0] : selectedIds;
+  return withUpdatedAt({ ...session, drafts: { ...session.drafts, [question.id]: draft } }, now);
+}
+
+export function toggleSessionDraftChoice(session, question, choiceId, now = new Date()) {
   if (session.status !== "in_progress" || session.answers[question.id]) return session;
-  if (!question.choices.some((choice) => choice.id === selected)) return session;
-  return withUpdatedAt({ ...session, drafts: { ...session.drafts, [question.id]: selected } }, now);
+  if (!question.choices.some((choice) => String(choice.id) === String(choiceId))) return session;
+  if (question.answerMode !== "multiple" && correctAnswerIds(question).length <= 1) return updateSessionDraft(session, question, String(choiceId), now);
+  const selected = new Set(selectedAnswerIds(session.drafts[question.id]));
+  if (selected.has(String(choiceId))) selected.delete(String(choiceId));
+  else selected.add(String(choiceId));
+  const drafts = { ...session.drafts };
+  if (selected.size === 0) delete drafts[question.id];
+  else drafts[question.id] = [...selected];
+  return withUpdatedAt({ ...session, drafts }, now);
 }
 
 export function answerSessionQuestion(session, question, selected, now = new Date()) {
-  if (session.status !== "in_progress" || session.answers[question.id]) return session;
-  if (!question.choices.some((choice) => choice.id === selected)) return session;
+  if (session.status !== "in_progress" || session.answers[question.id] || !validSelection(question, selected)) return session;
   const timestamp = nowIso(now);
+  const selectedIds = selectedAnswerIds(selected);
   const drafts = { ...session.drafts };
   delete drafts[question.id];
   return {
@@ -106,8 +175,9 @@ export function answerSessionQuestion(session, question, selected, now = new Dat
     answers: {
       ...session.answers,
       [question.id]: {
-        selected,
-        correct: selected === question.correctAnswer,
+        selected: selectedIds.length === 1 ? selectedIds[0] : selectedIds,
+        selectedIds,
+        correct: isCorrectAnswer(question, selectedIds),
         answeredAt: timestamp,
       },
     },
@@ -157,18 +227,11 @@ export function calculateSessionSummary(session) {
   const correct = session.questionIds.filter((questionId) => session.answers[questionId]?.correct).length;
   const incorrect = answered - correct;
   const unanswered = total - answered;
-  return {
-    total,
-    answered,
-    unanswered,
-    correct,
-    incorrect,
-    score: total === 0 ? 0 : Math.round((correct / total) * 100),
-  };
+  return { total, answered, unanswered, correct, incorrect, score: total === 0 ? 0 : Math.round((correct / total) * 100) };
 }
 
 export function normalizeFeSession(value, questionBank) {
-  if (!value || typeof value !== "object" || value.schemaVersion !== FE_SESSION_SCHEMA_VERSION) return null;
+  if (!value || typeof value !== "object" || ![1, FE_SESSION_SCHEMA_VERSION].includes(value.schemaVersion)) return null;
   if (typeof value.id !== "string" || !FE_SESSION_STATUSES.has(value.status)) return null;
   if (!Array.isArray(value.questionIds) || value.questionIds.length === 0 || value.questionIds.length > 2000) return null;
   if (unique(value.questionIds).length !== value.questionIds.length) return null;
@@ -178,10 +241,12 @@ export function normalizeFeSession(value, questionBank) {
   const answers = {};
   for (const [questionId, answer] of Object.entries(value.answers || {})) {
     const question = questionMap.get(questionId);
-    if (!question || !answer || !question.choices.some((choice) => choice.id === answer.selected)) continue;
+    const selectedIds = selectedAnswerIds(answer?.selectedIds || answer?.selected);
+    if (!question || !answer || !validSelection(question, selectedIds)) continue;
     answers[questionId] = {
-      selected: answer.selected,
-      correct: answer.selected === question.correctAnswer,
+      selected: selectedIds.length === 1 ? selectedIds[0] : selectedIds,
+      selectedIds,
+      correct: isCorrectAnswer(question, selectedIds),
       answeredAt: typeof answer.answeredAt === "string" ? answer.answeredAt : value.updatedAt,
     };
   }
@@ -189,25 +254,21 @@ export function normalizeFeSession(value, questionBank) {
   const drafts = {};
   for (const [questionId, selected] of Object.entries(value.drafts || {})) {
     const question = questionMap.get(questionId);
-    if (!answers[questionId] && question?.choices.some((choice) => choice.id === selected)) drafts[questionId] = selected;
+    if (!answers[questionId] && question && validSelection(question, selected)) {
+      const selectedIds = selectedAnswerIds(selected);
+      drafts[questionId] = selectedIds.length === 1 && question.answerMode !== "multiple" ? selectedIds[0] : selectedIds;
+    }
   }
 
   const currentIndex = Math.max(0, Math.min(Number(value.currentIndex) || 0, value.questionIds.length - 1));
-  const config = value.config || {};
-  if (!["topic", "mock"].includes(config.type) || !FE_PRACTICE_SCOPES.has(config.scope || "all")) return null;
+  const config = normalizeConfig(value.config || {});
+  if (!["topic", "mock"].includes(config.type)) return null;
 
   return {
     schemaVersion: FE_SESSION_SCHEMA_VERSION,
     id: value.id,
     status: value.status,
-    config: {
-      type: config.type,
-      domain: config.domain,
-      periodId: config.periodId || "all",
-      periodLabel: config.periodLabel || "すべての開催回",
-      scope: config.scope || "all",
-      count: config.count === "all" ? "all" : Number(config.count || 10),
-    },
+    config,
     questionIds: [...value.questionIds],
     answers,
     drafts,
@@ -220,10 +281,5 @@ export function normalizeFeSession(value, questionBank) {
 }
 
 export function scopeLabel(scope) {
-  return {
-    all: "通常演習",
-    incorrect: "間違えた問題",
-    unanswered: "未回答問題",
-    review: "見直し対象",
-  }[scope] || "通常演習";
+  return { all: "通常演習", incorrect: "間違えた問題", unanswered: "未回答問題", review: "見直し対象" }[scope] || "通常演習";
 }
