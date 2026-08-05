@@ -2,19 +2,31 @@ const choiceLabels = ["ア", "イ", "ウ", "エ"];
 
 const sourceDocuments = {
   spring: {
+    periodId: "2019h31h",
+    periodLabel: "平成31年度 春期",
     questionUrl: "https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000ddiw-att/2019h31h_fe_am_qs.pdf",
     answerUrl: "https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000ddiw-att/2019h31h_fe_am_ans.pdf",
   },
   autumn: {
+    periodId: "2019r1a",
+    periodLabel: "令和元年度 秋期",
     questionUrl: "https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_fe_am_qs.pdf",
     answerUrl: "https://www.ipa.go.jp/shiken/mondai-kaiotu/gmcbt8000000dict-att/2019r01a_fe_am_ans.pdf",
   },
 };
 
+/**
+ * @typedef {{id:string,label:string,text:string}} FeChoice
+ * @typedef {{id:string,domain:string,unitId:string,title:string,question:string,choices:FeChoice[],correctAnswer:string,explanation:string,periodId:string,periodLabel:string,sourceType:string,sourceRef:string,sourceUrl:string,sourceQuestionUrl:string,sourceAnswerUrl:string}} FeQuestion
+ * @param {{period:"spring"|"autumn",id:string,domain:string,unitId:string,title:string,question:string,choices:string[],correctAnswer:string,explanation:string}} input
+ * @returns {FeQuestion}
+ */
 function officialQuestion({ period, ...question }) {
   const source = sourceDocuments[period];
   return {
     ...question,
+    periodId: source.periodId,
+    periodLabel: source.periodLabel,
     choices: question.choices.map((text, index) => ({ id: choiceLabels[index], label: choiceLabels[index], text })),
     sourceType: "official-past-question",
     sourceRef: question.title.replace("午前 ", "基本情報技術者試験 科目A "),

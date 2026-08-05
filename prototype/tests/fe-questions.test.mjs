@@ -40,7 +40,7 @@ test("generated FE bank contains the image-free official past-question collectio
   assert.equal(fullBank.generatedFrom.commit, "1402da68e2e74945bc8fa4add829458220917512");
   assert.equal(fullBank.generatedFrom.blob, "82e64654a22d706a168563883752add70e70ad71");
   assert.equal(fullBank.questionCount, fullBank.questions.length);
-  assert.ok(fullBank.questionCount >= 1600);
+  assert.equal(fullBank.questionCount, 1674);
   assert.equal(new Set(fullBank.questions.map((question) => question.id)).size, fullBank.questionCount);
 
   for (const question of fullBank.questions) {
@@ -51,7 +51,30 @@ test("generated FE bank contains the image-free official past-question collectio
     assert.match(question.sourceAnswerUrl, /^https:\/\/www\.ipa\.go\.jp\//);
     assert.equal(question.choices.length, 4);
     assert.ok(question.choices.some((choice) => choice.id === question.correctAnswer));
+    assert.ok(question.periodId);
+    assert.ok(question.periodLabel);
+    assert.ok(question.title);
+    assert.ok(question.question);
+    assert.ok(question.explanation);
+    assert.doesNotMatch(`${question.title}${question.question}${question.explanation}`, /(?:<script|javascript:|onerror\s*=|�|繧|繝)/iu);
   }
+});
+
+test("known repeated official questions stay attributable instead of being silently removed", () => {
+  const normalized = new Map();
+  for (const question of fullBank.questions) {
+    const key = JSON.stringify({
+      question: question.question.replace(/\s+/gu, " ").trim(),
+      choices: question.choices.map((choice) => choice.text.replace(/\s+/gu, " ").trim()),
+      correctAnswer: question.correctAnswer,
+    });
+    normalized.set(key, [...(normalized.get(key) || []), question]);
+  }
+  const repeatedGroups = [...normalized.values()].filter((questions) => questions.length > 1);
+  assert.equal(repeatedGroups.length, 70);
+  assert.equal(repeatedGroups.reduce((total, questions) => total + questions.length, 0), 155);
+  assert.ok(repeatedGroups.every((questions) => new Set(questions.map(({ id }) => id)).size === questions.length));
+  assert.ok(repeatedGroups.every((questions) => questions.every(({ sourceRef }) => sourceRef.includes("基本情報技術者試験"))));
 });
 
 test("generated FE bank preserves the canonical question payload", () => {

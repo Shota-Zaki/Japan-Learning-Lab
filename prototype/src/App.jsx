@@ -4,6 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
+  BookmarkSimple,
   Briefcase,
   CaretRight,
   Certificate,
@@ -12,16 +13,14 @@ import {
   Code,
   Compass,
   Coffee,
-  Database,
   Exam,
-  Globe,
   House,
   ListChecks,
-  LockKey,
   MagnifyingGlass,
   MapTrifold,
   Medal,
   Monitor,
+  Pause,
   Play,
   ShieldCheck,
   SlidersHorizontal,
@@ -29,20 +28,31 @@ import {
   Stack,
   Trophy,
   UserCircle,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import { FE_DATASET_META, feDomains, feQuestions, feUnitLabels } from "./data/feQuestions.js";
+import {
+  abandonFeSession,
+  answerSessionQuestion,
+  calculateSessionSummary,
+  completeFeSession,
+  createFeSession,
+  filterPracticeQuestions,
+  moveSession,
+  pauseFeSession,
+  resumeFeSession,
+  scopeLabel,
+  selectPracticeQuestions,
+  toggleSessionReview,
+  updateSessionDraft,
+} from "./feSession.js";
+import { createFeSessionStore } from "./feStorage.js";
 
 const labs = [
   { name: "Engineer Learning Lab", description: "エンジニア資格・プログラミング", icon: Code, route: "engineer", primary: true },
   { name: "Business Learning Lab", description: "ビジネススキル・マネジメント", icon: Briefcase },
   { name: "Security Learning Lab", description: "セキュリティ・ITガバナンス", icon: ShieldCheck },
   { name: "Data Learning Lab", description: "データサイエンス・AI", icon: ChartBar },
-];
-
-const weakAreas = [
-  { name: "ネットワーク", value: 56, icon: Globe },
-  { name: "データベース", value: 63, icon: Database },
-  { name: "情報セキュリティ", value: 71, icon: LockKey },
 ];
 
 const routePaths = {
@@ -52,6 +62,7 @@ const routePaths = {
     lesson: "/engineer/it-exam/lessons/",
     practice: "/engineer/it-exam/practice/",
     session: "/engineer/it-exam/practice/session/",
+    history: "/engineer/it-exam/history/",
   },
   java: {
     lesson: "/engineer/java/lessons/",
@@ -67,7 +78,10 @@ function readLocation() {
     return { route: screen, mode: requestedMode, view: "home" };
   }
 
-  const path = window.location.pathname;
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const hashPath = hashParams.get("jll");
+  const path = hashPath?.startsWith("/") ? hashPath : window.location.pathname;
+  if (path.startsWith("/engineer/it-exam/history")) return { route: "exam", mode: "practice", view: "history" };
   if (path.startsWith("/engineer/it-exam/practice/session")) return { route: "exam", mode: "practice", view: "session" };
   if (path.startsWith("/engineer/it-exam/practice")) return { route: "exam", mode: "practice", view: "home" };
   if (path.startsWith("/engineer/it-exam")) return { route: "exam", mode: "lesson", view: "home" };
@@ -80,7 +94,12 @@ function readLocation() {
 function pathFor(route, mode = "lesson", view = "home") {
   const entry = routePaths[route];
   if (route === "exam" && mode === "practice" && view === "session") return entry.session;
+  if (route === "exam" && view === "history") return entry.history;
   return typeof entry === "string" ? entry : entry[mode];
+}
+
+function resilientUrl(path) {
+  return `${path}#${new URLSearchParams({ jll: path }).toString()}`;
 }
 
 function siteMeta(route) {
@@ -90,7 +109,7 @@ function siteMeta(route) {
   return { brand: "Japan Learning Lab", home: "japan", accent: "japan" };
 }
 
-function Header({ route, mode, go, notify }) {
+function Header({ route, mode, view, go, notify }) {
   const meta = siteMeta(route);
   const courseSite = route === "exam" || route === "java";
   const items = courseSite
@@ -98,19 +117,19 @@ function Header({ route, mode, go, notify }) {
         { label: "レッスン", icon: BookOpen, route, mode: "lesson" },
         { label: "演習・模試", icon: Exam, route, mode: "practice" },
         { label: "Engineer Lab", icon: Compass, route: "engineer" },
-        { label: "学習履歴", icon: ChartBar, action: () => notify("学習履歴はプロトタイプではプレビュー表示です。") },
+        { label: "学習履歴", icon: ChartBar, route: "exam", mode: "practice", view: "history" },
       ]
     : route === "engineer"
       ? [
           { label: "ホーム", icon: House, route: "engineer", active: true },
           { label: "資格試験", icon: Certificate, route: "exam" },
           { label: "Java", icon: Coffee, route: "java" },
-          { label: "学習履歴", icon: ChartBar, action: () => notify("学習履歴はプロトタイプではプレビュー表示です。") },
+          { label: "学習履歴", icon: ChartBar, route: "exam", mode: "practice", view: "history" },
         ]
       : [
           { label: "ホーム", icon: House, route: "japan", active: true },
           { label: "Learning Labs", icon: SquaresFour, route: "japan" },
-          { label: "学習履歴", icon: ChartBar, action: () => notify("学習履歴はプロトタイプではプレビュー表示です。") },
+          { label: "学習履歴", icon: ChartBar, route: "exam", mode: "practice", view: "history" },
         ];
 
   return (
@@ -120,12 +139,14 @@ function Header({ route, mode, go, notify }) {
         <nav className="global-nav" aria-label="グローバルナビゲーション">
           {items.map((item) => {
             const Icon = item.icon;
-            const active = item.active === true || (item.mode && item.route === route && item.mode === mode);
+            const active = item.active === true || (item.route === route && item.view === view) || (item.mode && !item.view && item.route === route && item.mode === mode && view !== "history");
             return (
               <button
                 className={`nav-item ${active ? "is-active" : ""}`}
                 key={item.label}
-                onClick={() => item.action ? item.action() : go(item.route, item.mode || "lesson")}
+                aria-label={item.label}
+                aria-current={active ? "page" : undefined}
+                onClick={() => item.action ? item.action() : go(item.route, item.mode || "lesson", item.view || "home")}
               >
                 <Icon size={19} />
                 <span>{item.label}</span>
@@ -187,7 +208,7 @@ function JapanHome({ go, notify }) {
         <div className="platform-hero-inner">
           <div className="platform-copy">
             <p className="eyebrow">A platform for continuous learning</p>
-            <h1 tabIndex="-1">学びたい分野から、<br />自分の道をつくる。</h1>
+            <h1 tabIndex={-1}>学びたい分野から、<br />自分の道をつくる。</h1>
             <p className="lead">興味や目標に合う分野を見つけて、今日から学習を始められます。</p>
             <button className="button button-primary platform-cta" onClick={() => go("engineer")}>
               Engineer Learning Labへ <ArrowRight size={19} />
@@ -228,7 +249,7 @@ function EngineerHome({ go }) {
           <div className="engineer-copy">
             <Breadcrumbs items={[{ label: "Japan Learning Lab", route: "japan" }, { label: "Engineer Learning Lab" }]} go={go} />
             <p className="eyebrow">Engineer Learning Lab</p>
-            <h1 tabIndex="-1">エンジニアの学びを、<br />次の実力へ。</h1>
+            <h1 tabIndex={-1}>エンジニアの学びを、<br />次の実力へ。</h1>
             <p className="lead">資格取得と開発スキルの向上に向けて、自分に合うコースを選べます。</p>
           </div>
           <aside className="engineer-index" aria-label="Engineer Learning Labの学習領域">
@@ -287,16 +308,6 @@ function StudyModeNav({ route, mode, go }) {
   );
 }
 
-function ProgressSummary() {
-  return (
-    <div className="progress-summary" aria-label="レッスン進捗68パーセント">
-      <div className="progress-number"><strong>68</strong><span>%</span></div>
-      <span>レッスン進捗</span>
-      <progress value="68" max="100">68%</progress>
-    </div>
-  );
-}
-
 function ExamLesson({ notify }) {
   const [lessonOpen, setLessonOpen] = useState(false);
   const [checkAnswer, setCheckAnswer] = useState("");
@@ -343,78 +354,45 @@ function ExamLesson({ notify }) {
     <>
       <section className="course-hero">
         <div className="course-main">
-          <p className="eyebrow">前回の続き</p>
-          <h1 tabIndex="-1">基本情報技術者試験</h1>
+          <p className="eyebrow">Featured lesson</p>
+          <h1 tabIndex={-1}>試験範囲をレッスンで学ぶ</h1>
           <p className="course-category">アルゴリズムとデータ構造</p>
           <div className="lesson-line"><BookOpen size={22} /><strong>Lesson 3</strong><span>探索アルゴリズム</span></div>
           <div className="course-actions single-action">
-            <button className="button button-primary" onClick={() => setLessonOpen(true)}><Play size={19} weight="fill" /> 学習を続ける</button>
+            <button className="button button-primary" onClick={() => setLessonOpen(true)}><Play size={19} weight="fill" /> レッスンを始める</button>
           </div>
-        </div>
-        <ProgressSummary />
-      </section>
-      <div className="dashboard-grid">
-        <section className="content-section weak-section" aria-labelledby="weak-heading">
-          <div className="section-heading-row compact"><div><p className="section-kicker">Focus</p><h2 id="weak-heading">苦手分野</h2></div><button className="text-link" onClick={() => notify("苦手分野の詳細を開きました。") }>詳しく見る <CaretRight size={16} /></button></div>
-          <div className="table-wrap"><table><thead><tr><th>分野</th><th>正答率</th></tr></thead><tbody>
-            {weakAreas.map((area) => { const Icon = area.icon; return <tr key={area.name}><td><span className="topic-icon"><Icon size={19} /></span>{area.name}</td><td><strong>{area.value}%</strong></td></tr>; })}
-          </tbody></table></div>
-        </section>
-        <section className="content-section review-section" aria-labelledby="review-heading">
-          <p className="section-kicker">Review</p><h2 id="review-heading">復習待ち</h2><div className="review-count"><strong>8</strong><span>問</span></div>
-          <p>間違えた問題を解き直します。</p>
-          <button className="button button-secondary" onClick={() => notify("8問の復習セッションを開始しました。") }>復習を始める</button>
-        </section>
-      </div>
-      <section className="history-section" aria-labelledby="history-heading">
-        <div className="section-heading-row compact"><div><p className="section-kicker">Recent activity</p><h2 id="history-heading">学習履歴</h2></div></div>
-        <div className="history-list">
-          <div className="history-row"><span className="history-icon"><Globe size={20} /></span><span><small>2026/08/03</small><strong>ネットワーク講義</strong><span>IPアドレスとサブネット</span></span></div>
-          <div className="history-row"><span className="history-icon"><Database size={20} /></span><span><small>2026/08/02</small><strong>データベース演習 15問</strong><span>正規化と関係モデル</span></span></div>
         </div>
       </section>
     </>
   );
 }
 
-function shuffled(items) {
-  const result = [...items];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
-  }
-  return result;
+function formatDate(value) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
-function buildPracticeQuestions(config, questionBank = feQuestions) {
-  const candidates = questionBank.filter((question) => (
-    (config.type === "mock" || question.domain === config.domain)
-    && (config.periodId === "all" || question.periodId === config.periodId)
-  ));
-  return shuffled(candidates).slice(0, Math.min(config.count || 10, candidates.length));
-}
-
-function ExamPractice({ startSession, questionBank, bankStatus }) {
+function ExamPractice({ startSession, resumeSession, activeSession, sessions, questionBank, bankStatus, retryBank }) {
   const [sessionType, setSessionType] = useState("topic");
   const [domain, setDomain] = useState("technology");
   const [periodId, setPeriodId] = useState("all");
-  const [questionCount, setQuestionCount] = useState(10);
+  const [questionCount, setQuestionCount] = useState(/** @type {number | "all"} */ (10));
+  const [scope, setScope] = useState("all");
   const periodOptions = [...new Map(questionBank.map((question) => [question.periodId, question.periodLabel])).entries()];
-  const availableQuestions = questionBank.filter((question) => (
-    (sessionType === "mock" || question.domain === domain)
-    && (periodId === "all" || question.periodId === periodId)
-  ));
-  const actualQuestionCount = Math.min(questionCount, availableQuestions.length);
+  const periodLabel = periodId === "all" ? "すべての開催回" : periodOptions.find(([id]) => id === periodId)?.[1] || "選択した開催回";
+  const config = { type: sessionType === "mock" ? "mock" : "topic", domain, periodId, periodLabel, count: questionCount, scope };
+  const availableQuestions = filterPracticeQuestions(questionBank, config, sessions);
+  const requestedCount = questionCount === "all" ? availableQuestions.length : questionCount;
+  const actualQuestionCount = Math.min(requestedCount, availableQuestions.length);
   const isLoading = bankStatus === "idle" || bankStatus === "loading";
-  const periodLabel = periodId === "all"
-    ? "すべての開催回"
-    : periodOptions.find(([id]) => id === periodId)?.[1] || "選択した開催回";
+  const shortage = questionCount !== "all" && availableQuestions.length > 0 && availableQuestions.length < questionCount;
+  const resumableSession = activeSession || sessions.find((session) => ["in_progress", "paused"].includes(session.status));
 
   return (
     <section className="practice-surface">
       <div className="practice-heading">
         <p className="eyebrow">Official past questions</p>
-        <h1 tabIndex="-1">公式過去問で実力を確かめる</h1>
+        <h1 tabIndex={-1}>公式過去問で実力を確かめる</h1>
         <p className="lead">分野別の演習と、3分野を横断する模擬セッションを選べます。</p>
       </div>
 
@@ -426,16 +404,31 @@ function ExamPractice({ startSession, questionBank, bankStatus }) {
         </span>
       </div>
 
+      {bankStatus === "error" && (
+        <div className="state-banner is-warning" role="alert">
+          <WarningCircle size={24} weight="fill" />
+          <span><strong>問題データを更新できませんでした</strong><small>収録済みの公式過去問で続行できます。</small></span>
+          <button className="button button-tertiary" onClick={retryBank}>再読み込み</button>
+        </div>
+      )}
+
+      {resumableSession && (
+        <div className="resume-card">
+          <span><strong>{resumableSession.status === "paused" ? "一時停止中の演習" : "進行中の演習"}</strong><small>{scopeLabel(resumableSession.config.scope)}・{Object.keys(resumableSession.answers).length}/{resumableSession.questionIds.length}問回答</small></span>
+          <button className="button button-secondary" onClick={() => resumeSession(resumableSession)}>演習を再開する <ArrowRight size={18} /></button>
+        </div>
+      )}
+
       <div className="practice-builder">
         <section className="builder-panel" aria-labelledby="practice-type-heading">
           <div className="builder-heading"><span>01</span><div><p className="section-kicker">Session type</p><h2 id="practice-type-heading">取り組み方を選ぶ</h2></div></div>
           <div className="session-type-grid">
-            <button className={sessionType === "topic" ? "is-selected" : ""} onClick={() => setSessionType("topic")}>
+            <button aria-pressed={sessionType === "topic"} className={sessionType === "topic" ? "is-selected" : ""} onClick={() => setSessionType("topic")}>
               <span className="practice-icon"><ListChecks size={26} /></span>
               <span><strong>分野別演習</strong><small>選んだ分野を集中して演習</small></span>
               <CheckCircle size={21} weight={sessionType === "topic" ? "fill" : "regular"} />
             </button>
-            <button className={sessionType === "mock" ? "is-selected" : ""} onClick={() => setSessionType("mock")}>
+            <button aria-pressed={sessionType === "mock"} className={sessionType === "mock" ? "is-selected" : ""} onClick={() => setSessionType("mock")}>
               <span className="practice-icon"><Trophy size={26} /></span>
               <span><strong>模擬セッション</strong><small>3分野を横断して出題</small></span>
               <CheckCircle size={21} weight={sessionType === "mock" ? "fill" : "regular"} />
@@ -449,12 +442,28 @@ function ExamPractice({ startSession, questionBank, bankStatus }) {
             {Object.entries(feDomains).map(([key, value]) => {
               const count = questionBank.filter((question) => question.domain === key && (periodId === "all" || question.periodId === periodId)).length;
               return (
-                <button key={key} className={domain === key ? "is-selected" : ""} disabled={sessionType === "mock"} onClick={() => setDomain(key)}>
+                <button key={key} aria-pressed={domain === key} className={domain === key ? "is-selected" : ""} disabled={sessionType === "mock"} onClick={() => setDomain(key)}>
                   <span><strong>{value.label}</strong><small>{value.description}</small></span>
                   <span className="domain-count">{count}問</span>
                 </button>
               );
             })}
+          </div>
+        </section>
+
+        <section className="builder-panel scope-panel" aria-labelledby="practice-scope-heading">
+          <div className="builder-heading"><span>03</span><div><p className="section-kicker">Question scope</p><h2 id="practice-scope-heading">問題の範囲を選ぶ</h2></div></div>
+          <div className="scope-option-list">
+            {[
+              ["all", "通常演習", "条件に合う公式過去問"],
+              ["incorrect", "間違えた問題", "過去の不正解を解き直す"],
+              ["unanswered", "未回答問題", "完了時に残した問題"],
+              ["review", "見直し対象", "自分で印を付けた問題"],
+            ].map(([value, label, description]) => (
+              <button key={value} aria-pressed={scope === value} className={scope === value ? "is-selected" : ""} onClick={() => setScope(value)}>
+                <span><strong>{label}</strong><small>{description}</small></span><CheckCircle size={19} weight={scope === value ? "fill" : "regular"} />
+              </button>
+            ))}
           </div>
         </section>
 
@@ -470,8 +479,8 @@ function ExamPractice({ startSession, questionBank, bankStatus }) {
           <fieldset className="question-count-field">
             <legend>問題数</legend>
             <div>
-              {[10, 20, 30].map((count) => (
-                <button key={count} type="button" className={questionCount === count ? "is-selected" : ""} onClick={() => setQuestionCount(count)}>{count}問</button>
+              {/** @type {Array<number | "all">} */ ([10, 20, 30, "all"]).map((count) => (
+                <button key={count} type="button" aria-pressed={questionCount === count} className={questionCount === count ? "is-selected" : ""} onClick={() => setQuestionCount(count)}>{count === "all" ? "全問" : `${count}問`}</button>
               ))}
             </div>
           </fieldset>
@@ -479,12 +488,17 @@ function ExamPractice({ startSession, questionBank, bankStatus }) {
             <div><dt>出題範囲</dt><dd>{periodLabel}</dd></div>
             <div><dt>出題可能</dt><dd>{availableQuestions.length}問</dd></div>
             <div><dt>今回の問題数</dt><dd>{actualQuestionCount}問</dd></div>
+            <div><dt>問題の範囲</dt><dd>{scopeLabel(scope)}</dd></div>
             <div><dt>出典</dt><dd>IPA公式過去問</dd></div>
           </dl>
+          {availableQuestions.length === 0 && (
+            <div className="empty-inline" role="status"><strong>条件に合う問題がありません</strong><span>{scope === "all" ? "開催回や分野を変更してください。" : "通常演習に戻すか、先に演習履歴を作成してください。"}</span>{scope !== "all" && <button onClick={() => setScope("all")}>通常演習に戻す</button>}</div>
+          )}
+          {shortage && <p className="shortage-note" role="status">指定した{questionCount}問に満たないため、出題可能な{availableQuestions.length}問で開始します。</p>}
           <button
             className="button button-primary"
             disabled={isLoading || actualQuestionCount === 0}
-            onClick={() => startSession({ type: sessionType === "mock" ? "mock" : "topic", domain, periodId, count: questionCount })}
+            onClick={() => startSession(config)}
           >
             {isLoading ? "問題を読み込んでいます" : "演習を開始する"} {!isLoading && <ArrowRight size={19} />}
           </button>
@@ -496,10 +510,10 @@ function ExamPractice({ startSession, questionBank, bankStatus }) {
   );
 }
 
-function ExamResult({ questions, answers, restart, exitSession }) {
-  const correctCount = answers.filter((answer) => answer.correct).length;
-  const score = Math.round((correctCount / questions.length) * 100);
-  const missed = answers.filter((answer) => !answer.correct);
+function ExamResult({ session, questionBank, retrySession, reviewSession, exitSession }) {
+  const summary = calculateSessionSummary(session);
+  const questionMap = new Map(questionBank.map((question) => [question.id, question]));
+  const missed = session.questionIds.filter((questionId) => session.answers[questionId] && !session.answers[questionId].correct);
 
   return (
     <section className="exam-result" aria-labelledby="result-heading">
@@ -507,64 +521,68 @@ function ExamResult({ questions, answers, restart, exitSession }) {
         <span className="result-icon"><Trophy size={34} weight="fill" /></span>
         <p className="eyebrow">Session complete</p>
         <h1 id="result-heading">演習結果</h1>
-        <div className="result-score"><strong>{score}</strong><span>%</span></div>
-        <p>{questions.length}問中 {correctCount}問正解</p>
+        <div className="result-score"><strong>{summary.score}</strong><span>%</span></div>
+        <p>{summary.total}問中 {summary.correct}問正解</p>
+        <div className="result-metrics" aria-label="結果の内訳">
+          <span><small>回答</small><strong>{summary.answered}</strong></span>
+          <span><small>未回答</small><strong>{summary.unanswered}</strong></span>
+          <span><small>不正解</small><strong>{summary.incorrect}</strong></span>
+        </div>
       </div>
       <div className="result-detail">
         <div className="section-heading-row compact"><div><p className="section-kicker">Review</p><h2>振り返り</h2></div></div>
-        {missed.length === 0 ? (
+        {summary.correct === summary.total ? (
           <div className="perfect-result"><CheckCircle size={26} weight="fill" /><span><strong>全問正解です</strong><small>この調子で次の分野へ進みましょう。</small></span></div>
+        ) : missed.length === 0 ? (
+          <div className="perfect-result is-unanswered"><WarningCircle size={26} weight="fill" /><span><strong>未回答の問題があります</strong><small>{summary.unanswered}問を未回答のまま終了しました。履歴から同じ問題に再挑戦できます。</small></span></div>
         ) : (
           <div className="missed-list">
-            {missed.map((answer) => {
-              const question = questions.find((item) => item.id === answer.questionId);
-              return <div key={answer.questionId}><span>{feUnitLabels[question.unitId]}</span><strong>{question.title}</strong><small>正答 {question.correctAnswer}</small></div>;
+            {missed.map((questionId) => {
+              const question = questionMap.get(questionId);
+              return <div key={questionId}><span>{feUnitLabels[question.unitId]}</span><strong>{question.title}</strong><small>正答 {question.correctAnswer}</small></div>;
             })}
           </div>
         )}
         <div className="result-actions">
-          <button className="button button-primary" onClick={restart}>もう一度取り組む</button>
+          {missed.length > 0 && <button className="button button-primary" onClick={() => reviewSession(session, missed)}>間違えた問題を復習</button>}
+          <button className="button button-secondary" onClick={() => retrySession(session)}>同じ問題でもう一度</button>
           <button className="button button-tertiary" onClick={exitSession}>出題設定へ戻る</button>
         </div>
+        <dl className="result-conditions">
+          <div><dt>形式</dt><dd>{session.config.type === "mock" ? "模擬セッション" : feDomains[session.config.domain]?.label}</dd></div>
+          <div><dt>範囲</dt><dd>{session.config.periodLabel}・{scopeLabel(session.config.scope)}</dd></div>
+          <div><dt>完了日時</dt><dd>{formatDate(session.completedAt)}</dd></div>
+        </dl>
       </div>
     </section>
   );
 }
 
-function ExamSession({ questions, restart, exitSession }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [answers, setAnswers] = useState([]);
-  const [finished, setFinished] = useState(false);
-  const question = questions[currentIndex];
-
-  if (finished) return <ExamResult questions={questions} answers={answers} restart={restart} exitSession={exitSession} />;
-
-  const submitAnswer = () => {
-    if (!selected || submitted) return;
-    setSubmitted(true);
-    setAnswers((current) => [...current, { questionId: question.id, selected, correct: selected === question.correctAnswer }]);
-  };
-
-  const goNext = () => {
-    if (currentIndex === questions.length - 1) {
-      setFinished(true);
-      return;
-    }
-    setCurrentIndex((index) => index + 1);
-    setSelected("");
-    setSubmitted(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+function ExamSession({ session, questionBank, persistSession, pauseSession, completeSession, retrySession, reviewSession, exitSession }) {
+  const [confirmFinish, setConfirmFinish] = useState(false);
+  if (!session) return <MissingSession exitSession={exitSession} />;
+  if (session.status === "completed") return <ExamResult session={session} questionBank={questionBank} retrySession={retrySession} reviewSession={reviewSession} exitSession={exitSession} />;
+  if (session.status === "paused") return <PausedSession session={session} persistSession={persistSession} exitSession={exitSession} />;
+  const questionMap = new Map(questionBank.map((item) => [item.id, item]));
+  const question = questionMap.get(session.questionIds[session.currentIndex]);
+  if (!question) return <MissingSession exitSession={exitSession} />;
+  const answer = session.answers[question.id];
+  const selected = answer?.selected || session.drafts[question.id] || "";
+  const summary = calculateSessionSummary(session);
+  const moveTo = (index) => { persistSession(moveSession(session, index)); setConfirmFinish(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const nextUnanswered = session.questionIds.findIndex((questionId, index) => index > session.currentIndex && !session.answers[questionId]);
+  const finish = () => {
+    if (summary.unanswered > 0 && !confirmFinish) { setConfirmFinish(true); return; }
+    completeSession(session);
   };
 
   return (
     <section className="exam-session" aria-labelledby="question-heading">
       <div className="session-topbar">
-        <button className="back-link" onClick={exitSession}><ArrowLeft size={18} /> 出題設定へ戻る</button>
-        <span>問題 {currentIndex + 1} / {questions.length}</span>
+        <button className="back-link" onClick={() => pauseSession(session)}><Pause size={18} /> 一時停止して戻る</button>
+        <span>問題 {session.currentIndex + 1} / {session.questionIds.length}</span>
       </div>
-      <div className="session-progress" aria-label={`${questions.length}問中${currentIndex + 1}問目`}><span style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} /></div>
+      <div className="session-progress" aria-label={`${session.questionIds.length}問中${session.currentIndex + 1}問目`}><span style={{ width: `${((session.currentIndex + 1) / session.questionIds.length) * 100}%` }} /></div>
 
       <div className="question-layout">
         <article className="question-card">
@@ -578,16 +596,16 @@ function ExamSession({ questions, restart, exitSession }) {
           <div className="answer-options" role="radiogroup" aria-label="選択肢">
             {question.choices.map((choice) => {
               const isSelected = selected === choice.id;
-              const isCorrect = submitted && choice.id === question.correctAnswer;
-              const isWrong = submitted && isSelected && choice.id !== question.correctAnswer;
+              const isCorrect = answer && choice.id === question.correctAnswer;
+              const isWrong = answer && isSelected && choice.id !== question.correctAnswer;
               return (
                 <button
                   key={choice.id}
                   role="radio"
                   aria-checked={isSelected}
                   className={`${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
-                  disabled={submitted}
-                  onClick={() => setSelected(choice.id)}
+                  disabled={Boolean(answer)}
+                  onClick={() => persistSession(updateSessionDraft(session, question, choice.id))}
                 >
                   <span>{choice.label}</span><strong>{choice.text}</strong>
                 </button>
@@ -595,19 +613,24 @@ function ExamSession({ questions, restart, exitSession }) {
             })}
           </div>
 
-          {!submitted ? (
-            <button className="button button-primary answer-submit" disabled={!selected} onClick={submitAnswer}>回答する</button>
+          {!answer ? (
+            <button className="button button-primary answer-submit" disabled={!selected} onClick={() => persistSession(answerSessionQuestion(session, question, selected))}>回答を確定する</button>
           ) : (
-            <div className={`answer-feedback ${selected === question.correctAnswer ? "is-correct" : "is-wrong"}`} role="status">
-              <div className="feedback-title"><CheckCircle size={24} weight="fill" /><strong>{selected === question.correctAnswer ? "正解です" : `正答は「${question.correctAnswer}」です`}</strong></div>
+            <div className={`answer-feedback ${answer.correct ? "is-correct" : "is-wrong"}`} role="status">
+              <div className="feedback-title"><CheckCircle size={24} weight="fill" /><strong>{answer.correct ? "正解です" : `正答は「${question.correctAnswer}」です`}</strong></div>
               <p>{question.explanation}</p>
               <div className="source-links">
                 <a href={question.sourceQuestionUrl} target="_blank" rel="noreferrer">IPA問題冊子 <ArrowUpRight size={15} /></a>
                 <a href={question.sourceAnswerUrl} target="_blank" rel="noreferrer">IPA解答 <ArrowUpRight size={15} /></a>
               </div>
-              <button className="button button-primary" onClick={goNext}>{currentIndex === questions.length - 1 ? "結果を見る" : "次の問題へ"} <ArrowRight size={18} /></button>
             </div>
           )}
+          <div className="session-actions">
+            <button className="button button-tertiary" disabled={session.currentIndex === 0} onClick={() => moveTo(session.currentIndex - 1)}><ArrowLeft size={18} /> 前の問題</button>
+            <button className={`button review-toggle ${session.reviewQuestionIds.includes(question.id) ? "is-selected" : ""}`} aria-pressed={session.reviewQuestionIds.includes(question.id)} onClick={() => persistSession(toggleSessionReview(session, question.id))}><BookmarkSimple size={19} weight={session.reviewQuestionIds.includes(question.id) ? "fill" : "regular"} /> 見直し</button>
+            {session.currentIndex < session.questionIds.length - 1 ? <button className="button button-secondary" onClick={() => moveTo(session.currentIndex + 1)}>次の問題 <ArrowRight size={18} /></button> : <button className="button button-secondary" onClick={finish}>演習を終了する</button>}
+          </div>
+          {confirmFinish && <div className="finish-confirm" role="alert"><strong>未回答が{summary.unanswered}問あります</strong><span>未回答のまま結果を保存できます。</span><div><button className="button button-tertiary" onClick={() => setConfirmFinish(false)}>続ける</button><button className="button button-primary" onClick={finish}>この内容で終了</button></div></div>}
         </article>
 
         <aside className="question-sidebar">
@@ -615,8 +638,51 @@ function ExamSession({ questions, restart, exitSession }) {
           <h2>出典情報</h2>
           <dl><div><dt>試験</dt><dd>基本情報技術者試験</dd></div><div><dt>区分</dt><dd>科目A</dd></div><div><dt>問題</dt><dd>{question.sourceRef}</dd></div></dl>
           <span className="official-badge"><ShieldCheck size={18} weight="fill" /> IPA公式資料</span>
+          <div className="question-navigator">
+            <div><strong>問題一覧</strong><small>{summary.answered} / {summary.total}問回答</small></div>
+            <div className="question-number-grid">
+              {session.questionIds.map((questionId, index) => (
+                <button key={questionId} className={`${index === session.currentIndex ? "is-current" : ""} ${session.answers[questionId] ? "is-answered" : ""} ${session.reviewQuestionIds.includes(questionId) ? "is-review" : ""}`} aria-label={`問題${index + 1}、${session.answers[questionId] ? "回答済み" : "未回答"}${session.reviewQuestionIds.includes(questionId) ? "、見直し対象" : ""}`} aria-current={index === session.currentIndex ? "step" : undefined} onClick={() => moveTo(index)}>{index + 1}</button>
+              ))}
+            </div>
+            {nextUnanswered >= 0 && <button className="text-link" onClick={() => moveTo(nextUnanswered)}>次の未回答へ <ArrowRight size={16} /></button>}
+            <button className="button button-tertiary finish-button" onClick={finish}>演習を終了する</button>
+          </div>
         </aside>
       </div>
+    </section>
+  );
+}
+
+function PausedSession({ session, persistSession, exitSession }) {
+  return <section className="session-state" aria-labelledby="paused-heading"><Pause size={36} weight="fill" /><p className="eyebrow">Session paused</p><h1 id="paused-heading">演習を一時停止しました</h1><p>{Object.keys(session.answers).length}/{session.questionIds.length}問まで保存されています。</p><div><button className="button button-primary" onClick={() => persistSession(resumeFeSession(session))}>演習を再開する</button><button className="button button-tertiary" onClick={exitSession}>出題設定へ戻る</button></div></section>;
+}
+
+function MissingSession({ exitSession }) {
+  return <section className="session-state" role="alert"><WarningCircle size={36} weight="fill" /><p className="eyebrow">Recovery</p><h1>再開できる演習が見つかりません</h1><p>出題設定から新しい演習を開始してください。</p><button className="button button-primary" onClick={exitSession}>出題設定へ</button></section>;
+}
+
+function ExamHistory({ sessions, resumeSession, openSession, retrySession, go, storageStatus, clearHistory }) {
+  const [confirmClear, setConfirmClear] = useState(false);
+  const visible = sessions.filter((session) => session.status !== "abandoned");
+  return (
+    <section className="history-page" aria-labelledby="fe-history-heading">
+      <div className="history-page-head"><p className="eyebrow">Learning history</p><h1 id="fe-history-heading">学習履歴</h1><p>演習の結果、途中経過、見直し対象を確認できます。</p></div>
+      {storageStatus.recovered && <div className="state-banner is-warning" role="status"><WarningCircle size={22} weight="fill" /><span><strong>保存データを復旧しました</strong><small>読み取れないデータを除外して表示しています。</small></span></div>}
+      {storageStatus.error && <div className="state-banner is-warning" role="alert"><WarningCircle size={22} weight="fill" /><span><strong>履歴を削除できませんでした</strong><small>接続を確認して、もう一度お試しください。</small></span></div>}
+      <div className="storage-note"><ShieldCheck size={18} weight="fill" /><span>{storageStatus.source === "cloud" ? "この端末とクラウドに保存済み" : "この端末に保存済み（接続時に同期）"}</span></div>
+      {visible.length === 0 ? (
+        <div className="empty-history"><ChartBar size={38} /><h2>まだ演習履歴はありません</h2><p>公式過去問の演習を完了すると、結果と復習対象がここに保存されます。</p><button className="button button-primary" onClick={() => go("exam", "practice")}>演習を始める <ArrowRight size={18} /></button></div>
+      ) : (
+        <div className="session-history-list">
+          {visible.map((session) => {
+            const summary = calculateSessionSummary(session);
+            return <article key={session.id} className="session-history-card"><div className="history-card-top"><span className={`status-pill is-${session.status}`}>{session.status === "completed" ? "完了" : session.status === "paused" ? "一時停止" : "進行中"}</span><time dateTime={session.updatedAt}>{formatDate(session.completedAt || session.updatedAt)}</time></div><h2>{session.config.type === "mock" ? "模擬セッション" : feDomains[session.config.domain]?.label}</h2><p>{session.config.periodLabel}・{scopeLabel(session.config.scope)}・{session.questionIds.length}問</p><div className="history-card-metrics"><span><small>正解</small><strong>{summary.correct}</strong></span><span><small>不正解</small><strong>{summary.incorrect}</strong></span><span><small>未回答</small><strong>{summary.unanswered}</strong></span>{session.status === "completed" && <span className="score"><small>得点</small><strong>{summary.score}%</strong></span>}</div><div className="history-card-actions">{session.status === "completed" ? <><button className="button button-secondary" onClick={() => openSession(session)}>結果を見る</button><button className="button button-tertiary" onClick={() => retrySession(session)}>再挑戦</button></> : <button className="button button-primary" onClick={() => resumeSession(session)}>再開する</button>}</div></article>;
+          })}
+        </div>
+      )}
+      {visible.length > 0 && !confirmClear && <button className="history-reset" onClick={() => setConfirmClear(true)}>学習履歴を削除する</button>}
+      {confirmClear && <div className="history-clear-confirm" role="alert"><strong>すべての学習履歴を削除しますか？</strong><span>この操作は取り消せません。</span><div><button className="button button-tertiary" onClick={() => setConfirmClear(false)}>キャンセル</button><button className="button button-primary" onClick={clearHistory}>削除する</button></div></div>}
     </section>
   );
 }
@@ -630,18 +696,24 @@ function CourseSiteIntro({ go, title, eyebrow, description }) {
   );
 }
 
-function ExamHome({ mode, view, go, notify, startSession, sessionQuestions, restartSession, sessionId, questionBank, bankStatus }) {
+function ExamHome({ mode, view, go, notify, startSession, activeSession, sessions, resumeSession, persistSession, pauseSession, completeSession, retrySession, reviewSession, openSession, clearHistory, questionBank, bankStatus, retryBank, storageStatus }) {
   return (
     <main className="page page-dashboard course-site-page">
-      <CourseSiteIntro go={go} title="FE Learning Lab" eyebrow="Fundamental Information Technology Engineer" description="試験範囲を体系的に学び、知識の定着を確認できます。" />
-      <StudyModeNav route="exam" mode={mode} go={go} />
+      {view !== "session" && <CourseSiteIntro go={go} title="FE Learning Lab" eyebrow="Fundamental Information Technology Engineer" description="試験範囲を体系的に学び、知識の定着を確認できます。" />}
+      {view === "home" && <StudyModeNav route="exam" mode={mode} go={go} />}
       {mode === "lesson" && <ExamLesson notify={notify} />}
-      {mode === "practice" && view !== "session" && <ExamPractice startSession={startSession} questionBank={questionBank} bankStatus={bankStatus} />}
+      {mode === "practice" && view === "home" && <ExamPractice startSession={startSession} resumeSession={resumeSession} activeSession={activeSession} sessions={sessions} questionBank={questionBank} bankStatus={bankStatus} retryBank={retryBank} />}
+      {view === "history" && <ExamHistory sessions={sessions} resumeSession={resumeSession} openSession={openSession} retrySession={retrySession} go={go} storageStatus={storageStatus} clearHistory={clearHistory} />}
       {mode === "practice" && view === "session" && (
         <ExamSession
-          key={sessionId}
-          questions={sessionQuestions}
-          restart={restartSession}
+          key={activeSession?.id || "missing"}
+          session={activeSession}
+          questionBank={questionBank}
+          persistSession={persistSession}
+          pauseSession={pauseSession}
+          completeSession={completeSession}
+          retrySession={retrySession}
+          reviewSession={reviewSession}
           exitSession={() => go("exam", "practice", "home")}
         />
       )}
@@ -652,7 +724,7 @@ function ExamHome({ mode, view, go, notify, startSession, sessionQuestions, rest
 function JavaLesson({ notify }) {
   return (
     <section className="java-course-list" aria-labelledby="java-heading">
-      <div className="java-intro"><p className="eyebrow">Programming lessons</p><h1 tabIndex="-1">Javaをレッスンで学ぶ</h1><p className="lead">基本文法から資格範囲まで、順番にステップアップできます。</p></div>
+      <div className="java-intro"><p className="eyebrow">Programming lessons</p><h1 tabIndex={-1}>Javaをレッスンで学ぶ</h1><p className="lead">基本文法から資格範囲まで、順番にステップアップできます。</p></div>
       <div className="section-heading-row"><h2 id="java-heading">Javaコース</h2><p>現在のレベルに合うコースから始めましょう。</p></div>
       <article className="java-course java-course-current"><span className="course-icon bronze"><Medal size={31} weight="fill" /></span><div className="java-course-copy"><span className="path-kicker">学習中のコース</span><h3>Java Bronze</h3><p><strong>次のレッスン</strong>　Lesson 1　Javaの基本</p></div><button className="button button-primary" onClick={() => notify("Java Bronze「Javaの基本」を開きました。") }><Play size={19} weight="fill" /> 学習を始める</button></article>
       <article className="java-course"><span className="course-icon silver"><Medal size={31} weight="fill" /></span><div className="java-course-copy"><span className="path-kicker">次のステップ</span><h3>Java Silver</h3><p>オブジェクト指向と標準APIを実践的に学びます。</p></div><button className="button button-tertiary" onClick={() => notify("Java Silverのコース概要を開きました。") }>コースを見る <ArrowUpRight size={18} /></button></article>
@@ -663,7 +735,7 @@ function JavaLesson({ notify }) {
 function JavaPractice({ notify }) {
   return (
     <section className="practice-surface">
-      <div className="practice-heading"><p className="eyebrow">Java certification practice</p><h1 tabIndex="-1">資格試験の演習・模試</h1><p className="lead">BronzeとSilverの出題範囲を、分野別演習と模試で確認します。</p></div>
+      <div className="practice-heading"><p className="eyebrow">Java certification practice</p><h1 tabIndex={-1}>資格試験の演習・模試</h1><p className="lead">BronzeとSilverの出題範囲を、分野別演習と模試で確認します。</p></div>
       <div className="certification-groups">
         <section className="certification-group bronze-group">
           <div className="certification-title"><Medal size={30} weight="fill" /><div><span>Oracle Java Certification</span><h2>Java Bronze</h2></div></div>
@@ -700,40 +772,100 @@ function SiteFooter({ route, go }) {
 }
 
 export function App() {
-  const initial = readLocation();
+  const [initial] = useState(readLocation);
   const [route, setRoute] = useState(initial.route);
   const [mode, setMode] = useState(initial.mode);
   const [view, setView] = useState(initial.view);
   const [notice, setNotice] = useState("");
-  const initialSessionConfig = { type: "mock", domain: "technology", periodId: "all", count: 10 };
   const [feQuestionBank, setFeQuestionBank] = useState(feQuestions);
-  const [feBankStatus, setFeBankStatus] = useState("idle");
-  const [sessionConfig, setSessionConfig] = useState(initialSessionConfig);
-  const [sessionQuestions, setSessionQuestions] = useState(() => initial.view === "session" ? buildPracticeQuestions(initialSessionConfig) : []);
-  const [sessionId, setSessionId] = useState(0);
+  const [feBankStatus, setFeBankStatus] = useState("loading");
+  const [bankReload, setBankReload] = useState(0);
+  const [feSessions, setFeSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [storageStatus, setStorageStatus] = useState({ source: "device", recovered: false, ready: false });
   const noticeTimer = useRef(null);
+  const [sessionStore] = useState(createFeSessionStore);
+  const loadedStoreFor = useRef("");
   const isQaCapture = new URLSearchParams(window.location.search).get("qaCapture") === "1";
+  const activeSession = feSessions.find((session) => session.id === activeSessionId) || null;
 
   const go = (nextRoute, nextMode = "lesson", nextView = "home") => {
     setRoute(nextRoute);
     setMode(nextMode);
     setView(nextView);
     setNotice("");
-    window.history.pushState({}, "", pathFor(nextRoute, nextMode, nextView));
+    window.history.pushState({}, "", resilientUrl(pathFor(nextRoute, nextMode, nextView)));
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const persistSession = (session, baseSessions = feSessions) => {
+    const saved = sessionStore.save(session, baseSessions);
+    setFeSessions(saved.sessions);
+    setActiveSessionId(session.id);
+    return session;
+  };
+
+  const abandonActiveSessions = (baseSessions = feSessions) => {
+    let nextSessions = baseSessions;
+    for (const session of baseSessions.filter((item) => ["in_progress", "paused"].includes(item.status))) {
+      nextSessions = sessionStore.save(abandonFeSession(session), nextSessions).sessions;
+    }
+    return nextSessions;
   };
 
   const startSession = (config) => {
-    setSessionConfig(config);
-    setSessionQuestions(buildPracticeQuestions(config, feQuestionBank));
-    setSessionId((current) => current + 1);
+    const questions = selectPracticeQuestions(config, feQuestionBank, feSessions);
+    if (questions.length === 0) return;
+    const baseSessions = abandonActiveSessions();
+    const session = createFeSession({ config, questions });
+    persistSession(session, baseSessions);
     go("exam", "practice", "session");
   };
 
-  const restartSession = () => {
-    setSessionQuestions(buildPracticeQuestions(sessionConfig, feQuestionBank));
-    setSessionId((current) => current + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const resumeSession = (session) => {
+    persistSession(session.status === "paused" ? resumeFeSession(session) : session);
+    go("exam", "practice", "session");
+  };
+
+  const pauseSession = (session) => {
+    persistSession(pauseFeSession(session));
+    go("exam", "practice", "home");
+  };
+
+  const completeSession = (session) => persistSession(completeFeSession(session));
+
+  const retrySession = (sourceSession) => {
+    const questionMap = new Map(feQuestionBank.map((question) => [question.id, question]));
+    const questions = sourceSession.questionIds.map((questionId) => questionMap.get(questionId)).filter(Boolean);
+    const baseSessions = abandonActiveSessions();
+    const session = createFeSession({ config: { ...sourceSession.config, count: questions.length }, questions });
+    persistSession(session, baseSessions);
+    go("exam", "practice", "session");
+  };
+
+  const reviewSession = (sourceSession, questionIds) => {
+    const requested = new Set(questionIds);
+    const questions = feQuestionBank.filter((question) => requested.has(question.id));
+    const baseSessions = abandonActiveSessions();
+    const session = createFeSession({ config: { ...sourceSession.config, scope: "incorrect", count: questions.length }, questions });
+    persistSession(session, baseSessions);
+    go("exam", "practice", "session");
+  };
+
+  const openSession = (session) => {
+    setActiveSessionId(session.id);
+    go("exam", "practice", "session");
+  };
+
+  const clearHistory = async () => {
+    try {
+      await sessionStore.clear();
+      setFeSessions([]);
+      setActiveSessionId(null);
+      setStorageStatus((current) => ({ ...current, source: "device", error: false }));
+    } catch {
+      setStorageStatus((current) => ({ ...current, error: true }));
+    }
   };
 
   const notify = (message) => {
@@ -743,6 +875,8 @@ export function App() {
   };
 
   useEffect(() => {
+    const currentPath = pathFor(initial.route, initial.mode, initial.view);
+    window.history.replaceState({}, "", resilientUrl(currentPath));
     const onPopState = () => {
       const current = readLocation();
       setRoute(current.route);
@@ -755,12 +889,10 @@ export function App() {
       window.removeEventListener("popstate", onPopState);
       window.clearTimeout(noticeTimer.current);
     };
-  }, []);
+  }, [initial.mode, initial.route, initial.view]);
 
   useEffect(() => {
-    if (route !== "exam") return undefined;
     const controller = new AbortController();
-    setFeBankStatus("loading");
     fetch("/data/fe-official-past-questions.json", { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`FE question bank request failed: ${response.status}`);
@@ -781,11 +913,26 @@ export function App() {
         if (error.name !== "AbortError") setFeBankStatus("error");
       });
     return () => controller.abort();
-  }, [route]);
+  }, [bankReload]);
+
+  useEffect(() => {
+    if (!["ready", "error"].includes(feBankStatus)) return;
+    const signature = `${feBankStatus}:${feQuestionBank.length}`;
+    if (loadedStoreFor.current === signature) return;
+    loadedStoreFor.current = signature;
+    sessionStore.list(feQuestionBank).then((result) => {
+      setFeSessions(result.sessions);
+      setStorageStatus({ source: result.source, recovered: result.recovered, ready: true });
+      const routeState = readLocation();
+      const recoverable = result.sessions.find((session) => ["in_progress", "paused"].includes(session.status));
+      const completed = routeState.view === "session" ? result.sessions.find((session) => session.status === "completed") : null;
+      if (recoverable || completed) setActiveSessionId((recoverable || completed).id);
+    });
+  }, [feBankStatus, feQuestionBank, sessionStore]);
 
   return (
-    <div className={`app-shell theme-${siteMeta(route).accent} ${isQaCapture ? "qa-capture" : ""}`}>
-      <Header route={route} mode={mode} go={go} notify={notify} />
+    <div className={`app-shell theme-${siteMeta(route).accent} ${view === "session" ? "is-session" : ""} ${isQaCapture ? "qa-capture" : ""}`}>
+      <Header route={route} mode={mode} view={view} go={go} notify={notify} />
       {notice && <div className="notice" role="status"><CheckCircle size={21} weight="fill" /><span>{notice}</span></div>}
       {route === "japan" && <JapanHome go={go} notify={notify} />}
       {route === "engineer" && <EngineerHome go={go} />}
@@ -796,11 +943,20 @@ export function App() {
           go={go}
           notify={notify}
           startSession={startSession}
-          sessionQuestions={sessionQuestions}
-          restartSession={restartSession}
-          sessionId={sessionId}
+          activeSession={activeSession}
+          sessions={feSessions}
+          resumeSession={resumeSession}
+          persistSession={persistSession}
+          pauseSession={pauseSession}
+          completeSession={completeSession}
+          retrySession={retrySession}
+          reviewSession={reviewSession}
+          openSession={openSession}
+          clearHistory={clearHistory}
           questionBank={feQuestionBank}
           bankStatus={feBankStatus}
+          retryBank={() => { setFeBankStatus("loading"); setBankReload((value) => value + 1); }}
+          storageStatus={storageStatus}
         />
       )}
       {route === "java" && <JavaHome mode={mode} go={go} notify={notify} />}

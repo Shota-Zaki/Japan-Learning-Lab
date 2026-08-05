@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "useDefineForClassFields": true
+  },
+  "include": ["src/**/*.js", "src/**/*.jsx", "src/**/*.d.ts", "worker/**/*.js"],
+  "exclude": ["dist", "node_modules"]
+}

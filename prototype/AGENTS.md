@@ -33,3 +33,9 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - FE practice loads the image-free, four-choice, subject-A official past-question collection generated from `Engineer-License-Lab/docs/labs/fe/data/question-bank.json` at commit `1402da68e2e74945bc8fa4add829458220917512` and blob `82e64654a22d706a168563883752add70e70ad71`. Regenerate it with `npm run sync:fe`; keep question text, choices, and correct answers byte-stable.
 - Keep the 18-question FE seed in `src/data/feQuestions.js` as a byte-stable direct-session and load-failure fallback.
 - FE practice supports a setup screen at `/engineer/it-exam/practice/` and an answer session at `/engineer/it-exam/practice/session/`, including source links and results. Do not add time estimates or countdowns.
+- FE practice sessions use the lifecycle `in_progress` -> `paused` or `completed`; starting a different session abandons the prior active session so attempts are not duplicated.
+- Persist FE session payloads through the Sites D1 binding `DB`. Keep the device cache as an offline/recovery copy, not as the only authoritative store. Validate and normalize saved payloads against the current question bank before displaying them.
+- Preserve FE direct-entry routes after the private Sites gateway by mirroring the canonical pathname in the `#jll=` fragment. Keep the existing pathname URLs unchanged.
+- FE history is available at `/engineer/it-exam/history/` and must be derived from saved sessions. Do not display invented progress, weak-area, review, or history values.
+- FE results show counts, score, conditions, and completion datetime. They do not show estimated or elapsed duration.
+- The responsive acceptance widths for FE setup, player, result, and history are 375px, 768px, and 1280px or wider, with no horizontal scrolling and accessible names on icon-only navigation.
