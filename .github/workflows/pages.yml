@@ -103,18 +103,28 @@ jobs:
           const dataUrl = new URL("data/fe-official-past-questions.json", pageUrl);
           const dataResponse = await fetchWithRetry(dataUrl);
           const data = await dataResponse.json();
-          const sampleQuestion = data.questions?.find((question) => question.id === "fe-ipa-2022sample-a-005");
-          const sampleImages = [
-            ...(sampleQuestion?.questionBlocks || []),
-            ...(sampleQuestion?.choices || []).flatMap((choice) => choice.contentBlocks || []),
-          ].filter((block) => block?.type === "image" && block.src);
-          if (sampleImages.length === 0) throw new Error("Published subject A sample question 5 has no figure");
+          const expectedFigures = new Map([
+            ["fe-ipa-2022sample-a-005", "assets/fe/a-2022-005-figure.svg"],
+            ["fe-ipa-2022sample-a-006", "assets/fe/a-2022-006-figure.svg"],
+            ["fe-ipa-2022sample-a-007", "assets/fe/a-2022-007-figure.svg"],
+          ]);
 
           const resourceUrls = new Set([
             dataUrl.href,
             new URL("favicon.svg", pageUrl).href,
           ]);
-          for (const image of sampleImages) resourceUrls.add(new URL(image.src, pageUrl).href);
+          for (const [questionId, expectedSource] of expectedFigures) {
+            const question = data.questions?.find((item) => item.id === questionId);
+            const images = [
+              ...(question?.questionBlocks || []),
+              ...(question?.choices || []).flatMap((choice) => choice.contentBlocks || []),
+            ].filter((block) => block?.type === "image" && block.src);
+            if (!images.some((image) => image.src === expectedSource)) {
+              throw new Error(`Published ${questionId} does not reference ${expectedSource}`);
+            }
+            resourceUrls.add(new URL(expectedSource, pageUrl).href);
+          }
+
           for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
             const resourceUrl = new URL(match[1], pageUrl);
             if (resourceUrl.origin === pageUrl.origin && resourceUrl.pathname.startsWith(pageUrl.pathname)) resourceUrls.add(resourceUrl.href);
