@@ -28,6 +28,10 @@ const unitLabels = {
   unclassified: "未分類",
 };
 
+function hasIdentityValue(value) {
+  return value !== null && value !== undefined && value !== "";
+}
+
 export function normalizeQuestion(question) {
   const correctAnswers = [...new Set(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : []))];
   const sourceUnitId = question.unitId || "unclassified";
@@ -62,15 +66,12 @@ export function validQuestion(question) {
 }
 
 export function normalizedFingerprint(question) {
-  const sourceIdentity = [
-    question.subject || "A",
-    question.sourceCategory,
-    question.periodId,
-    question.sourceQuestionNumber,
-  ]
-    .filter((value) => value !== null && value !== undefined && value !== "")
-    .join("|");
-  if (sourceIdentity) return `source:${sourceIdentity}`;
+  const sourceParts = [question.sourceCategory, question.periodId, question.sourceQuestionNumber];
+  if (sourceParts.some(hasIdentityValue)) {
+    return `source:${[question.subject || "A", ...sourceParts]
+      .filter(hasIdentityValue)
+      .join("|")}`;
+  }
   return [
     question.subject,
     question.question,
