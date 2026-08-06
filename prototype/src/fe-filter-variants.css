@@ -1,0 +1,222 @@
+.fe-selected-filters-top {
+  margin: 1rem 0;
+  position: sticky;
+  top: 0.5rem;
+  z-index: 4;
+  box-shadow: 0 10px 30px rgb(28 34 44 / 10%);
+}
+
+.fe-filter-view-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  margin: 1rem 0;
+  border: 1px solid var(--line, #d9dee8);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+}
+
+.fe-filter-view-switch > span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.fe-filter-view-switch small {
+  color: var(--muted, #667085);
+}
+
+.fe-filter-view-switch > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.fe-filter-view-switch button,
+.fe-filter-panel-actions button {
+  min-height: 40px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line, #d9dee8);
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.fe-filter-view-switch button.is-selected {
+  border-color: var(--exam-accent, #2768d7);
+  background: color-mix(in srgb, var(--exam-accent, #2768d7) 10%, #fff);
+  font-weight: 700;
+}
+
+.fe-filter-panel-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.fe-filter-variant-accordion {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.fe-filter-disclosure {
+  overflow: hidden;
+  border: 1px solid var(--line, #d9dee8);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+}
+
+.fe-filter-disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.fe-filter-disclosure summary small {
+  margin-left: auto;
+  color: var(--muted, #667085);
+  font-weight: 600;
+}
+
+.fe-filter-disclosure[open] summary {
+  border-bottom: 1px solid var(--line, #d9dee8);
+  background: color-mix(in srgb, var(--exam-accent, #2768d7) 5%, #fff);
+}
+
+.fe-filter-panel-body {
+  min-width: 0;
+  padding: 0.85rem;
+}
+
+.fe-filter-panel-body > p {
+  margin: 0.45rem 0 0.75rem;
+  color: var(--muted, #667085);
+  font-size: 0.9rem;
+}
+
+.fe-filter-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.fe-filter-panel-actions > span {
+  color: var(--muted, #667085);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.fe-filter-panel-actions > div {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.fe-filter-panel-actions button {
+  min-height: 36px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+}
+
+.fe-filter-variant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.fe-filter-group-compact {
+  min-width: 0;
+  margin: 0;
+  padding: 0.7rem;
+}
+
+.fe-filter-group-compact legend {
+  padding: 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.fe-filter-group-compact .fe-filter-panel-body {
+  padding: 0;
+}
+
+.fe-filter-group-compact .fe-check-grid-compact {
+  max-height: 230px;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+  overscroll-behavior: contain;
+}
+
+.fe-check-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.4rem;
+}
+
+.fe-check-grid-compact label {
+  min-height: 44px;
+  padding: 0.5rem 0.65rem;
+}
+
+.fe-check-grid-compact label span {
+  min-width: 0;
+}
+
+.fe-check-grid-compact label strong {
+  overflow-wrap: anywhere;
+}
+
+.fe-filter-chips .is-select-all {
+  border-style: solid;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .fe-filter-variant-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .fe-selected-filters-top {
+    position: static;
+  }
+
+  .fe-filter-view-switch,
+  .fe-filter-panel-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fe-filter-view-switch > div,
+  .fe-filter-panel-actions > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fe-filter-view-switch button,
+  .fe-filter-panel-actions button {
+    min-height: 44px;
+  }
+
+  .fe-filter-variant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fe-filter-group-compact .fe-check-grid-compact {
+    max-height: 190px;
+  }
+
+  .fe-check-grid-compact {
+    grid-template-columns: 1fr;
+  }
+}
