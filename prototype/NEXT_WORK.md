@@ -1,55 +1,48 @@
-# FE Learning Lab完成修正・検証指示
+# 次工程
 
-## 現在地
+## FE Learning Lab
 
-Java Learning Labの設計・実装は停止する。次工程へ進めず、FE Learning Labの完成修正と独立検証を優先する。
+状態: **完成・監査合格**
 
-実装済みの修正候補:
+FE Learning Labの完成条件は、`prototype/qa/fe-completion-audit-2026-08-06/audit.md`に記録した証拠により満たされた。
 
-- GitHub Pages用成果物をRepository直下`docs/`へ生成するビルド構成
-- 科目・分野・単元・開催回・回答状態の複数条件絞り込み
-- 同一条件群はOR、異なる条件群はANDの検索契約
-- 科目A・科目Bの共通問題モデル
-- 科目Bのアルゴリズム／情報セキュリティ分類
-- 単一正答・複数正答への対応
-- 問題本文・コード・表・注記・画像・解説の構造化表示
-- FE保存スキーマVersion 1からVersion 2への互換復元
-- `docs/index.html`、`docs/404.html`、`docs/.nojekyll`の生成処理
+完了済み:
 
-## 未完了判定
+- Repository直下`docs/`へのPages成果物生成と`work`への自動commit
+- GitHub Pages公開と公開リソースのHTTPスモークテスト
+- 科目A・科目Bの公式問題同期
+- 科目Bの実演習
+- 単一正答・複数正答
+- 複数条件の同一群OR・群間AND
+- 正解、不正解、未回答、見直し対象の複数選択
+- 本文、コード、表、画像、注記、解説の構造化表示
+- 375px、768px、1280pxの実ブラウザ監査
+- 一時停止、再開、再読込復元、結果、履歴、復習、再挑戦
+- Console error、Console warning、HTTP error、Request failure 0件
 
-次の検証が成功するまで、FE Learning Labを完成扱いにしない。
+公開URL:
 
-1. 移行元固定SHAから科目A・科目Bを同期する。
-2. 科目Bが0件の場合はビルドを失敗させる。
-3. 科目Bにアルゴリズムと情報セキュリティの両方が存在することを検査する。
-4. 科目Bの少なくとも一部にコード、表または画像の構造化ブロックが存在することを検査する。
-5. 科目Aの既存問題件数、ID、本文、選択肢、正答、公式URLを回帰させない。
-6. 複数条件について、同一群OR・群間AND・0件・不足件数を実ブラウザで確認する。
-7. 科目Bで問題本文、擬似言語、表、選択肢、解説、公式リンクを確認する。
-8. 単一正答と複数正答で、回答確定後に変更できないことを確認する。
-9. 前後移動、未回答移動、見直し、一時停止、再開、再読込復元、結果、履歴、復習、再挑戦を確認する。
-10. 375px、768px、1280px以上でページ全体の横スクロールがないことを確認する。コードと表の内部横スクロールは許容する。
-11. `npm run sync:fe`、自動テスト、TypeScript、ESLint、`npm run build:pages`を全て成功させる。
-12. 生成されたRepository直下`docs/`について、`index.html`、`404.html`、`.nojekyll`、問題データ、アセット参照を確認する。
-13. main統合後にGitHub Pagesを公開し、トップURLとFEの深いURLを再読込して確認する。
-14. ブラウザ警告・エラーを0件にする。
+`https://shota-zaki.github.io/Japan-Learning-Lab/`
 
-## 完了報告
+FE Learning Labの完成を妨げる未実装事項はない。
 
-次を明記する。
+## 継続時の回帰条件
 
-- 固定HEAD
-- 移行元SHA
-- 科目A・科目Bの収録件数
-- 科目Bの分野別件数
-- 構造化ブロック件数
-- 複数条件の検証結果
-- 自動テスト、TypeScript、ESLint、Pages buildの結果
-- 375px、768px、1280px以上の実ブラウザ結果
-- GitHub Pages公開先
-- 深いURLと再読込結果
-- 保存・履歴・復習の回帰結果
-- 未実装事項
+今後FE Learning Labを変更する場合は、少なくとも次を維持する。
 
-Java Learning Labは、FE Learning Labがこの完了条件に合格した後にのみ再開する。
+1. `npm run verify:fe`を成功させる。
+2. 科目A・科目Bの問題件数と固定blob検証を維持する。
+3. 科目Bを0件にしない。
+4. 同一条件群OR・異なる条件群ANDを維持する。
+5. 本文、コード、表、解説の表示境界を維持する。
+6. Pages build後に`docs/`を`work`へ反映する。
+7. 公開トップ、CSS、JavaScript、公式問題JSON、faviconのHTTPスモークテストを成功させる。
+8. Pagesでは端末保存を使用し、存在しないセッションAPIへアクセスしない。
+9. ページ全体に不要な横スクロールを発生させない。
+10. ブラウザコンソールとネットワークエラーを0件に保つ。
+
+## 次の開発対象
+
+Java Learning Labの作業停止を解除する。
+
+次工程では、Repositoryの現在の設計文書と進捗を再確認したうえで、Java Learning Labを再開する。FE Learning Labの変更を同時進行させず、FEの回帰条件を維持する。
