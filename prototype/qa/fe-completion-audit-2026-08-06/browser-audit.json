@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "auditedArtifact": {
+    "workflowRunId": 31063779893,
+    "sourceRevision": "d476cade599de00e56f7def9ad6a1bb17f804758"
+  },
+  "viewports": [
+    {
+      "width": 375,
+      "documentWidth": 375,
+      "pageHorizontalOverflow": false,
+      "tableViewportWidth": 303,
+      "tableScrollWidth": 624,
+      "tableColumnWidths": [112, 512]
+    },
+    {
+      "width": 768,
+      "documentWidth": 768,
+      "pageHorizontalOverflow": false,
+      "tableViewportWidth": 656,
+      "tableScrollWidth": 656,
+      "tableColumnWidths": [112, 544]
+    },
+    {
+      "width": 1280,
+      "documentWidth": 1280,
+      "pageHorizontalOverflow": false,
+      "tableViewportWidth": 846,
+      "tableScrollWidth": 846,
+      "tableColumnWidths": [112, 734]
+    }
+  ],
+  "checks": {
+    "answerAndReviewInputsAreMultiSelect": true,
+    "multipleAnswerStatesSelectedTogether": true,
+    "subjectBCodeVisible": true,
+    "subjectBTableVisible": true,
+    "subjectBExplanationVisible": true,
+    "codeKeepsFormatting": true,
+    "tableUsesInternalHorizontalScroll": true,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "httpErrors": 0,
+    "requestFailures": 0
+  },
+  "note": "Later commits only changed Pages build and deployment automation; application rendering remained unchanged."
+}
