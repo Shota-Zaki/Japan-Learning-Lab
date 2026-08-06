@@ -27,31 +27,39 @@ test("runtime question bank merge preserves both subjects and the supplemental s
   assert.equal(bank.filter((question) => question.subject === "B").length, 167);
 });
 
-test("source fingerprints distinguish subjects and source-less content remains distinct", () => {
+test("fingerprints distinguish subjects and questions that reuse source coordinates", () => {
   const sharedSource = {
     sourceCategory: "official-sample",
     periodId: "2022-sample",
     sourceQuestionNumber: 1,
+    choices: [{ id: "a", text: "one" }, { id: "b", text: "two" }],
+    correctAnswers: ["a"],
   };
-  const subjectA = normalizedFingerprint({ ...sharedSource, subject: "A" });
-  const subjectB = normalizedFingerprint({ ...sharedSource, subject: "B" });
+  const subjectA = normalizedFingerprint({ ...sharedSource, subject: "A", question: "shared question" });
+  const subjectB = normalizedFingerprint({ ...sharedSource, subject: "B", question: "shared question" });
+  const distinctContent = normalizedFingerprint({ ...sharedSource, subject: "A", question: "different question" });
   assert.notEqual(subjectA, subjectB);
-  assert.equal(subjectA, normalizedFingerprint({ ...sharedSource, subject: "A" }));
+  assert.notEqual(subjectA, distinctContent);
+  assert.equal(subjectA, normalizedFingerprint({ ...sharedSource, subject: "A", question: "shared question" }));
+});
 
-  const sourceLessOne = normalizedFingerprint({
+test("merge removes exact duplicates with different IDs without dropping distinct questions", () => {
+  const common = {
     subject: "A",
-    question: "first question",
-    choices: [{ text: "one" }, { text: "two" }],
-    correctAnswers: ["one"],
-  });
-  const sourceLessTwo = normalizedFingerprint({
-    subject: "A",
-    question: "second question",
-    choices: [{ text: "one" }, { text: "two" }],
-    correctAnswers: ["one"],
-  });
-  assert.notEqual(sourceLessOne, sourceLessTwo);
-  assert.ok(!sourceLessOne.startsWith("source:"));
+    sourceCategory: "archive",
+    periodId: "shared-period",
+    sourceQuestionNumber: 1,
+    unitId: "basic-theory",
+    choices: [{ id: "a", text: "one" }, { id: "b", text: "two" }],
+    correctAnswers: ["a"],
+    explanation: "explanation",
+  };
+  const first = { ...common, id: "first", question: "first question" };
+  const duplicate = { ...common, id: "duplicate", question: "first question" };
+  const distinct = { ...common, id: "distinct", question: "second question" };
+
+  const merged = mergeQuestionBanks([first, distinct], [duplicate]);
+  assert.deepEqual(merged.map((question) => question.id), ["duplicate", "distinct"]);
 });
 
 for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {
