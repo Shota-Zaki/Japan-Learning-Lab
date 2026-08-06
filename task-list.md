@@ -106,7 +106,8 @@ push workflow run ID `31105739031`、run number `237`では、build、`npm run v
 
 ### Failure evidence
 
-- Latest failure evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
+- Authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
+- Original workflow evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
 - Evidence file: `prototype/qa/pages-deployment-failure.json`
 - Source revision: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
 - Push workflow run ID: `31105739031`
@@ -124,18 +125,24 @@ push workflow run ID `31105739031`、run number `237`では、build、`npm run v
 - Pull Request build job: success
 - Temporary recovery and patch workflows on `work`: removed
 
+### Excluded transient run
+
+最終確認中に誤って作成された一時ファイルcommit `67d137930063321048c91641c919b177b17542eb`は、直後のcommit `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`で削除した。このcommitによりpush workflow run ID `31107033694`、run number `239`が起動したが、deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`との競合で新規deployment作成前にHTTP 400となった。
+
+一時ファイルはRepositoryから削除済みであり、競合deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`は隔離Branch `pages-recovery`から公式cancel endpointで解除し、`deployment_cancelled`を確認した。run `239`は外部queue障害の根拠には使用せず、authoritative evidenceはrun `237`とする。
+
 ### Resume condition
 
 GitHub Pages deployment queueが処理可能な状態へ戻った後、`work`の最新sourceでpush workflowを再実行する。deploy成功後に公開`build-info.json`、JS/CSS、問題データ、図表を照合し、公開画面の独立確認を完了する。
 
-同じqueue状態が継続している間は、アプリケーションコード、build設定、artifact生成を変更しない。現行`.github/workflows/pages.yml`のpreflightは、今回の残留deployment `7ac17dd605546149649223e88dd67f22d32c70d3`が終端状態であることを確認してからdeployする。
+同じqueue状態が継続している間は、アプリケーションコード、build設定、artifact生成を変更しない。現行`.github/workflows/pages.yml`のpreflightは、残留deployment `7ac17dd605546149649223e88dd67f22d32c70d3`が終端状態であることを確認してからdeployする。
 
 ### Non-blocking issues
 
 - `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
 - 一部GitHub ActionのNode.js 20非推奨warning
 - Repository default branchが`work`である点
-- 一時復旧Branch `pages-recovery`が残っているが、workflowは手動実行専用のretired状態
+- 一時復旧Branch `pages-recovery`は隔離用として残っている
 
 ### Merge commit
 
