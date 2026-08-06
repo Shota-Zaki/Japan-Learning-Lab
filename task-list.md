@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`needs_fix`
+`review_ready`
 
 ### Purpose
 
@@ -58,7 +58,7 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 5. `npm run verify:fe`が成功する
 6. 全自動テスト、TypeScript、ESLint、通常build、Pages buildが成功する
 7. `docs/`が最新の実装Revisionから再生成される
-8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を実ブラウザで利用できる
+8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を利用できる
 9. Draft Pull Request #1の最新実装HEADに対するCIが成功する
 10. GitHub Pagesが最新実装相当の成果物を公開し、公開スモークテストが成功する
 11. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
@@ -87,83 +87,72 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 ### Review target HEAD
 
-`9633c88f214c719ee8413e93be87821a9dd31257`
+`10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
 
-確認担当はこのHEADのPages artifactと実画面を独立確認した。管理文書更新後のHEADはPull Requestから再取得する。
+このHEADは修正済みアプリケーション、回帰テスト、最新生成データ、`docs/`を含む。以後の管理文書のみのcommitを含む最新PR HEADは確認開始時に再取得する。
+
+### Fix summary
+
+確認担当が検出した実行時問題バンク統合の科目B誤除外を修正した。
+
+- 統合処理を`prototype/src/feQuestionBank.js`へ分離
+- `prototype/src/FeLearningApp.jsx`から共通統合処理を使用
+- 重複fingerprintへ科目、出典座標、問題本文、構造化本文、選択肢、構造化選択肢、正答を含めた
+- 同一出典番号を再利用する別問題を保持し、ID一致または内容一致の真の重複だけを除外
+- 実行時と同じ統合処理を通す回帰テストを追加
 
 ### Verification result
 
 #### Passed checks
 
-- Pull Request #1はDraft / Open / Unmerged、Base `main`、Head `work`
-- PR用Workflow run `31077783324` run number `172`のbuildは成功
-- Pages deployment evidenceはsource revision `b7ec726bc36e4d051344ee9c62adbd2dfcdd7349`、run `31077780284` run number `171`、public smoke check success
-- Pages artifactを取得し、`index.html`、`404.html`、`.nojekyll`相当、静的アセット、問題JSON、問5・問6・問7のSVGを確認
-- 公開問題JSONには1,977問、科目A 1,810問、科目B 167問、2022年12月サンプルは科目A 60問・科目B 20問存在
-- 375px、768px、1280pxで科目A問5・問6・問7を実ブラウザ表示
-- 3図表に代替テキストがあり、ページ全体の横スクロールなし
-- 科目A問9は画像なし、4選択肢、正答`エ`
-- 上記画面でConsole error、Page error、HTTP error、Request failureは0件
-- キーボードフォーカスの可視アウトラインを確認
+- 実行時統合結果: 1,997問
+- 科目A: 1,830問
+- 科目B: 167問
+- 2022年12月公開サンプル科目A: 60問、公式問番号順
+- 2022年12月公開サンプル科目B: 20問、公式問番号順
+- 科目B公式サンプルの設定件数20問でセッション選択成功
+- 科目B複数正答の完全一致判定成功
+- 回答、レビュー、停止、保存状態の正規化、復元、再開、完了の自動テスト成功
+- 履歴由来の不正解、未回答、要復習スコープの自動テスト成功
+- 科目A問5・問6・問7の図表参照を維持
+- 科目A問9の本文、4選択肢、正答`エ`を維持
+- `npm run verify:fe`: success
+- Tests: 47 / 47 passed
+- TypeScript: success
+- ESLint: 0 errors / 1 existing warning
+- Normal build: success
+- Pages build: success
+- Generated output commit: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
+- Push workflow run `31079687176` run number `185`: build / deploy / public smoke success
+- Pull request workflow run `31079690171` run number `186`: build success
+- GitHub Pages deployment evidence source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
+- Audit: `prototype/qa/fe-question-bank-merge-fix-2026-08-06/audit.md`
 
-#### Blocking issue
+#### Independent review required
 
-実行時に画面へ渡される統合済み問題バンクから、科目Bの159問が誤って除外される。
-
-実測:
-
-- 配信済み基本問題JSON: 1,977問（科目A 1,810 / 科目B 167）
-- 補足問題JSON: 科目A 20問
-- 期待する統合結果: 1,997問（科目A 1,830 / 科目B 167）
-- 実際の画面上の統合結果: 1,838問（科目A 1,830 / 科目B 8）
-- 誤除外: 科目B 159問
-- 2022年12月公開サンプル科目B: JSONには20問あるが画面では0問
-- 科目B公式サンプル開始ボタン: disabled
-
-再現手順:
-
-1. GitHub Pages成果物または同一artifactを開く
-2. FE Learning Lab → 演習・模試
-3. 科目Bを選択する
-4. 模擬試験 → 2022年12月公開サンプル問題
-5. 「0問が対象」と表示され、「公式サンプル問題を開始」が無効になる
-
-原因:
-
-- `prototype/src/FeLearningApp.jsx`の`normalizedFingerprint()`が、出典ベースの重複判定キーを`sourceCategory`、`periodId`、`sourceQuestionNumber`だけで作成している
-- 科目をキーに含めていないため、同一開催回・同一問番号の科目Aと科目Bが同一問題と誤判定される
-- 例: `fe-ipa-2022sample-b-001`は科目A問1と衝突する
-- 現行`prototype/tests/fe-official-sample.test.mjs`は生の基本問題JSONを直接`selectPracticeQuestions()`へ渡しており、実行時の`mergeQuestionBanks()`を経由しないため不具合を検出できない
-
-### Required fix
-
-1. 出典ベースの重複判定キーへ少なくとも`subject`を含め、科目Aと科目Bを別問題として扱う
-2. 実行時と同じ問題バンク統合処理をテスト可能なモジュールへ分離またはexportする
-3. 基本1,977問と補足20問を統合した結果が1,997問、科目A 1,830問、科目B 167問になる回帰テストを追加する
-4. 統合済み問題バンクに対し、2022年12月公開サンプルが科目A 60問・科目B 20問で公式問番号順になるテストを追加する
-5. 科目B公式サンプル画面で20問が対象となり、開始可能であることをブラウザ検証する
-6. 科目Bの回答、解説、保存、再読込後の復元、履歴、復習、再挑戦をブラウザ検証する
-7. `npm run verify:fe`、最新HEADのCI、`docs/`再生成、GitHub Pages再公開を行う
-8. Pull Request本文、監査記録、`task-list.md`、`NEXT_WORK.md`を実結果へ更新する
+確認担当は最新PR HEADを固定し、科目B公式サンプル画面で20問表示、開始ボタン、回答、解説、再読込後の復元、履歴、復習、再挑戦を実ブラウザで独立確認する。
 
 ### Non-blocking issue
 
-- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件。今回のBlocking修正とは分離してよいが、残存を記録すること。
+- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件。今回のBlocking修正とは分離する。
+- GitHub Actionsが使用する一部ActionのNode.js 20非推奨warning。Workflow自体はNode.js 22で検証成功している。
 
 ### Merge commit
 
-未マージ。Blocking問題のためマージ禁止。
+未マージ。実装担当のためマージ禁止。確認合格時に確認担当がmerge commit方式で処理する。
 
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- 最新確認済み公開source revision: `b7ec726bc36e4d051344ee9c62adbd2dfcdd7349`
-- 科目A図表の公開確認: 合格
-- 科目B実行時統合: 不合格
+- Source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
+- Generated output commit: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
+- Workflow run: `31079687176` / run number `185`
+- Deploy: success
+- Public smoke check: success
 
 ### Next task
 
-`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が修正、再確認、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
+`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が独立確認、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
 
 ---
 
