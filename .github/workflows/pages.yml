@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
   pages: write
   id-token: write
 
@@ -26,41 +25,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Record Pages workflow run
-        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
-        working-directory: .
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
-          SOURCE_SHA: ${{ github.sha }}
-        run: |
-          node --input-type=module <<'NODE'
-          const marker = "<!-- pages-push-run -->";
-          const headers = {
-            Accept: "application/vnd.github+json",
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Content-Type": "application/json",
-          };
-          const commentsUrl = `https://api.github.com/repos/${process.env.REPOSITORY}/issues/1/comments`;
-          const commentsResponse = await fetch(`${commentsUrl}?per_page=100`, { headers });
-          if (!commentsResponse.ok) throw new Error(`Unable to list PR comments: ${commentsResponse.status}`);
-          const comments = await commentsResponse.json();
-          const existing = comments.find((comment) => comment.body?.includes(marker));
-          const body = `${marker}\nPages push workflow: running\n\n- Run: ${process.env.RUN_NUMBER}\n- Run ID: ${process.env.RUN_ID}\n- Source: \`${process.env.SOURCE_SHA}\``;
-          const targetUrl = existing
-            ? `https://api.github.com/repos/${process.env.REPOSITORY}/issues/comments/${existing.id}`
-            : commentsUrl;
-          const response = await fetch(targetUrl, {
-            method: existing ? "PATCH" : "POST",
-            headers,
-            body: JSON.stringify({ body }),
-          });
-          if (!response.ok) throw new Error(`Unable to record Pages run: ${response.status}`);
-          NODE
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -270,42 +234,43 @@ jobs:
             workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
           }, null, 2)}\n`, "utf8");
           await rm("prototype/qa/pages-deployment-attempt.json", { force: true });
+          await rm("prototype/qa/pages-deployment-failure.json", { force: true });
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json prototype/qa/pages-deployment-attempt.json
+          git add -A docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json prototype/qa/pages-deployment-attempt.json prototype/qa/pages-deployment-failure.json
           git commit -m "docs: sync successful Pages deployment evidence [skip ci]"
           git push origin HEAD:work
 
-      - name: Update Pages workflow result
-        if: always()
+      - name: Checkout work after deployment failure
+        if: failure()
+        uses: actions/checkout@v4
+        with:
+          ref: work
+
+      - name: Record failed Pages deployment
+        if: failure()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
+          SOURCE_SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           RUN_NUMBER: ${{ github.run_number }}
-          SOURCE_SHA: ${{ github.sha }}
-          RUN_STATUS: ${{ job.status }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
         run: |
           node --input-type=module <<'NODE'
-          const marker = "<!-- pages-push-run -->";
-          const headers = {
-            Accept: "application/vnd.github+json",
-            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Content-Type": "application/json",
-          };
-          const commentsUrl = `https://api.github.com/repos/${process.env.REPOSITORY}/issues/1/comments`;
-          const commentsResponse = await fetch(`${commentsUrl}?per_page=100`, { headers });
-          if (!commentsResponse.ok) throw new Error(`Unable to list PR comments: ${commentsResponse.status}`);
-          const comments = await commentsResponse.json();
-          const existing = comments.find((comment) => comment.body?.includes(marker));
-          if (!existing) throw new Error("Pages run diagnostic comment was not found");
-          const body = `${marker}\nPages push workflow: ${process.env.RUN_STATUS}\n\n- Run: ${process.env.RUN_NUMBER}\n- Run ID: ${process.env.RUN_ID}\n- Source: \`${process.env.SOURCE_SHA}\``;
-          const response = await fetch(`https://api.github.com/repos/${process.env.REPOSITORY}/issues/comments/${existing.id}`, {
-            method: "PATCH",
-            headers,
-            body: JSON.stringify({ body }),
-          });
-          if (!response.ok) throw new Error(`Unable to update Pages run result: ${response.status}`);
+          import { mkdir, writeFile } from "node:fs/promises";
+          await mkdir("prototype/qa", { recursive: true });
+          await writeFile("prototype/qa/pages-deployment-failure.json", `${JSON.stringify({
+            status: "failure",
+            sourceBranch: process.env.SOURCE_BRANCH,
+            sourceRevision: process.env.SOURCE_SHA,
+            workflowRunId: Number(process.env.RUN_ID),
+            workflowRunNumber: Number(process.env.RUN_NUMBER),
+            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
+          }, null, 2)}\n`, "utf8");
           NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prototype/qa/pages-deployment-failure.json
+          git commit -m "docs: record failed Pages deployment [skip ci]"
+          git push origin HEAD:work
