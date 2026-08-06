@@ -25,13 +25,14 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 - Base Branch: `main`
 - Pull Request: `#1`
 - Pull Request state: Draft / Open / Unmerged
-- Latest deployment source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
-- Latest failure evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
-- Latest task status commit: `daa94256c896a83a8d42dd4191fe9fbbe6255b4a`
-- Recovery marker removal commit: `f2c064fdc1aef6e64db15ac426f6db75d0039dbf`
-- Accidental temporary file cleanup commit: `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`
+- Latest authoritative deployment source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
+- Authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
+- Latest task status commit: `b00491bf0e1f33f0c6d5cb8c71197c040089743a`
 - Current Pages workflow: `.github/workflows/pages.yml`
 - Temporary recovery and patch workflows on `work`: removed
+- Isolated recovery Branch: `pages-recovery`
+- Recovery result: deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f` is `deployment_cancelled`
+- Recovery workflow retired commit: `cef2997716469a2e7c33d4f5c16b204376a060e0`
 - この管理文書更新後の`work` HEADを最終報告の固定HEADとする
 
 ## Verified state
@@ -50,7 +51,7 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 
 ## External blocker
 
-### Latest push run
+### Authoritative push run
 
 - Workflow run ID: `31105739031`
 - Run number: `237`
@@ -76,7 +77,13 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 4. API状態`deployment_cancelled`を終端状態として処理
 5. 新しいsourceとartifactでdeployを再実行
 
-最新runではpreflight、build、artifact upload、deployment作成が成功した後、約10分間`deployment_queued`が継続した。残留deployment競合、アプリケーション、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のqueue処理が外部Blockerである。
+authoritative run `237`ではpreflight、build、artifact upload、deployment作成が成功した後、約10分間`deployment_queued`が継続した。残留deployment競合、アプリケーション、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のqueue処理が外部Blockerである。
+
+## Excluded transient run
+
+最終確認中の一時ファイルcommit `67d137930063321048c91641c919b177b17542eb`はcommit `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`で削除済み。このcommitによりrun ID `31107033694`、run number `239`が起動したが、deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`との競合で新規deployment作成前にHTTP 400となった。
+
+一時ファイルは存在せず、競合deploymentは隔離Branchから解除して`deployment_cancelled`を確認した。run `239`はqueue障害の根拠から除外し、run `237`をauthoritative evidenceとする。
 
 ## Resume procedure
 
@@ -126,7 +133,7 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 - `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
 - 一部GitHub ActionのNode.js 20非推奨warning
 - Repository default branchが`work`である点
-- 一時復旧Branch `pages-recovery`が残っているが、workflowは手動実行専用のretired状態
+- 隔離用Branch `pages-recovery`が残っているが、workflowは手動実行専用へ戻している
 
 ## User memo for next implementation
 
