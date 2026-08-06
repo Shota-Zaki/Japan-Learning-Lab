@@ -36,11 +36,13 @@ Blocking問題がなければ、管理文書更新、merge commit、`main`のCI�
 - Pull Request: `#1`
 - Pull Request state: Draft / Open / Unmerged
 - Fix start HEAD: `a1912c53719b64bfcc5b4e83bb5eb2bcf8ef5796`
-- Verified implementation source revision: `10af5e9e9489a39eec43efb77ca13087f748f07d`
-- Generated output commit: `d832cddb2949a12c9fb1d53a031ac989f4400c19`
+- Review handoff source revision: `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`
+- Generated output commit: `5700b363fe233594c7717d483da44fe37aecf81f`
+- `docs/build-info.json` sourceRevision: `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`
+- Management update commit: `70c4fc4462f67c23f9d6d83a0a85bc1009006666`
 - Audit: `prototype/qa/fe-result-filter-fix-2026-08-06/audit.md`
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- 最新の管理文書HEAD、Pull Request HEAD、Pages deployment evidenceは確認開始時に再取得して固定する
+- このファイル更新後の最新HEAD、Pull Request HEAD、Pages deployment evidenceは確認開始時に再取得して固定する
 
 ## Implemented changes
 
@@ -86,11 +88,10 @@ Blocking問題がなければ、管理文書更新、merge commit、`main`のCI�
 
 ## Automated verification
 
-Pull Request workflow:
+Pull Request workflows:
 
-- Run ID: `31082788764`
-- Run number: `195`
-- Result: success
+- Run ID: `31082788764` / run number `195` / success
+- Final Run ID: `31083188418` / run number `197` / success
 
 `npm run verify:fe`:
 
@@ -110,6 +111,14 @@ Pull Request workflow:
 - 科目A問9の本文、4選択肢、正答を維持
 - 保存、復元、履歴、復習、再挑戦のテスト成功
 
+## GitHub Pages evidence status
+
+- Repository内の`docs/`はsource revision `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`から生成済み
+- 生成commitは`5700b363fe233594c7717d483da44fe37aecf81f`
+- 現在の`prototype/qa/pages-deployment.json`は旧source revision `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`、workflow run number `191`の公開成功を記録している
+- 最新source revisionの公開スモーク成功証拠は未固定
+- 確認担当は公開URL、公開資産、`docs/build-info.json`、deployment evidenceを独立して照合する
+
 ## Mandatory independent browser verification
 
 1. GitHub PagesのFE演習を開く
@@ -126,6 +135,7 @@ Pull Request workflow:
 12. キーボード操作、フォーカス表示、Console error、Page error、HTTP error、Request failureを確認する
 13. `docs/build-info.json`と公開成果物のRevisionを照合する
 14. Pull Requestの最新固定HEADに対するCIを確認する
+15. 最新RevisionのPages deployment evidenceが更新されていない場合は、公開状態を確認してBlocking可否を判断する
 
 ## Change allowed for confirmation
 
