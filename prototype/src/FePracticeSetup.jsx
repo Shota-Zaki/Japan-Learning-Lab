@@ -80,7 +80,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
   const requestedCount = count === "all" ? available.length : Number(count);
   const actualCount = Math.min(requestedCount, available.length);
   const shortage = count !== "all" && available.length > 0 && available.length < Number(count);
-  const resumable = activeSession || sessions.find((session) => ["in_progress", "paused"].includes(session.status));
+  const resumable = [activeSession, ...sessions].find((session) => session && ["in_progress", "paused"].includes(session.status));
   const chips = [
     ...subjects.map((value) => ({ group: "subjects", value, label: selectedLabel(value) })),
     ...domains.map((value) => ({ group: "domains", value, label: selectedLabel(value) })),
