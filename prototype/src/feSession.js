@@ -26,6 +26,17 @@ function shuffled(items, random = Math.random) {
   return result;
 }
 
+function officialOrder(items) {
+  return [...items].sort((left, right) => {
+    const leftNumber = Number(left.sourceQuestionNumber);
+    const rightNumber = Number(right.sourceQuestionNumber);
+    if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber) && leftNumber !== rightNumber) return leftNumber - rightNumber;
+    if (Number.isFinite(leftNumber) && !Number.isFinite(rightNumber)) return -1;
+    if (!Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) return 1;
+    return String(left.id).localeCompare(String(right.id));
+  });
+}
+
 function nowIso(now) {
   return typeof now === "string" ? now : (now || new Date()).toISOString();
 }
@@ -105,14 +116,17 @@ export function filterPracticeQuestions(questionBank, config, sessions = []) {
 export function selectPracticeQuestions(config, questionBank, sessions = [], random = Math.random) {
   const candidates = filterPracticeQuestions(questionBank, config, sessions);
   const requestedCount = config.count === "all" ? candidates.length : Number(config.count || 10);
-  return shuffled(candidates, random).slice(0, Math.min(requestedCount, candidates.length));
+  const ordered = config.preserveOrder ? officialOrder(candidates) : shuffled(candidates, random);
+  return ordered.slice(0, Math.min(requestedCount, ordered.length));
 }
 
 function normalizeConfig(config = {}) {
   const filters = configFilters(config);
   const reviewScopes = normalizedReviewScopes(config.reviewScopes ?? config.scopes ?? config.scope);
+  const mockMode = config.type === "mock" && config.mockMode === "official-sample" ? "official-sample" : "random";
   return {
     type: config.type === "mock" ? "mock" : "topic",
+    mockMode,
     subjects: filters.subjects,
     domains: filters.domains,
     unitIds: filters.unitIds,
@@ -124,6 +138,11 @@ function normalizeConfig(config = {}) {
     reviewScopes,
     scope: reviewScopes.length === 1 ? reviewScopes[0] : "all",
     count: config.count === "all" ? "all" : Number(config.count || 10),
+    durationMinutes: Number(config.durationMinutes) || null,
+    officialQuestionCount: Number(config.officialQuestionCount) || null,
+    preserveOrder: Boolean(config.preserveOrder),
+    sampleSetId: typeof config.sampleSetId === "string" ? config.sampleSetId : null,
+    sampleSetLabel: typeof config.sampleSetLabel === "string" ? config.sampleSetLabel : null,
   };
 }
 
