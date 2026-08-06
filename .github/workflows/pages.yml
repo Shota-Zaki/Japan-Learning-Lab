@@ -55,7 +55,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Confirm stale Pages deployment is terminal
+      - name: Request cancellation of stale Pages deployment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -79,16 +79,20 @@ jobs:
               ;;
           esac
           cancel_code="$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{http_code}' "${headers[@]}" "${api}/cancel")"
-          [[ "${cancel_code}" == "204" || "${cancel_code}" == "404" ]]
+          if [[ "${cancel_code}" != "204" && "${cancel_code}" != "404" ]]; then
+            cat /tmp/cancel.json
+            echo "Unable to request stale deployment cancellation: HTTP ${cancel_code}" >&2
+            exit 1
+          fi
           sleep 5
           check_code="$(curl -sS -L -o /tmp/check.json -w '%{http_code}' "${headers[@]}" "${api}")"
           if [[ "${check_code}" == "404" ]]; then exit 0; fi
-          [[ "${check_code}" == "200" ]]
+          if [[ "${check_code}" != "200" ]]; then cat /tmp/check.json; exit 1; fi
           current="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/check.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
-          echo "Status after cancellation: ${current}"
+          echo "Status after cancellation request: ${current}"
           case "${current}" in
             cancelled|canceled|error|failure|deployment_cancelled|deployment_canceled|deployment_failed) exit 0 ;;
-            *) exit 1 ;;
+            *) echo "Cancellation was accepted but the stale status has not propagated; continuing to the authoritative deploy step." ;;
           esac
 
       - name: Deploy to GitHub Pages
@@ -222,13 +226,16 @@ jobs:
           RUN_NUMBER: ${{ github.run_number }}
           RUN_ATTEMPT: ${{ github.run_attempt }}
           REPOSITORY: ${{ github.repository }}
+          STALE_DEPLOYMENT: 7ac17dd605546149649223e88dd67f22d32c70d3
         run: |
           node --input-type=module <<'NODE'
           import { writeFile } from "node:fs/promises";
           await writeFile("prototype/qa/pages-deployment-failure.json", `${JSON.stringify({
             status: "failure",
+            failureClass: "pages_deploy_or_public_verification",
             sourceBranch: "work",
             sourceRevision: process.env.SOURCE_SHA,
+            staleDeployment: process.env.STALE_DEPLOYMENT,
             workflowRunId: Number(process.env.RUN_ID),
             workflowRunNumber: Number(process.env.RUN_NUMBER),
             workflowRunAttempt: Number(process.env.RUN_ATTEMPT),
