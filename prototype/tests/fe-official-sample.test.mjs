@@ -12,6 +12,10 @@ function richImageBlocks(question) {
   ].filter((block) => block?.type === "image" && block.src);
 }
 
+function isSafeImageSource(source) {
+  return typeof source === "string" && source.trim() && !/^javascript:/iu.test(source);
+}
+
 for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {
   test(`2022 official sample set for subject ${subject} is complete and keeps official order`, () => {
     const selected = selectPracticeQuestions({
@@ -39,12 +43,15 @@ test("subject A sample retains rich media for the four figure-dependent question
     const question = bank.questions.find((item) => item.id === id);
     const imageBlocks = richImageBlocks(question);
     assert.ok(imageBlocks.length > 0, `${id} must retain its official figure in the question or choices`);
-    assert.ok(imageBlocks.every((block) => /^https?:\/\//u.test(block.src)), `${id} contains an invalid figure URL`);
+    assert.ok(imageBlocks.every((block) => isSafeImageSource(block.src)), `${id} contains an invalid figure URL`);
   }
 });
 
-test("subject A sample question 5 keeps renderable tree figures", () => {
+test("subject A sample question 5 keeps the supplemental tree figure", () => {
   const question = bank.questions.find((item) => item.id === "fe-ipa-2022sample-a-005");
   assert.ok(question, "subject A sample question 5 is missing");
-  assert.ok(richImageBlocks(question).length > 0, "subject A sample question 5 must keep renderable rich media");
+  assert.ok(
+    richImageBlocks(question).some((block) => block.src === "assets/fe/a-2022-005-figure.svg"),
+    "subject A sample question 5 must reference the supplemental tree figure",
+  );
 });
