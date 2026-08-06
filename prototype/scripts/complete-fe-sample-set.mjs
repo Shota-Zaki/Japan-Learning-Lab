@@ -75,7 +75,11 @@ function candidateScore(question) {
 
 function findRequired(value, found = new Map()) {
   if (!value || typeof value !== "object") return found;
-  if (!Array.isArray(value) && requiredIds.has(value.id)) {
+  if (
+    !Array.isArray(value)
+    && requiredIds.has(value.id)
+    && (Array.isArray(value.choices) || Array.isArray(value.options))
+  ) {
     const existing = found.get(value.id);
     if (!existing || candidateScore(value) > candidateScore(existing)) found.set(value.id, value);
   }
