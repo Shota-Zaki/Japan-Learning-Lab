@@ -74,3 +74,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "docs: record accidental Pages deployment cleanup [skip ci]"
           git push origin HEAD:pages-recovery
+
+# trigger cleanup
