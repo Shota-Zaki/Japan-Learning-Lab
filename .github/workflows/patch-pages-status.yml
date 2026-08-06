@@ -1,0 +1,39 @@
+name: Patch Pages terminal status
+
+on:
+  push:
+    branches: [work]
+    paths: [.github/workflows/patch-pages-status.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work
+      - name: Accept GitHub Pages terminal status names
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/pages.yml')
+          text = path.read_text()
+          text = text.replace(
+              '            succeed|success|cancelled|canceled|error|failure)\n',
+              '            succeed|success|cancelled|canceled|error|failure|deployment_succeeded|deployment_cancelled|deployment_canceled|deployment_failed)\n',
+          )
+          text = text.replace(
+              '              cancelled|canceled|error|failure)\n',
+              '              cancelled|canceled|error|failure|deployment_cancelled|deployment_canceled|deployment_failed)\n',
+          )
+          path.write_text(text)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/pages.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "ci: accept Pages deployment terminal statuses [skip ci]"
+          git push origin HEAD:work
