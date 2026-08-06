@@ -6,17 +6,17 @@
 
 ## Current phase
 
-`needs_fix`の実装修正工程
+`review_ready`の独立確認工程
 
 ## Role
 
-次の担当は、別の新しいチャットで実装担当として作業する。
+次の担当は、別の新しいチャットで確認担当として作業する。
 
-確認担当がBlocking問題を再現したため、Pull Request #1はマージせずDraft / Open / Unmergedのまま維持する。
+実装担当はBlocking修正、回帰テスト、`docs/`再生成、CI、GitHub Pages再公開まで完了した。Pull Request #1はDraft / Open / Unmergedのまま維持する。
 
 ## Objective
 
-実行時の問題バンク統合で科目Bが誤って重複除外される不具合を修正し、科目B 167問と2022年12月公開サンプル20問を画面・演習・保存・履歴から利用可能にする。
+科目B誤除外の修正を固定HEADで独立検証し、Blocking問題がなければ管理文書更新、merge commit、`main`のCI確認、`work`同期、GitHub Pages再確認まで完了する。
 
 ## Repository state at handoff
 
@@ -25,177 +25,125 @@
 - Base Branch: `main`
 - Pull Request: `#1`
 - Pull Request state: Draft / Open / Unmerged
-- Review target HEAD: `9633c88f214c719ee8413e93be87821a9dd31257`
-- Review result commit 1: `8d9231b7ef00c207f4caf9c3aa8ac90c9876152e`
-- このファイル更新後の最新HEADはPull Requestから再取得すること
+- Application review target HEAD: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
+- Implementation source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
+- 管理文書更新後の最新PR HEADは確認開始時に再取得して固定する
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
+- Audit: `prototype/qa/fe-question-bank-merge-fix-2026-08-06/audit.md`
+- Deployment evidence: `prototype/qa/pages-deployment.json`
 
-## Blocking issue
+## Implemented fix
 
-### Symptom
+### Previous symptom
 
-配信済みの基本問題JSONには科目B 167問、2022年12月公開サンプル科目B 20問が存在するが、実画面では次の状態になる。
-
-- 全体: 1,838問
+- 実行時統合: 1,838問
 - 科目A: 1,830問
 - 科目B: 8問
 - 科目B公式サンプル: 0問
-- 「公式サンプル問題を開始」: disabled
+- 開始ボタン: disabled
 
-期待値:
+### Fix
 
-- 基本問題JSON: 1,977問（科目A 1,810 / 科目B 167）
-- 補足問題JSON: 科目A 20問
-- 統合結果: 1,997問（科目A 1,830 / 科目B 167）
-- 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
+- 問題バンクの正規化、妥当性検証、fingerprint生成、統合処理を`prototype/src/feQuestionBank.js`へ分離
+- `prototype/src/FeLearningApp.jsx`は共通統合処理を使用
+- fingerprintへ科目、出典座標、問題本文、構造化本文、選択肢、構造化選択肢、正答を含めた
+- 同一出典座標でも科目または問題内容が異なる問題を保持
+- ID一致または内容一致の真の重複だけを除外
+- 実行時と同じ統合処理を通す回帰テストを追加
 
-### Reproduction
+## Implementation verification evidence
 
-1. FE Learning Labを開く
-2. 演習・模試を開く
-3. 科目Bを選択する
-4. 模擬試験を選択する
-5. 2022年12月公開サンプル問題を選択する
-6. 「0問が対象」と表示され、開始ボタンが無効になることを確認する
+### Data and selection
 
-### Root cause
-
-`prototype/src/FeLearningApp.jsx`の`normalizedFingerprint()`が、出典ベースの重複判定キーを次の3項目だけで作っている。
-
-- `sourceCategory`
-- `periodId`
-- `sourceQuestionNumber`
-
-`subject`を含めていないため、同一開催回・同一問番号の科目Aと科目Bが衝突する。
-
-確認担当の再現集計:
-
-- 誤って除外された科目B: 159問
-- 2022年12月公開サンプル科目B: 20問すべて誤除外
-- 例: `fe-ipa-2022sample-b-001`が科目A問1と同じfingerprintになる
-
-現行`prototype/tests/fe-official-sample.test.mjs`は生の基本問題JSONへ直接`selectPracticeQuestions()`を適用しており、実行時の`mergeQuestionBanks()`を通らないため不具合を検出できない。
-
-## Required implementation
-
-1. `normalizedFingerprint()`の出典ベースキーへ少なくとも`subject`を追加する
-2. 真の重複だけを除外し、科目Aと科目Bを別問題として保持する
-3. `mergeQuestionBanks()`をテスト可能なモジュールへ分離するかexportする
-4. 実行時と同じ統合処理を通す回帰テストを追加する
-5. 統合結果が1,997問、科目A 1,830問、科目B 167問になることを固定する
-6. 統合済み問題バンクで2022年12月公開サンプルが科目A 60問・科目B 20問、公式問番号順になることを固定する
-7. 科目B公式サンプル画面で20問が対象となり、開始可能であることを検証する
-8. 科目Bの単一正答・複数正答、解説、保存、再読込後の復元、履歴、復習、再挑戦を検証する
-9. 既存の科目A問5・問6・問7の図表、問9のテキスト問題を回帰させない
-10. `docs/`を最新実装から再生成する
-11. Pull Request本文、監査記録、`task-list.md`、`NEXT_WORK.md`を実結果に合わせて更新する
-
-## Main files to inspect
-
-- `prototype/src/FeLearningApp.jsx`
-- 問題バンク統合処理を分離する新規または既存モジュール
-- `prototype/tests/fe-official-sample.test.mjs`
-- 実行時統合結果を検証するテスト
-- 必要に応じて`prototype/src/FePracticeSetup.jsx`
-- 生成された`docs/`
-- `task-list.md`
-- `NEXT_WORK.md`
-- Pull Request #1本文
-
-## Allowed changes for implementation role
-
-- 上記Blocking修正に必要なアプリケーションコード
-- 回帰テスト
-- 生成データと`docs/`
-- 監査記録
-- 管理文書
-- Pull Request本文
-
-## Forbidden changes
-
-- Java Learning Labの実装再開
-- Pull RequestをReady for reviewへ変更すること
-- `main`へのマージ
-- Squash merge、rebase merge、force push
-- `work` Branchの削除
-- テスト要件を弱めること
-- 科目Bの問題を減らして期待値を8問へ合わせること
-
-## Completion criteria
-
-- 実行時統合結果: 1,997問
+- 実行時統合: 1,997問
 - 科目A: 1,830問
 - 科目B: 167問
-- 科目A公式サンプル: 60問
-- 科目B公式サンプル: 20問
-- 科目B公式サンプル開始ボタンが有効
-- 科目Bの回答、保存、復元、履歴、復習、再挑戦が成功
-- 375px、768px、1280px以上で主要画面に横スクロールなし
-- Console error、Page error、HTTP error、Request failure 0件
-- `npm run verify:fe`成功
-- 最新実装HEADのCI成功
-- `docs/`更新
-- GitHub Pages再公開と公開スモークテスト成功
-- 管理文書とGitHub実状態が一致
+- 2022年12月公開サンプル科目A: 60問、公式問番号順
+- 2022年12月公開サンプル科目B: 20問、公式問番号順
+- 科目B公式サンプルの設定件数20問でセッション選択成功
 
-## Mandatory validation
+### Automated checks
 
-Repository rootから:
+- `npm run verify:fe`: success
+- Tests: 47 / 47 passed
+- TypeScript: success
+- ESLint: 0 errors / 1 existing warning
+- Normal build: success
+- Pages build: success
+- 科目B複数正答、回答状態、保存、復元、再開、完了、履歴由来スコープのテスト成功
+- 科目A問5・問6・問7の図表参照を維持
+- 科目A問9の本文、4選択肢、正答`エ`を維持
 
-```bash
-cd prototype
-npm ci
-npm run verify:fe
-```
+### CI and Pages
 
-追加自動検証:
+- Push workflow run: `31079687176` / run number `185` / success
+- Pull request workflow run: `31079690171` / run number `186` / success
+- Pages source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
+- Generated output commit: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
+- Deploy: success
+- Public smoke check: success
 
-- 実行時と同一の統合関数へ基本問題JSONと補足問題JSONを渡す
-- 統合後の全体・科目別件数をassertする
-- 科目B公式サンプル20問と問番号順をassertする
-- 科目A公式サンプル60問と問番号順をassertする
+## Mandatory independent review
 
-追加ブラウザ検証:
+1. Repository、`main`、`work`、Pull Request #1の実状態を再取得する
+2. 最新PR HEADを固定し、Application review target HEAD以降が管理文書のみか確認する
+3. `main`との差分を独立確認する
+4. `cd prototype && npm ci && npm run verify:fe`を実行する
+5. 実行時統合関数で1,997問、科目A 1,830問、科目B 167問を確認する
+6. 科目A公式サンプル60問、科目B公式サンプル20問と公式問番号順を確認する
+7. 科目B → 模擬試験 → 2022年12月公開サンプル問題で20問対象と開始ボタン有効を確認する
+8. 科目Bの単一正答・複数正答、解説、保存、再読込後の復元、履歴、復習、再挑戦を確認する
+9. 科目A問5・問6・問7の図表、問9のテキスト問題を回帰確認する
+10. 375px、768px、1280px以上で横スクロール、可読性、フォーカス表示を確認する
+11. Console error、Page error、HTTP error、Request failureを確認する
+12. GitHub Pagesの実表示と公開資産を確認する
+13. `task-list.md`、`NEXT_WORK.md`、監査記録、PR本文、CI、Pages evidenceの整合性を確認する
 
-- 科目B → 模擬試験 → 2022年12月公開サンプル問題
-- 20問が対象と表示される
-- 開始ボタンが有効
-- 回答を保存し、再読込後に復元される
-- 完了後に履歴を開ける
-- 復習と再挑戦を開始できる
-- 375px、768px、1280px以上
-- ConsoleとNetworkを確認
+## Pass handling
 
-## Review evidence already passed
+Blocking問題がなければ、確認担当は次を一括で実施する。
 
-次は回帰確認として再実施する。
+1. `task-list.md`を`completed`へ更新
+2. `NEXT_WORK.md`を次タスク`JLL-JAVA-001`向けに更新
+3. 管理文書を`work`へcommit、push
+4. 管理文書更新後のHEADを再検証
+5. Pull Request #1をmerge commit方式で`main`へマージ
+6. `main`のCIを確認
+7. `work`を最新`main`へ同期し、削除しない
+8. GitHub Pagesの再公開を確認
+9. 管理文書とGitHub実状態の一致を確認
 
-- 科目A問5・問6・問7のSVGは375px、768px、1280pxで横スクロールなし
-- 3図表に代替テキストあり
-- 科目A問9は画像なし、4選択肢、正答`エ`
-- 上記画面のConsole error、HTTP error、Request failureは0件
-- キーボードフォーカスの可視アウトラインあり
+## Failure handling
 
-## Non-blocking issue
+Blocking問題がある場合はマージしない。
 
-`prototype/src/FeSessionView.jsx`に既存の`react-hooks/exhaustive-deps` warningが1件ある。今回のBlocking修正と分離してよいが、検証結果へ残すこと。
+- 問題をBlocking / Non-blockingへ分類
+- 再現手順、原因候補、修正対象、再検証項目を記録
+- `task-list.md`を`needs_fix`へ更新
+- `NEXT_WORK.md`を実装担当向け修正指示へ更新
+- 管理文書を`work`へcommit、push
+- Pull Request #1をDraft / Open / Unmergedのまま維持
 
-## Work completion updates
+## Allowed changes for review role
 
-作業完了時に次を更新する。
+- `task-list.md`
+- `NEXT_WORK.md`
+- レビュー結果と検証証拠を記録する管理文書
+- 明白な管理メタデータの不一致
 
-- `task-list.md`: `review_ready`、最新HEAD、CI、Pages、ブラウザ証拠
-- `NEXT_WORK.md`: 独立確認向け
-- Pull Request #1本文
-- 必要な監査記録
-- `docs/`
+アプリケーションコード、UI、テスト、設定に問題がある場合は確認担当自身で修正しない。
+
+## Non-blocking issues
+
+- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
+- GitHub Actionsが使用する一部ActionのNode.js 20非推奨warning。検証ランタイムはNode.js 22で成功
 
 ## Latest user request
 
-`確認`
+`修正`
 
-確認結果は不合格。Blocking問題をRepositoryへ記録済み。
+実装担当が修正工程を完了し、独立確認可能な状態へ戻した。
 
 ## Next user command
 
-`修正`
+`確認`
