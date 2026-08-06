@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, BookmarkSimple, CheckCircle, Pause, Play, ShieldCheck, Timer, WarningCircle } from "@phosphor-icons/react";
 import { FeRichContent } from "./FeRichContent.jsx";
+import { buildSessionReviewItems, choiceLabels } from "./fePresentation.js";
 import {
   answerSessionQuestion,
   calculateSessionSummary,
@@ -210,7 +211,7 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
   const summary = calculateSessionSummary(session);
   const incorrectIds = session.questionIds.filter((questionId) => session.answers[questionId] && !session.answers[questionId].correct);
   const reviewIds = session.reviewQuestionIds;
-  const questionMap = new Map(questionBank.map((question) => [question.id, question]));
+  const reviewItems = buildSessionReviewItems(session, questionBank);
   const isMock = session.config.type === "mock";
   return (
     <section className="fe-result" aria-labelledby="fe-result-heading">
@@ -218,13 +219,62 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
       <h1 id="fe-result-heading">{isMock ? "模擬試験結果" : "演習結果"}</h1>
       <div className="result-score"><strong>{summary.score}%</strong><span>{summary.correct}/{summary.total}問正解</span></div>
       <div className="result-metrics"><span><small>正解</small><strong>{summary.correct}</strong></span><span><small>不正解</small><strong>{summary.incorrect}</strong></span><span><small>未回答</small><strong>{summary.unanswered}</strong></span><span><small>見直し</small><strong>{reviewIds.length}</strong></span></div>
-      <div className="result-question-list">
-        {session.questionIds.map((questionId, index) => {
-          const question = questionMap.get(questionId);
-          const answer = session.answers[questionId];
-          return <div key={questionId}><span>{index + 1}</span><strong>{subjectLabels[question?.subject || "A"]}・{question?.title || questionId}</strong><small>{!answer ? "未回答" : answer.correct ? "正解" : "不正解"}</small></div>;
-        })}
-      </div>
+      <section className="result-review-section" aria-labelledby="result-review-heading">
+        <div className="result-review-heading">
+          <h2 id="result-review-heading">問題別レビュー</h2>
+          <p>各問題を開くと、問題文、回答、正答、正誤、解説を確認できます。</p>
+        </div>
+        <div className="result-question-list">
+          {reviewItems.map(({ questionId, index, question, selectedIds, correctIds, status }) => {
+            const statusLabel = status === "correct" ? "正解" : status === "incorrect" ? "不正解" : "未回答";
+            return (
+              <details key={questionId} className={`result-question-review is-${status}`}>
+                <summary>
+                  <span>{index + 1}</span>
+                  <strong>{subjectLabels[question?.subject || "A"]}・{question?.title || questionId}</strong>
+                  <small>{statusLabel}</small>
+                </summary>
+                {question ? (
+                  <div className="result-question-detail">
+                    <div className="question-meta">
+                      <span>{subjectLabels[question.subject || "A"]}</span>
+                      {question.domain && <span>{domainLabels[question.domain] || question.domain}</span>}
+                      {question.unitId && <span>{unitLabels[question.unitId] || question.unitId}</span>}
+                      {question.periodLabel && <span>{question.periodLabel}</span>}
+                    </div>
+                    <h3>問題文</h3>
+                    <FeRichContent blocks={question.questionBlocks} fallback={question.question} className="fe-question-content" />
+                    <div className={`result-answer-summary is-${status}`} role="status">
+                      <div><small>判定</small><strong>{statusLabel}</strong></div>
+                      <div><small>あなたの回答</small><strong>{choiceLabels(question, selectedIds)}</strong></div>
+                      <div><small>正答</small><strong>{choiceLabels(question, correctIds, "正答情報なし")}</strong></div>
+                    </div>
+                    <h3>選択肢</h3>
+                    <div className="result-choice-list">
+                      {question.choices.map((choice) => {
+                        const choiceId = String(choice.id);
+                        const selected = selectedIds.includes(choiceId);
+                        const correct = correctIds.includes(choiceId);
+                        return (
+                          <div key={choiceId} className={`result-choice ${selected ? "is-selected" : ""} ${correct ? "is-correct" : ""}`}>
+                            <span className="choice-label">{choice.label || choice.id}</span>
+                            <FeRichContent blocks={choice.contentBlocks} fallback={choice.text} compact className="choice-content" />
+                            <small>{correct ? "正答" : selected ? "選択" : ""}</small>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <h3>解説</h3>
+                    <FeRichContent blocks={question.explanationBlocks} fallback={question.explanation} className="fe-explanation-content" />
+                  </div>
+                ) : (
+                  <div className="result-question-detail" role="alert">問題データを読み込めませんでした。</div>
+                )}
+              </details>
+            );
+          })}
+        </div>
+      </section>
       <div className="result-actions">
         {incorrectIds.length > 0 && <button className="button button-primary" onClick={() => reviewSession(session, incorrectIds)}>間違えた問題を復習</button>}
         {reviewIds.length > 0 && <button className="button button-secondary" onClick={() => reviewSession(session, reviewIds)}>見直し問題を演習</button>}
