@@ -15,6 +15,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: work
+      - name: Fast-forward work
+        run: git pull --ff-only origin work
       - name: Accept GitHub Pages terminal status names
         run: |
           python - <<'PY'
@@ -38,4 +40,4 @@ jobs:
           git commit -m "ci: accept Pages deployment terminal statuses [skip ci]"
           git push origin HEAD:work
 
-# trigger
+# retry with fast-forward
