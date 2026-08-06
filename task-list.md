@@ -10,15 +10,15 @@
 
 ### Title
 
-FE演習の公開構成、複合絞り込み、科目B、公式サンプル模試を完成させる
+FE演習の公開構成、複合絞り込み、科目B、公式サンプル模試、演習ナビゲーション、詳細解説を完成させる
 
 ### Status
 
-`blocked`
+`in_progress`
 
 ### Purpose
 
-FE演習機能を、公式問題データ、複合絞り込み、科目A・科目B、模擬試験、履歴、結果レビュー、GitHub Pages公開まで含めて完成させる。
+FE演習機能を、公式問題データ、複合絞り込み、科目A・科目B、模擬試験、履歴、結果レビュー、問題移動、詳細解説、GitHub Pages公開まで含めて完成させる。
 
 ### Scope
 
@@ -29,6 +29,10 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 - 構造化問題・解説表示
 - 模擬試験中の正誤非表示と完了後レビュー
 - セッション保存、再開、履歴、復習、再挑戦
+- 問題番号入力による直接移動
+- 問題一覧領域の高さ制限と内部縦スクロール
+- 正答根拠、選択肢ごとの判断、関連知識を含む詳細解説
+- 通常演習と結果レビューで共通する解説表示
 - CI、GitHub Pages、公開スモーク
 - 管理文書とGitHub実状態の整合
 
@@ -37,9 +41,8 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 - Java Learning Labの実装
 - 実装担当による`main`へのマージ
 - Pull RequestのReady for review変更
-- 問題一覧の番号入力による直接移動
-- 問題一覧領域内スクロール
-- 演習解説の詳細化
+- 問題データに存在しない技術的根拠の生成
+- GitHub Pages queue障害を回避するための新規復旧workflow追加
 
 ### Completion criteria
 
@@ -47,14 +50,20 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 2. 科目A問5、6、7の図表と問9の本文・選択肢を維持する
 3. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を利用できる
 4. 模擬試験中は正誤と解説を隠す
-5. 完了後は問題文、ユーザー回答、正答、判定、解説を確認できる
+5. 完了後は問題文、ユーザー回答、正答、判定、詳細解説を確認できる
 6. 公式サンプル模試の履歴に対象セットを表示する
 7. 絞り込みはコンパクトグリッド型のみを使用する
 8. 項目名を省略せず全文表示する
 9. 条件群は可変高さで内部縦スクロールなしとする
-10. `npm run verify:fe`、CI、Pages build、Pages deployが成功する
-11. `docs/`が最新sourceから生成される
-12. 確認担当が固定HEAD、複数画面幅、最新公開Revisionを独立検証できる
+10. 問題番号へ数値入力とEnterまたは移動ボタンで直接移動できる
+11. 範囲外の問題番号は移動せず、入力可能範囲を表示する
+12. 問題一覧が多い場合は一覧領域だけを縦スクロールでき、現在問題を視認できる
+13. 解説に正答、正答の根拠、選択肢ごとの判断、関連知識を表示する
+14. 選択肢別解説データがある場合はそれを優先し、ない場合は未登録であることが分かる汎用説明を使用する
+15. 通常演習の回答直後と模擬試験終了後レビューで同じ詳細解説構造を使用する
+16. `npm run verify:fe`、CI、Pages build、Pages deployが成功する
+17. `docs/`が最新sourceから生成される
+18. 確認担当が固定HEAD、375px、768px、1280px以上、最新公開Revisionを独立検証できる
 
 ### Dependencies
 
@@ -75,15 +84,21 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 
 ### Start HEAD
 
-`af7be0dbc73b8bce193defefdd013e13a667596f`
+- Task start: `af7be0dbc73b8bce193defefdd013e13a667596f`
+- Current revision start: `88c0b50e86a7c3a1fde542b4b5163931daef0695`
 
-### Independent review fixed HEAD
+### Current revision
 
-`fe1ee2aaaace3f89170544aaeca1a7d4d545d4e2`
+2026-08-06のユーザー修正希望を同一タスクへ追加した。
 
-### Latest implementation verification
+1. 問題一覧の進捗表示付近へ問題番号入力を追加し、指定問題へ移動する
+2. 問題数が多い場合、問題一覧領域内へ縦スクロールを表示する
+3. 演習解説を正答根拠、選択肢ごとの判断、関連知識まで確認できる構造へ改善する
 
-- アプリケーション修正と回帰検証は合格範囲
+設計文書、実装、単体テスト、回帰検証、`docs/`生成、Pull Request更新、CI確認を実施する。アプリケーション変更後のPages deployは既知の外部queue障害を再評価する。
+
+### Previous verified baseline
+
 - Tests: 50 / 50 passed
 - TypeScript: success
 - ESLint: 0 errors / 1 existing warning
@@ -96,66 +111,40 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 - Pull Request workflow run ID `31105741489`, run number `238`: success
 - Pull Request検証source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
 
-### Blocking B-03: GitHub Pages deployment queue
+### Known external blocker B-03: GitHub Pages deployment queue
 
-再開工程では、残留していたPages deploymentを公式REST APIで解除し、workflow内にも旧deploymentの終端状態を確認するpreflightを追加した。GitHub Pages APIが返す`deployment_cancelled`を終端状態として扱う修正後、source `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`でpush workflowを実行した。
+Authoritative push workflow run ID `31105739031`、run number `237`では、build、`npm run verify:fe`、Pages artifact upload、生成成果物artifact upload、旧deployment確認preflight、Pages deployment作成が成功した。その後、source `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`のdeploymentが2026-08-06 13:25:06 UTCから13:34:42 UTCまで`deployment_queued`のまま進まず、`actions/deploy-pages@v4`の600秒timeoutで失敗した。
 
-push workflow run ID `31105739031`、run number `237`では、build、`npm run verify:fe`、Pages artifact upload、生成成果物artifact upload、preflight、Pages deployment作成がすべて成功した。artifact ID `8969439155`からsource `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`のdeploymentが作成されたが、2026-08-06 13:25:06 UTCから13:34:42 UTCまで`deployment_queued`のまま変化せず、`actions/deploy-pages@v4`の600秒timeoutで`Deployment cancelled.`となった。
-
-残留deployment競合とworkflow上の状態判定不備を解消した後も、新しいsourceとartifactでqueue停止が再現した。アプリケーション、テスト、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のdeployment queue処理が外部Blockerである。Completion criteria 10および12は未達であり、`main`へマージしない。
+残留deployment競合、workflow状態判定、アプリケーション、build、artifact、権限、deployment作成、preflightは原因から除外済み。現在も同じqueue障害が再現する場合、Completion criteria 16および18は未達として`main`へマージしない。
 
 ### Failure evidence
 
 - Authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
-- Original workflow evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
 - Evidence file: `prototype/qa/pages-deployment-failure.json`
 - Source revision: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
 - Push workflow run ID: `31105739031`
-- Push workflow run number: `237`
-- Build job ID: `92630289040`
-- Build job: success
-- Preflight: success
-- Deploy job ID: `92630432990`
-- Deploy job: failure
+- Build job ID: `92630289040` / success
+- Deploy job ID: `92630432990` / failure
 - Pages artifact ID: `8969439155`
-- Deployment creation: success
-- Failure: Pages state remained `deployment_queued` until the 600-second timeout
-- Pull Request workflow run ID: `31105741489`
-- Pull Request workflow run number: `238`
-- Pull Request build job: success
-- Temporary recovery and patch workflows on `work`: removed
-
-### Excluded transient run
-
-最終確認中に誤って作成された一時ファイルcommit `67d137930063321048c91641c919b177b17542eb`は、直後のcommit `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`で削除した。このcommitによりpush workflow run ID `31107033694`、run number `239`が起動したが、deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`との競合で新規deployment作成前にHTTP 400となった。
-
-一時ファイルはRepositoryから削除済みであり、競合deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`は隔離Branch `pages-recovery`から公式cancel endpointで解除し、`deployment_cancelled`を確認した。run `239`は外部queue障害の根拠には使用せず、authoritative evidenceはrun `237`とする。
-
-### Resume condition
-
-GitHub Pages deployment queueが処理可能な状態へ戻った後、`work`の最新sourceでpush workflowを再実行する。deploy成功後に公開`build-info.json`、JS/CSS、問題データ、図表を照合し、公開画面の独立確認を完了する。
-
-同じqueue状態が継続している間は、アプリケーションコード、build設定、artifact生成を変更しない。現行`.github/workflows/pages.yml`のpreflightは、残留deployment `7ac17dd605546149649223e88dd67f22d32c70d3`が終端状態であることを確認してからdeployする。
+- Failure: Pages state remained `deployment_queued` until timeout
+- Excluded transient run: `31107033694` / run number `239`
 
 ### Non-blocking issues
 
-- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
 - 一部GitHub ActionのNode.js 20非推奨warning
 - Repository default branchが`work`である点
-- 一時復旧Branch `pages-recovery`は隔離用として残っている
+- 隔離用Branch `pages-recovery`が残っている点
 
 ### Merge commit
 
-未マージ。GitHub Pages Blockerが解消され、確認合格するまでマージしない。
+未マージ。確認担当が合格するまでマージしない。
 
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- 最新sourceのPages buildとartifact upload: success
-- 最新sourceのpreflight: success
-- 最新sourceのPages deployment作成: success
-- 最新sourceのPages deployment: queuedのままtimeout / failure
-- 最新公開Revisionと公開スモーク: 未固定
+- Previous latest sourceのPages buildとartifact upload: success
+- Previous latest sourceのPages deployment: queuedのままtimeout / failure
+- Current revisionのPages結果: 実装後に更新する
 
 ### Next task
 
