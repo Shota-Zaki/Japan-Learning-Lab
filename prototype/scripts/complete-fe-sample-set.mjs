@@ -53,35 +53,32 @@ function objectText(value) {
   return firstText(value.stem, value.text, value.question, value.content, value.passage, value.material);
 }
 
-function candidateScore(question) {
-  return [
-    question.question,
-    question.questionHtml,
-    question.questionText,
-    question.explanation,
-    question.explanationHtml,
-    question.correctAnswers,
-    question.correctChoiceIds,
-    question.answer,
-    question.prompt,
-    question.assets,
-    question.sourceAssets,
-    question.questionBlocks,
-    question.explanationBlocks,
-    question.extensions,
-    question.placement,
-  ].reduce((score, value) => score + (value ? 1 : 0), 0);
+function meaningful(value) {
+  if (value === null || value === undefined || value === "") return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
+
+function mergeRecord(left, right) {
+  if (!meaningful(left)) return right;
+  if (!meaningful(right)) return left;
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (right.length > left.length) return right;
+    return left;
+  }
+  if (typeof left === "object" && typeof right === "object" && !Array.isArray(left) && !Array.isArray(right)) {
+    const merged = { ...left };
+    for (const [key, value] of Object.entries(right)) merged[key] = key in merged ? mergeRecord(merged[key], value) : value;
+    return merged;
+  }
+  return left;
 }
 
 function findRequired(value, found = new Map()) {
   if (!value || typeof value !== "object") return found;
-  if (
-    !Array.isArray(value)
-    && requiredIds.has(value.id)
-    && (Array.isArray(value.choices) || Array.isArray(value.options))
-  ) {
-    const existing = found.get(value.id);
-    if (!existing || candidateScore(value) > candidateScore(existing)) found.set(value.id, value);
+  if (!Array.isArray(value) && requiredIds.has(value.id)) {
+    found.set(value.id, mergeRecord(found.get(value.id), value));
   }
   for (const child of Object.values(value)) findRequired(child, found);
   return found;
@@ -155,8 +152,8 @@ function convert(question) {
     ? question.explanationBlocks
     : paragraphBlocks(explanationText || `公式解答の正答は${correctAnswers.join("、")}です。`);
 
-  if (!domain || choices.length !== 4 || correctAnswers.length !== 1) {
-    throw new Error(`2022 sample question is incomplete: ${question.id}`);
+  if (!domain || choices.length !== 4 || correctAnswers.length !== 1 || questionBlocks.length === 0) {
+    throw new Error(`2022 sample question is incomplete: ${question.id} (domain=${domain || "none"}, choices=${choices.length}, answers=${correctAnswers.length}, blocks=${questionBlocks.length})`);
   }
 
   return {
