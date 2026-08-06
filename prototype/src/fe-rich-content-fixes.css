@@ -1,0 +1,60 @@
+.fe-table-block {
+  min-width: 0;
+}
+
+.fe-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.fe-table-scroll table {
+  width: 100%;
+  min-width: 640px;
+  table-layout: auto;
+}
+
+.fe-table-scroll th,
+.fe-table-scroll td {
+  display: table-cell;
+  width: auto;
+  min-width: 10rem;
+  text-align: left;
+  vertical-align: top;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+.fe-table-scroll table.is-two-column th:first-child,
+.fe-table-scroll table.is-two-column td:first-child {
+  width: 7rem;
+  min-width: 7rem;
+}
+
+.fe-table-scroll table.is-two-column th:last-child,
+.fe-table-scroll table.is-two-column td:last-child {
+  width: auto;
+  min-width: 32rem;
+  text-align: left;
+}
+
+.fe-table-scroll caption {
+  caption-side: top;
+  padding: 0 0 8px;
+  text-align: left;
+}
+
+@media (max-width: 520px) {
+  .fe-table-scroll table {
+    min-width: 680px;
+  }
+
+  .fe-table-scroll th:last-child,
+  .fe-table-scroll td:last-child {
+    width: auto;
+    text-align: left;
+  }
+}
