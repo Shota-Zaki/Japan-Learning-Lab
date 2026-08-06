@@ -58,14 +58,26 @@ test("history descriptions distinguish topic, random mock, and official sample m
 test("filter layout permanently uses full-height compact cards without ellipsis or vertical scroll", () => {
   const setupSource = fs.readFileSync(new URL("../src/FePracticeSetup.jsx", import.meta.url), "utf8");
   const filterCss = fs.readFileSync(new URL("../src/fe-filter-variants.css", import.meta.url), "utf8");
-  const resultSource = fs.readFileSync(new URL("../src/FeSessionView.jsx", import.meta.url), "utf8");
 
   assert.match(setupSource, /className="fe-filter-variant-grid"/);
   assert.doesNotMatch(setupSource, /filterVariant|パターンA|fe-filter-view-switch/);
   assert.doesNotMatch(filterCss, /text-overflow:\s*ellipsis/);
   assert.doesNotMatch(filterCss, /overflow-y:\s*auto/);
   assert.match(filterCss, /white-space:\s*normal/);
-  assert.match(resultSource, /result-question-review/);
-  assert.match(resultSource, /あなたの回答/);
-  assert.match(resultSource, /<h3>解説<\/h3>/);
+});
+
+test("session and result views share detailed explanations and direct question navigation", () => {
+  const sessionSource = fs.readFileSync(new URL("../src/FeSessionView.jsx", import.meta.url), "utf8");
+  const enhancementCss = fs.readFileSync(new URL("../src/fe-session-enhancements.css", import.meta.url), "utf8");
+
+  assert.match(sessionSource, /function DetailedExplanation/);
+  assert.match(sessionSource, /正答の根拠/);
+  assert.match(sessionSource, /選択肢ごとの判断/);
+  assert.match(sessionSource, /関連知識/);
+  assert.match(sessionSource, /<DetailedExplanation question=\{question\} headingId="fe-explanation-heading"/);
+  assert.match(sessionSource, /headingId=\{`result-explanation-/);
+  assert.match(sessionSource, /id="question-number-input"/);
+  assert.match(sessionSource, /type="number"/);
+  assert.match(sessionSource, /scrollIntoView/);
+  assert.match(enhancementCss, /\.question-number-grid\s*\{[^}]*overflow-y:\s*auto/s);
 });
