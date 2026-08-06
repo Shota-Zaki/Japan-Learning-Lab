@@ -19,7 +19,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           RECOVERY_SHA: ${{ github.sha }}
-          STALE_DEPLOYMENT: 5a5396e32a5159d932a4455f3e0ad632d8b41499
+          STALE_DEPLOYMENT: 55540ec5f4de178dae8426b27480babc36a3b363
         run: |
           set -euo pipefail
 
