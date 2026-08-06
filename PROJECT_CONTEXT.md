@@ -34,7 +34,7 @@
 | CI workflow | `.github/workflows/pages.yml` |
 
 `work`は継続利用する恒久Branchであり、タスク完了後も削除しない。
-GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。実際の検証・artifact upload・公開はGitHub Actions Workflowから実行する。
+GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。実際の検証、artifact upload、公開はGitHub Actions Workflowから実行する。
 
 ## 2. Project
 
@@ -73,15 +73,15 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 9. 過去チャット
 10. 推測または一般的慣習
 
-進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの最新状態は、このファイルへ固定値として重複記録しない。`task-list.md`と`NEXT_WORK.md`およびGitHub実状態を確認する。
+進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの最新状態は、このファイルへ固定値として重複記録しない。`task-list.md`、`NEXT_WORK.md`、GitHub実状態を確認する。
 
 ## 5. Current priority
 
-現在の進行中タスクは、FE Learning Labの演習機能の修正と検証である。
+現在の進行中タスクは、FE Learning Labの演習機能を独立確認する工程にある。
 
-複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録まで実装が進んでいる。
+複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録、公式冊子に必要な補完図表、GitHub Pages公開まで実装と自己検証が完了し、`review_ready`である。
 
-ただし、最新状態は`task-list.md`を正本とする。FEタスクが`completed`になるまで、Java Learning Labの実装を同時進行させない。
+最新状態は`task-list.md`を正本とする。FEタスクが確認合格、`main`へのmerge commit、`work`同期、公開再確認を経て`completed`になるまで、Java Learning Labの実装を同時進行させない。
 
 ## 6. Technical stack
 
@@ -204,6 +204,9 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 - 公式サンプルと実試験過去問題を区別する
 - 重複は、科目、問題文、選択肢、正答を正規化した指紋で扱う
 - 図表付き問題は、本文、選択肢、図表、正答が揃うまで公開セットとして完成扱いにしない
+- 固定同期元に公式冊子の図表が存在しない場合は、公式冊子と照合した補完資産をRepository管理下へ置き、対象問題IDを明示して付与する
+- 補完資産には意味のある代替テキストを付け、通常buildとPages buildの双方へ含める
+- 図表要件は公式冊子の実構成を根拠とし、引継ぎ文書の誤った前提を優先しない
 
 ## 12. Chat startup rule
 
