@@ -6,7 +6,7 @@
 
 ## Current phase
 
-`needs_fix`の実装担当修正工程
+`needs_fix`の実装担当修正工程（最新Pages deploy実行中）
 
 ## Role
 
@@ -33,7 +33,8 @@
 - Repository `docs/build-info.json` sourceRevision: `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`
 - Pull Request CI merge revision: `1ac951a6095ca78582517d9f1c222f2165a69c53`
 - Confirmation task-list update commit: `9886f8c9a20b90349f92dbe0a5a32ae192035242`
-- このファイル更新後の最新HEADは作業開始時に再取得する
+- Pages deploy trigger start HEAD: `036a90d601e93add0eab586cccaa0db1db42eed0`
+- このファイル更新後の最新HEADは作業完了時に固定する
 
 ## Confirmation result
 
