@@ -1,0 +1,7 @@
+{
+  "application": "Japan Learning Lab",
+  "entry": "docs/index.html",
+  "fallback": "docs/404.html",
+  "sourceRevision": "36e02189b51b9fd378f2a1f21debc3ea62c16ffd",
+  "removedWebFonts": 124
+}
