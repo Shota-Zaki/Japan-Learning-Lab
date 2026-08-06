@@ -3,16 +3,28 @@ import { ArrowRight, ArrowUpRight, BookOpen, ChartBar, Code, Coffee, Compass, Ex
 export function PlatformHeader({ screen, tab, navigate }) {
   const brand = screen === "fe" ? "FE Learning Lab" : screen === "engineer" ? "Engineer Learning Lab" : "Japan Learning Lab";
   const items = screen === "fe"
-    ? [["レッスン", BookOpen, "fe", "lesson"], ["演習・模試", Exam, "fe", "practice"], ["学習履歴", ChartBar, "fe", "history"], ["Engineer Lab", Compass, "engineer", "home"]]
+    ? [
+        { label: "レッスン", Icon: BookOpen, target: "fe", targetTab: "lesson" },
+        { label: "演習・模試", Icon: Exam, target: "fe", targetTab: "practice" },
+        { label: "学習履歴", Icon: ChartBar, target: "fe", targetTab: "history" },
+        { label: "Engineer Lab", Icon: Compass, target: "engineer", targetTab: "home" },
+      ]
     : screen === "engineer"
-      ? [["ホーム", House, "engineer", "home"], ["FE", Monitor, "fe", "lesson"], ["Japan Lab", SquaresFour, "japan", "home"]]
-      : [["ホーム", House, "japan", "home"], ["Engineer Lab", Code, "engineer", "home"]];
+      ? [
+          { label: "ホーム", Icon: House, target: "engineer", targetTab: "home" },
+          { label: "FE", Icon: Monitor, target: "fe", targetTab: "lesson" },
+          { label: "Japan Lab", Icon: SquaresFour, target: "japan", targetTab: "home" },
+        ]
+      : [
+          { label: "ホーム", Icon: House, target: "japan", targetTab: "home" },
+          { label: "Engineer Lab", Icon: Code, target: "engineer", targetTab: "home" },
+        ];
   return (
     <header className="site-header">
       <div className="header-inner">
         <button className="brand" onClick={() => navigate(screen === "fe" ? "fe" : screen, screen === "fe" ? "lesson" : "home")}>{brand}</button>
         <nav className="global-nav" aria-label="グローバルナビゲーション">
-          {items.map(([label, Icon, target, targetTab]) => {
+          {items.map(({ label, Icon, target, targetTab }) => {
             const active = target === screen && (target !== "fe" || targetTab === tab);
             return <button className={`nav-item ${active ? "is-active" : ""}`} aria-current={active ? "page" : undefined} key={label} onClick={() => navigate(target, targetTab)}><Icon size={19} /><span>{label}</span></button>;
           })}
