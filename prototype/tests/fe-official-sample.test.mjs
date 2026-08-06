@@ -27,7 +27,7 @@ test("runtime question bank merge preserves both subjects and the supplemental s
   assert.equal(bank.filter((question) => question.subject === "B").length, 167);
 });
 
-test("source fingerprints distinguish subjects while retaining same-subject duplicate detection", () => {
+test("source fingerprints distinguish subjects and source-less content remains distinct", () => {
   const sharedSource = {
     sourceCategory: "official-sample",
     periodId: "2022-sample",
@@ -37,6 +37,21 @@ test("source fingerprints distinguish subjects while retaining same-subject dupl
   const subjectB = normalizedFingerprint({ ...sharedSource, subject: "B" });
   assert.notEqual(subjectA, subjectB);
   assert.equal(subjectA, normalizedFingerprint({ ...sharedSource, subject: "A" }));
+
+  const sourceLessOne = normalizedFingerprint({
+    subject: "A",
+    question: "first question",
+    choices: [{ text: "one" }, { text: "two" }],
+    correctAnswers: ["one"],
+  });
+  const sourceLessTwo = normalizedFingerprint({
+    subject: "A",
+    question: "second question",
+    choices: [{ text: "one" }, { text: "two" }],
+    correctAnswers: ["one"],
+  });
+  assert.notEqual(sourceLessOne, sourceLessTwo);
+  assert.ok(!sourceLessOne.startsWith("source:"));
 });
 
 for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {
