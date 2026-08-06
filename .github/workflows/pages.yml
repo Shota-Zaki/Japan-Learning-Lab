@@ -26,6 +26,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Record Pages deployment attempt
+        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
+        working-directory: .
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdir, writeFile } from "node:fs/promises";
+          await mkdir("prototype/qa", { recursive: true });
+          await writeFile("prototype/qa/pages-deployment-attempt.json", `${JSON.stringify({
+            status: "running",
+            sourceBranch: process.env.SOURCE_BRANCH,
+            sourceRevision: process.env.SOURCE_SHA,
+            workflowRunId: Number(process.env.RUN_ID),
+            workflowRunNumber: Number(process.env.RUN_NUMBER),
+            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
+          }, null, 2)}\n`, "utf8");
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prototype/qa/pages-deployment-attempt.json
+          git commit -m "docs: record Pages deployment attempt [skip ci]"
+          git push origin HEAD:work
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -78,11 +106,13 @@ jobs:
           node --input-type=module <<'NODE'
           const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-          async function fetchWithRetry(url, attempts = 12) {
+          async function fetchWithRetry(url, attempts = 24) {
             let lastError;
             for (let attempt = 1; attempt <= attempts; attempt += 1) {
               try {
-                const response = await fetch(url, { redirect: "follow", cache: "no-store" });
+                const requestUrl = new URL(url);
+                requestUrl.searchParams.set("pages_verify", `${process.env.SOURCE_SHA}-${attempt}`);
+                const response = await fetch(requestUrl, { redirect: "follow", cache: "no-store" });
                 if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
                 return response;
               } catch (error) {
@@ -93,18 +123,35 @@ jobs:
             throw new Error(`Unable to fetch ${url}: ${lastError?.message || lastError}`);
           }
 
+          async function fetchExpectedBuildInfo(url, attempts = 24) {
+            let lastRevision = null;
+            let lastError;
+            for (let attempt = 1; attempt <= attempts; attempt += 1) {
+              try {
+                const requestUrl = new URL(url);
+                requestUrl.searchParams.set("pages_revision", `${process.env.SOURCE_SHA}-${attempt}`);
+                const response = await fetch(requestUrl, { redirect: "follow", cache: "no-store" });
+                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+                const buildInfo = await response.json();
+                lastRevision = buildInfo.sourceRevision ?? null;
+                if (lastRevision === process.env.SOURCE_SHA) return buildInfo;
+                lastError = new Error(`received revision ${lastRevision}`);
+              } catch (error) {
+                lastError = error;
+              }
+              if (attempt < attempts) await delay(5000);
+            }
+            throw new Error(`Published source revision did not converge to ${process.env.SOURCE_SHA}; last revision ${lastRevision}; ${lastError?.message || lastError}`);
+          }
+
           const pageUrl = new URL(process.env.PAGE_URL);
+          const buildInfoUrl = new URL("build-info.json", pageUrl);
+          await fetchExpectedBuildInfo(buildInfoUrl);
+
           const indexResponse = await fetchWithRetry(pageUrl);
           const html = await indexResponse.text();
           if (!html.includes("Japan Learning Lab")) {
             throw new Error("Published index does not contain the expected application title");
-          }
-
-          const buildInfoUrl = new URL("build-info.json", pageUrl);
-          const buildInfoResponse = await fetchWithRetry(buildInfoUrl);
-          const buildInfo = await buildInfoResponse.json();
-          if (buildInfo.sourceRevision !== process.env.SOURCE_SHA) {
-            throw new Error(`Published source revision mismatch: expected ${process.env.SOURCE_SHA}, received ${buildInfo.sourceRevision}`);
           }
 
           const dataUrl = new URL("data/fe-official-past-questions.json", pageUrl);
@@ -176,7 +223,7 @@ jobs:
           SOURCE_BRANCH: ${{ github.ref_name }}
         run: |
           node --input-type=module <<'NODE'
-          import { mkdir, readFile, writeFile } from "node:fs/promises";
+          import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
           const buildInfo = JSON.parse(await readFile("docs/build-info.json", "utf8"));
           if (buildInfo.sourceRevision !== process.env.SOURCE_SHA) {
@@ -214,9 +261,10 @@ jobs:
             workflowRunNumber: Number(process.env.RUN_NUMBER),
             workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
           }, null, 2)}\n`, "utf8");
+          await rm("prototype/qa/pages-deployment-attempt.json", { force: true });
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json
+          git add -A docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json prototype/qa/pages-deployment-attempt.json
           git commit -m "docs: sync successful Pages deployment evidence [skip ci]"
           git push origin HEAD:work
