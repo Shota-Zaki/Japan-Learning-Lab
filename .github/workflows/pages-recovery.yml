@@ -1,0 +1,123 @@
+name: Recover GitHub Pages deployment
+
+on:
+  push:
+    branches: [work]
+    paths:
+      - .github/workflows/pages-recovery.yml
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel stale deployment and trigger retry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RECOVERY_SHA: ${{ github.sha }}
+          STALE_DEPLOYMENT: 5a5396e32a5159d932a4455f3e0ad632d8b41499
+        run: |
+          set -euo pipefail
+
+          headers=(
+            -H "Accept: application/vnd.github+json"
+            -H "Authorization: Bearer ${GH_TOKEN}"
+            -H "X-GitHub-Api-Version: 2022-11-28"
+          )
+          deployment_api="https://api.github.com/repos/${REPOSITORY}/pages/deployments/${STALE_DEPLOYMENT}"
+
+          read_code="$(curl -sS -L -o /tmp/deployment.json -w '%{http_code}' "${headers[@]}" "${deployment_api}")"
+          if [[ "${read_code}" == "200" ]]; then
+            status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/deployment.json", "utf8")); process.stdout.write(String(value.status ?? "unknown"));')"
+            echo "Stale deployment status: ${status}"
+
+            case "${status}" in
+              succeed|success|cancelled|canceled|error|failure)
+                echo "No cancellation is required."
+                ;;
+              *)
+                cancel_code="$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{http_code}' "${headers[@]}" "${deployment_api}/cancel")"
+                if [[ "${cancel_code}" != "204" && "${cancel_code}" != "404" ]]; then
+                  cat /tmp/cancel.json
+                  echo "Unable to cancel stale deployment: HTTP ${cancel_code}" >&2
+                  exit 1
+                fi
+
+                for attempt in {1..24}; do
+                  check_code="$(curl -sS -L -o /tmp/check.json -w '%{http_code}' "${headers[@]}" "${deployment_api}")"
+                  if [[ "${check_code}" == "404" ]]; then
+                    break
+                  fi
+                  if [[ "${check_code}" != "200" ]]; then
+                    cat /tmp/check.json
+                    echo "Unable to confirm cancellation: HTTP ${check_code}" >&2
+                    exit 1
+                  fi
+
+                  current_status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/check.json", "utf8")); process.stdout.write(String(value.status ?? "unknown"));')"
+                  echo "Cancellation check ${attempt}: ${current_status}"
+                  case "${current_status}" in
+                    cancelled|canceled|error|failure)
+                      break 2
+                      ;;
+                  esac
+                  sleep 5
+                done
+                ;;
+            esac
+          elif [[ "${read_code}" != "404" ]]; then
+            cat /tmp/deployment.json
+            echo "Unable to inspect stale deployment: HTTP ${read_code}" >&2
+            exit 1
+          fi
+
+          marker_path="prototype/qa/pages-recovery-attempt.json"
+          marker_api="https://api.github.com/repos/${REPOSITORY}/contents/${marker_path}"
+          existing_code="$(curl -sS -L -o /tmp/existing.json -w '%{http_code}' "${headers[@]}" "${marker_api}?ref=work")"
+          existing_sha=""
+          if [[ "${existing_code}" == "200" ]]; then
+            existing_sha="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/existing.json", "utf8")); process.stdout.write(String(value.sha ?? ""));')"
+          elif [[ "${existing_code}" != "404" ]]; then
+            cat /tmp/existing.json
+            echo "Unable to inspect recovery marker: HTTP ${existing_code}" >&2
+            exit 1
+          fi
+
+          REQUESTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          STALE_DEPLOYMENT="${STALE_DEPLOYMENT}" \
+          RECOVERY_SHA="${RECOVERY_SHA}" \
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from "node:fs";
+          const marker = {
+            status: "requested",
+            staleDeployment: process.env.STALE_DEPLOYMENT,
+            recoveryRevision: process.env.RECOVERY_SHA,
+            requestedAt: process.env.REQUESTED_AT,
+          };
+          writeFileSync("/tmp/marker.json", `${JSON.stringify(marker, null, 2)}\n`);
+          NODE
+
+          encoded="$(base64 -w0 /tmp/marker.json)"
+          CONTENT="${encoded}" EXISTING_SHA="${existing_sha}" node --input-type=module <<'NODE'
+          import { writeFileSync } from "node:fs";
+          const payload = {
+            message: "ci: retry Pages after stale deployment cleanup",
+            content: process.env.CONTENT,
+            branch: "work",
+          };
+          if (process.env.EXISTING_SHA) payload.sha = process.env.EXISTING_SHA;
+          writeFileSync("/tmp/update.json", JSON.stringify(payload));
+          NODE
+
+          update_code="$(curl -sS -L -X PUT -o /tmp/update-response.json -w '%{http_code}' "${headers[@]}" -H "Content-Type: application/json" --data-binary @/tmp/update.json "${marker_api}")"
+          if [[ "${update_code}" != "200" && "${update_code}" != "201" ]]; then
+            cat /tmp/update-response.json
+            echo "Unable to trigger clean Pages retry: HTTP ${update_code}" >&2
+            exit 1
+          fi
+
+          cat /tmp/update-response.json
