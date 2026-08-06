@@ -15,7 +15,7 @@ export function TextWithBreaks({ text }) {
   ));
 }
 
-export function FeRichContent({ blocks, fallback, className = "", compact = false }) {
+export function FeRichContent({ blocks, fallback = "", className = "", compact = false }) {
   const content = Array.isArray(blocks) && blocks.length > 0 ? blocks : fallbackBlocks(fallback);
   return (
     <div className={`fe-rich-content ${compact ? "is-compact" : ""} ${className}`.trim()}>
