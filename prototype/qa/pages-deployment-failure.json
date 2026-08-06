@@ -1,9 +1,16 @@
 {
   "status": "failure",
   "sourceBranch": "work",
-  "sourceRevision": "67d137930063321048c91641c919b177b17542eb",
-  "workflowRunId": 31107033694,
-  "workflowRunNumber": 239,
+  "sourceRevision": "3cf01154f44a3fa8d101bf5aa04b983e99e819a7",
+  "workflowRunId": 31105739031,
+  "workflowRunNumber": 237,
   "workflowRunAttempt": 1,
-  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31107033694"
+  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31105739031",
+  "failureClass": "external_pages_queue",
+  "transientRunExcluded": {
+    "sourceRevision": "67d137930063321048c91641c919b177b17542eb",
+    "workflowRunId": 31107033694,
+    "workflowRunNumber": 239,
+    "reason": "Accidental temporary-file commit triggered a deployment conflict with dfad4dceb877446fe5d9b447f82e4bdb4f329a2f. The temporary file was removed and the conflicting deployment was cancelled on the isolated recovery branch."
+  }
 }
