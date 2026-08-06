@@ -1,6 +1,6 @@
 {
   "status": "requested",
-  "staleDeployment": "5a5396e32a5159d932a4455f3e0ad632d8b41499",
-  "recoveryRevision": "55540ec5f4de178dae8426b27480babc36a3b363",
-  "requestedAt": "2026-08-06T13:01:19Z"
+  "staleDeployment": "55540ec5f4de178dae8426b27480babc36a3b363",
+  "recoveryRevision": "1d4beb6b0a8e22e06edd00cf75637e1869ac1935",
+  "requestedAt": "2026-08-06T13:04:11Z"
 }
