@@ -53,9 +53,32 @@ function objectText(value) {
   return firstText(value.stem, value.text, value.question, value.content, value.passage, value.material);
 }
 
+function candidateScore(question) {
+  return [
+    question.question,
+    question.questionHtml,
+    question.questionText,
+    question.explanation,
+    question.explanationHtml,
+    question.correctAnswers,
+    question.correctChoiceIds,
+    question.answer,
+    question.prompt,
+    question.assets,
+    question.sourceAssets,
+    question.questionBlocks,
+    question.explanationBlocks,
+    question.extensions,
+    question.placement,
+  ].reduce((score, value) => score + (value ? 1 : 0), 0);
+}
+
 function findRequired(value, found = new Map()) {
   if (!value || typeof value !== "object") return found;
-  if (!Array.isArray(value) && requiredIds.has(value.id)) found.set(value.id, value);
+  if (!Array.isArray(value) && requiredIds.has(value.id)) {
+    const existing = found.get(value.id);
+    if (!existing || candidateScore(value) > candidateScore(existing)) found.set(value.id, value);
+  }
   for (const child of Object.values(value)) findRequired(child, found);
   return found;
 }
