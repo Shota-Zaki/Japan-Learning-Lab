@@ -77,11 +77,11 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の進行中タスクは、FE Learning Labの演習機能を独立確認する工程にある。
+現在の進行中タスクは、FE Learning Labの演習機能をGitHub Pagesへ公開し、独立確認可能な状態にする工程にある。
 
-複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録、公式冊子に必要な補完図表、GitHub Pages公開まで実装と自己検証が完了し、`review_ready`である。
+複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録、公式冊子に必要な補完図表、結果レビュー、履歴識別は実装と自動検証が完了している。一方、GitHub Pages側で新規deploymentが`deployment_queued`のまま処理されずtimeoutとなるため、現在状態は`blocked`である。
 
-最新状態は`task-list.md`を正本とする。FEタスクが確認合格、`main`へのmerge commit、`work`同期、公開再確認を経て`completed`になるまで、Java Learning Labの実装を同時進行させない。
+最新状態、検証証拠、再開条件は`task-list.md`と`NEXT_WORK.md`を正本とする。FEタスクがPages deploy成功、確認合格、`main`へのmerge commit、`work`同期、公開再確認を経て`completed`になるまで、Java Learning Labの実装を同時進行させない。
 
 ## 6. Technical stack
 
