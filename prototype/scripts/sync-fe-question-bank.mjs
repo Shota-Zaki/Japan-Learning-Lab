@@ -69,7 +69,7 @@ function periodLabelFor(question, subject) {
   if (match?.[1]) return match[1];
   const year = yearFor(question);
   const season = seasonFor(question, subject);
-  if (subject === "B" && /sample|サンプル/u.test(`${season} ${title}`)) return `${year}年 科目Bサンプル`;
+  if (/sample|サンプル/u.test(`${season} ${title}`)) return `${year}年 科目${subject}サンプル`;
   return `${year}年度`;
 }
 
@@ -317,6 +317,11 @@ function isOfficialQuestion(question) {
   return sourceType === "official-past-question" || /^fe-ipa-/u.test(String(question.id)) || /\bipa\b|official/u.test(sourceRef);
 }
 
+function isCompleteSubjectASample(question, subject, assets) {
+  const sampleKey = `${yearFor(question)} ${seasonFor(question, subject)} ${question.id || ""} ${question.title || ""}`;
+  return subject === "A" && assets.length > 0 && /2022/u.test(sampleKey) && /sample|サンプル/u.test(sampleKey);
+}
+
 async function readSourceBank() {
   try {
     await access(sourceFile);
@@ -340,7 +345,8 @@ const questions = sourceQuestions
     const assets = allAssetsFor(question);
     if (!domain || choices.length < 2 || correctAnswers.length < 1) return [];
     if (correctAnswers.some((answerId) => !choices.some((choice) => choice.id === answerId))) return [];
-    if (subject === "A" && (choices.length !== 4 || correctAnswers.length !== 1 || assets.length > 0)) return [];
+    const allowedSubjectAAssets = isCompleteSubjectASample(question, subject, assets);
+    if (subject === "A" && (choices.length !== 4 || correctAnswers.length !== 1 || (assets.length > 0 && !allowedSubjectAAssets))) return [];
 
     const questionBlocks = blocksFor(question, "question");
     if (assets.length > 0) questionBlocks.push(...assets);
@@ -403,7 +409,7 @@ const payload = {
   filter: {
     sourceType: "official-past-question",
     subjects: ["A", "B"],
-    subjectA: { assets: "none", choices: 4, correctAnswers: 1 },
+    subjectA: { assets: "none-except-complete-2022-sample", choices: 4, correctAnswers: 1 },
     subjectB: { recursiveSourceDiscovery: true, structuredContent: true },
   },
   questionCount: questions.length,
