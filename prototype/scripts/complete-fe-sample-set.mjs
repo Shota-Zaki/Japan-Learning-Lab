@@ -50,7 +50,7 @@ function stripTags(value) {
 function objectText(value) {
   if (typeof value === "string") return value;
   if (!value || typeof value !== "object") return "";
-  return firstText(value.stem, value.text, value.question, value.content, value.passage, value.material);
+  return firstText(value.stem, value.text, value.question, value.content, value.passage, value.material, value.html);
 }
 
 function meaningful(value) {
@@ -79,21 +79,68 @@ function findRequired(value, found = new Map()) {
   return found;
 }
 
+function assetSource(asset) {
+  return typeof asset === "string"
+    ? asset
+    : asset?.path || asset?.src || asset?.url || asset?.href || asset?.file || "";
+}
+
 function normalizeAsset(asset) {
-  const source = typeof asset === "string" ? asset : asset?.path || asset?.src || asset?.url || "";
+  const source = assetSource(asset);
   if (!source) return null;
   return {
     type: "image",
     src: /^https?:\/\//u.test(source) ? source : `https://raw.githubusercontent.com/${sourceRepository}/${sourceCommit}/${source.replace(/^\/+/, "")}`,
     alt: asset?.alt || asset?.description || asset?.label || "問題図表",
-    caption: asset?.caption || "",
+    caption: asset?.caption || asset?.title || "",
   };
 }
 
-function assetsFor(question) {
-  const assets = [question.assets, question.sourceAssets, question.prompt?.assets, question.extensions?.exam?.assets]
-    .filter(Array.isArray).flat().map(normalizeAsset).filter(Boolean);
-  return [...new Map(assets.map((asset) => [asset.src, asset])).values()];
+function htmlAttribute(tag, name) {
+  const pattern = new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "iu");
+  const match = tag.match(pattern);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? "";
+}
+
+function htmlAssets(...values) {
+  const assets = [];
+  for (const value of values) {
+    for (const match of String(value || "").matchAll(/<img\b[^>]*>/giu)) {
+      const tag = match[0];
+      const asset = normalizeAsset({
+        src: htmlAttribute(tag, "src"),
+        alt: htmlAttribute(tag, "alt"),
+        title: htmlAttribute(tag, "title"),
+      });
+      if (asset) assets.push(asset);
+    }
+  }
+  return assets;
+}
+
+function referencedAssets(question) {
+  return [question.refs?.images, question.prompt?.refs?.images, question.extensions?.exam?.refs?.images]
+    .filter(Array.isArray)
+    .flat();
+}
+
+function referencedAssetIds(choice) {
+  const values = [
+    choice?.imageId,
+    choice?.imageRef,
+    choice?.assetId,
+    ...(Array.isArray(choice?.refs?.images) ? choice.refs.images : []),
+  ];
+  return values
+    .map((value) => typeof value === "object" ? value?.id : value)
+    .filter((value) => value !== null && value !== undefined && String(value).trim())
+    .map(String);
+}
+
+function directAssetsFor(value) {
+  return [value?.assets, value?.sourceAssets, value?.images]
+    .filter(Array.isArray)
+    .flat();
 }
 
 function paragraphBlocks(text) {
@@ -101,17 +148,47 @@ function paragraphBlocks(text) {
   return normalized ? normalized.split(/\n{2,}/u).filter(Boolean).map((part) => ({ type: "paragraph", text: part })) : [];
 }
 
-function choicesFor(question) {
+function choicesFor(question, imageLookup) {
   const choices = Array.isArray(question.choices) ? question.choices : Array.isArray(question.options) ? question.options : [];
   return choices.map((choice, index) => {
-    const text = firstText(choice?.text, choice?.label, choice?.content, typeof choice === "string" ? choice : "");
+    const text = firstText(choice?.text, choice?.label, choice?.content, choice?.html, typeof choice === "string" ? choice : "");
+    const contentBlocks = Array.isArray(choice?.contentBlocks) && choice.contentBlocks.length > 0
+      ? choice.contentBlocks.map((block) => block?.type === "image" ? (normalizeAsset(block) || block) : block)
+      : paragraphBlocks(text);
+    const images = [
+      ...directAssetsFor(choice),
+      choice?.image,
+      ...referencedAssetIds(choice).map((id) => imageLookup.get(id)),
+      ...htmlAssets(choice?.html, choice?.contentHtml),
+    ].map(normalizeAsset).filter(Boolean);
+    const knownSources = new Set(contentBlocks.filter((block) => block?.type === "image").map((block) => block.src));
+    contentBlocks.push(...images.filter((asset) => !knownSources.has(asset.src)));
+
     return {
       ...(choice && typeof choice === "object" ? choice : {}),
       id: String(choice?.id ?? choice?.key ?? index + 1),
       text: stripTags(text),
-      contentBlocks: Array.isArray(choice?.contentBlocks) && choice.contentBlocks.length > 0 ? choice.contentBlocks : paragraphBlocks(text),
+      contentBlocks,
     };
   });
+}
+
+function questionAssetsFor(question, choiceImageIds) {
+  const directAssets = [
+    ...directAssetsFor(question),
+    ...(Array.isArray(question.prompt?.assets) ? question.prompt.assets : []),
+    ...(Array.isArray(question.extensions?.exam?.assets) ? question.extensions.exam.assets : []),
+  ];
+  const unassignedReferences = referencedAssets(question).filter((asset) => {
+    const id = asset && typeof asset === "object" ? asset.id : null;
+    return !id || !choiceImageIds.has(String(id));
+  });
+  const assets = [
+    ...directAssets,
+    ...unassignedReferences,
+    ...htmlAssets(question.questionHtml, question.html, question.prompt?.html, question.prompt?.questionHtml),
+  ].map(normalizeAsset).filter(Boolean);
+  return [...new Map(assets.map((asset) => [asset.src, asset])).values()];
 }
 
 function correctAnswersFor(question) {
@@ -125,16 +202,34 @@ function correctAnswersFor(question) {
   return [...new Set((Array.isArray(value) ? value : [value]).filter((answer) => answer !== null && answer !== undefined).map(String))];
 }
 
+function hasRichImage(questionBlocks, choices) {
+  return questionBlocks.some((block) => block?.type === "image" && block.src)
+    || choices.some((choice) => choice.contentBlocks?.some((block) => block?.type === "image" && block.src));
+}
+
 function convert(question) {
   const unitId = String(question.unitId || question.placement?.unitId || question.extensions?.exam?.unitId || "unclassified");
   const domain = Object.entries(domainUnits).find(([, units]) => units.has(unitId))?.[0] || "technology";
   const shared = objectText(question.sharedMaterial || question.passage || question.prompt?.sharedMaterial || question.prompt?.passage);
-  const direct = firstText(question.question, question.questionText, question.text, objectText(question.prompt));
+  const direct = firstText(
+    question.question,
+    question.questionText,
+    question.text,
+    stripTags(question.questionHtml),
+    stripTags(question.html),
+    objectText(question.prompt),
+  );
   const questionText = [...new Set([shared, direct].filter(Boolean))].join("\n\n");
   const explanationText = firstText(question.explanation, question.explanationText, objectText(question.solution), objectText(question.answer?.explanation), objectText(question.answer));
-  const choices = choicesFor(question);
+  const references = referencedAssets(question);
+  const imageLookup = new Map(references
+    .filter((asset) => asset && typeof asset === "object" && asset.id !== null && asset.id !== undefined)
+    .map((asset) => [String(asset.id), asset]));
+  const choiceImageIds = new Set((Array.isArray(question.choices) ? question.choices : Array.isArray(question.options) ? question.options : [])
+    .flatMap(referencedAssetIds));
+  const choices = choicesFor(question, imageLookup);
   const correctAnswers = correctAnswersFor(question);
-  const assets = assetsFor(question);
+  const assets = questionAssetsFor(question, choiceImageIds);
   const questionBlocks = Array.isArray(question.questionBlocks) && question.questionBlocks.length > 0
     ? question.questionBlocks.map((block) => block?.type === "image" ? (normalizeAsset(block) || block) : block)
     : paragraphBlocks(questionText);
@@ -146,6 +241,9 @@ function convert(question) {
 
   if (choices.length !== 4 || correctAnswers.length !== 1 || questionBlocks.length === 0) {
     throw new Error(`2022 sample question is incomplete: ${question.id} (choices=${choices.length}, answers=${correctAnswers.length}, blocks=${questionBlocks.length})`);
+  }
+  if (requiredIds.has(question.id) && !hasRichImage(questionBlocks, choices)) {
+    throw new Error(`2022 sample figure is missing after normalization: ${question.id}`);
   }
 
   return {
@@ -205,7 +303,7 @@ payload.questions = questions;
 payload.questionCount = questions.length;
 payload.countsBySubject = Object.fromEntries(["A", "B"].map((subject) => [subject, questions.filter((question) => question.subject === subject).length]));
 payload.canonicalSha256 = crypto.createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
-payload.filter.subjectA = { assets: "none except complete official sample set", choices: 4, correctAnswers: 1 };
+payload.filter.subjectA = { assets: "official sample set keeps question and choice figures", choices: 4, correctAnswers: 1 };
 payload.officialSampleSets = { "2022-12": { periodId: "2022-sample", countsBySubject: sampleCounts, preserveOrderBy: "sourceQuestionNumber" } };
 
 await writeFile(bankPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
