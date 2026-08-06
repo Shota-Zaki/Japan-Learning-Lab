@@ -28,8 +28,9 @@ const unitLabels = {
   unclassified: "未分類",
 };
 
-function hasIdentityValue(value) {
-  return value !== null && value !== undefined && value !== "";
+function normalizeIdentityValue(value) {
+  const serialized = value && typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
+  return serialized.normalize("NFKC").replace(/\s+/gu, "").toLowerCase();
 }
 
 export function normalizeQuestion(question) {
@@ -66,18 +67,16 @@ export function validQuestion(question) {
 }
 
 export function normalizedFingerprint(question) {
-  const sourceParts = [question.sourceCategory, question.periodId, question.sourceQuestionNumber];
-  if (sourceParts.some(hasIdentityValue)) {
-    return `source:${[question.subject || "A", ...sourceParts]
-      .filter(hasIdentityValue)
-      .join("|")}`;
-  }
   return [
-    question.subject,
+    question.subject || "A",
+    question.sourceCategory,
+    question.periodId,
+    question.sourceQuestionNumber,
     question.question,
-    ...(question.choices || []).map((choice) => choice.text),
-    ...(question.correctAnswers || []),
-  ].join("|").normalize("NFKC").replace(/\s+/gu, "").toLowerCase();
+    question.questionBlocks,
+    ...(question.choices || []).flatMap((choice) => [choice.id, choice.text, choice.contentBlocks]),
+    ...(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : [])),
+  ].map(normalizeIdentityValue).join("|");
 }
 
 export function mergeQuestionBanks(primaryQuestions, supplementalQuestions) {
