@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`in_progress`
+`blocked`
 
 ### Purpose
 
@@ -87,47 +87,84 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 - Task start: `af7be0dbc73b8bce193defefdd013e13a667596f`
 - Current revision start: `88c0b50e86a7c3a1fde542b4b5163931daef0695`
 
-### Current revision
+### Current implementation
 
-2026-08-06のユーザー修正希望を同一タスクへ追加した。
+2026-08-06の修正希望3件を同一タスクへ反映した。
 
-1. 問題一覧の進捗表示付近へ問題番号入力を追加し、指定問題へ移動する
-2. 問題数が多い場合、問題一覧領域内へ縦スクロールを表示する
-3. 演習解説を正答根拠、選択肢ごとの判断、関連知識まで確認できる構造へ改善する
+1. 問題一覧へ問題番号入力を追加し、Enterまたは移動ボタンで指定問題へ移動する
+2. 問題数が多い場合、問題一覧領域内だけを縦スクロールさせ、移動後の現在問題を一覧内へ表示する
+3. 通常演習と結果レビューの解説を、正答、正答の根拠、選択肢ごとの判断、関連知識の共通構造へ変更する
 
-設計文書、実装、単体テスト、回帰検証、`docs/`生成、Pull Request更新、CI確認を実施する。アプリケーション変更後のPages deployは既知の外部queue障害を再評価する。
+データに選択肢別解説がある場合は優先し、ない場合は個別解説未登録であることを明示する。保存データにない技術的理由は生成しない。
 
-### Previous verified baseline
+### Fixed revisions
 
-- Tests: 50 / 50 passed
+- Application implementation HEAD: `a38c9af1ce63ac98cd870d2ce3f175636cc7ac46`
+- Pages workflow correction HEAD: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
+- Latest failure evidence commit before management update: `63c8920e4f5cf79f6620f8e70571c57763b6a01a`
+
+### Automated validation
+
+Pull Request workflow run ID `31110519907`、run number `248`、build job ID `92646803294`は成功した。
+
+- `npm run verify:fe`: success
+- Tests: 54 / 54 passed
 - TypeScript: success
-- ESLint: 0 errors / 1 existing warning
+- ESLint: success
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
-- Generated repository output artifact: success
+- Question count: 1977
+- 科目A: 1810問
 - 科目B: 167問
+- 構造化済み科目B: 142問
 - 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
-- Pull Request workflow run ID `31105741489`, run number `238`: success
-- Pull Request検証source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
+- Generated Pages assets: `index-Ck9d4Xmf.css`, `index-C7PAGcGn.js`
 
-### Known external blocker B-03: GitHub Pages deployment queue
+Push workflow run ID `31110515900`、run number `247`でもbuild job ID `92646789661`は成功した。
 
-Authoritative push workflow run ID `31105739031`、run number `237`では、build、`npm run verify:fe`、Pages artifact upload、生成成果物artifact upload、旧deployment確認preflight、Pages deployment作成が成功した。その後、source `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`のdeploymentが2026-08-06 13:25:06 UTCから13:34:42 UTCまで`deployment_queued`のまま進まず、`actions/deploy-pages@v4`の600秒timeoutで失敗した。
+- `npm run verify:fe`: success
+- Pages artifact ID: `8971468045`
+- Generated repository output artifact ID: `8971469109`
+- Stale deployment cancellation request: success
+- New Pages deployment creation: success
+- Public verification: deploy未完了のためskipped
 
-残留deployment競合、workflow状態判定、アプリケーション、build、artifact、権限、deployment作成、preflightは原因から除外済み。現在も同じqueue障害が再現する場合、Completion criteria 16および18は未達として`main`へマージしない。
+### Blocking B-03: GitHub Pages deployment service
+
+Push workflow run `31110515900`では、固定された旧deploymentの状態が`deployment_in_progress`のままだったが、キャンセル要求が受理されたためworkflowは停止せず、正式な`actions/deploy-pages@v4`まで進んだ。
+
+source `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`、artifact `8971468045`の新規Pages deploymentは2026-08-06 14:23:35 UTCに作成された。その後、2026-08-06 14:23:41 UTCから14:33:36 UTCまで約10分間`deployment_in_progress`のまま変化せず、600秒timeoutで失敗し、workflowがdeploymentをキャンセルした。
+
+次は成功しているため、アプリケーション、テスト、型検査、Lint、通常build、Pages build、artifact生成、artifact upload、権限、旧deploymentキャンセル要求、deployment作成は原因から除外する。
+
+GitHub Pages側でdeployment処理が完了しない外部Blockerであり、Completion criteria 16、17、18は未達。`main`へマージしない。
 
 ### Failure evidence
 
-- Authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
 - Evidence file: `prototype/qa/pages-deployment-failure.json`
-- Source revision: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
-- Push workflow run ID: `31105739031`
-- Build job ID: `92630289040` / success
-- Deploy job ID: `92630432990` / failure
-- Pages artifact ID: `8969439155`
-- Failure: Pages state remained `deployment_queued` until timeout
-- Excluded transient run: `31107033694` / run number `239`
+- Evidence commit: `63c8920e4f5cf79f6620f8e70571c57763b6a01a`
+- Source revision: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
+- Push workflow run ID: `31110515900`
+- Run number: `247`
+- Build job ID: `92646789661` / success
+- Deploy job ID: `92646971036` / failure
+- Pages artifact ID: `8971468045`
+- Generated output artifact ID: `8971469109`
+- Failure: deployment remained `deployment_in_progress` until 600-second timeout
+
+### Pending validation
+
+Pages公開成功後、固定された公開Revisionに対して次を確認する。
+
+- 375px、768px、1280px以上の表示
+- ページ全体の横スクロール有無
+- 問題番号入力、Enter、移動ボタン、範囲外エラー
+- 問題一覧内部スクロールと現在問題の視認性
+- 通常演習回答直後の詳細解説
+- 模擬試験中の正誤・解説非表示
+- 模擬試験終了後レビューの詳細解説
+- キーボード、フォーカス、Console、Network
 
 ### Non-blocking issues
 
@@ -142,9 +179,15 @@ Authoritative push workflow run ID `31105739031`、run number `237`では、buil
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Previous latest sourceのPages buildとartifact upload: success
-- Previous latest sourceのPages deployment: queuedのままtimeout / failure
-- Current revisionのPages結果: 実装後に更新する
+- Latest successful evidence source: `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`
+- Current implementation sourceのPages buildとartifact upload: success
+- Current implementation sourceのPages deployment: `deployment_in_progress`のままtimeout / failure
+- Current implementation sourceの公開Revision確認: 未実施
+- `docs/`の成功時同期: deploy失敗により未実施
+
+### Resume condition
+
+GitHub Pagesのdeployment処理が完了可能になった時点で、最新`work`から同じworkflowを再実行する。アプリケーションの追加修正は行わず、deploy、公開Revision、公開スモークが成功した場合に`review_ready`へ進める。
 
 ### Next task
 
