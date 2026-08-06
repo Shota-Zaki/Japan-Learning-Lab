@@ -6,17 +6,19 @@
 
 ## Current phase
 
-`blocked`（GitHub Pages deployment queue）
+`in_progress`（問題ナビゲーションと詳細解説の修正）
 
 ## Role
 
-次の担当は実装担当とする。Pull Request #1はDraft / Open / Unmergedのまま維持し、`main`へマージしない。
+実装担当。Pull Request #1はDraft / Open / Unmergedのまま維持し、`main`へマージしない。
 
 ## Objective
 
-GitHub Pages側のdeployment queueが処理可能になった後、最新`work`のPages deployを再実行し、公開RevisionとRepository内成果物の一致を証明する。
+次の3件を同一改修として実装する。
 
-アプリケーション、テスト、生成処理、artifact upload、Pull Request検証、旧deployment確認preflightは合格している。再開時はアプリケーションコードを変更せず、Pages deployと公開検証から開始する。
+1. 問題一覧へ数値入力を追加し、入力した問題番号へ直接移動できるようにする
+2. 問題数が多い場合、問題一覧領域内だけを縦スクロールできるようにする
+3. 通常演習と結果レビューの解説を、正答根拠、選択肢ごとの判断、関連知識を確認できる構造へ改善する
 
 ## Repository state
 
@@ -25,85 +27,36 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 - Base Branch: `main`
 - Pull Request: `#1`
 - Pull Request state: Draft / Open / Unmerged
-- Latest authoritative deployment source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
-- Authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
-- Latest task status commit: `b00491bf0e1f33f0c6d5cb8c71197c040089743a`
-- Current Pages workflow: `.github/workflows/pages.yml`
-- Temporary recovery and patch workflows on `work`: removed
-- Isolated recovery Branch: `pages-recovery`
-- Recovery result: deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f` is `deployment_cancelled`
-- Recovery workflow retired commit: `cef2997716469a2e7c33d4f5c16b204376a060e0`
-- この管理文書更新後の`work` HEADを最終報告の固定HEADとする
+- Revision start HEAD: `88c0b50e86a7c3a1fde542b4b5163931daef0695`
+- Previous authoritative deployment source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
+- Previous authoritative failure evidence commit: `a344262d45d0ffe661d8e64e9437f0f9e04244dc`
 
-## Verified state
+## Design decisions
 
-- Tests: 50 / 50 passed
-- TypeScript: success
-- ESLint: 0 errors / 1 existing warning
-- Normal build: success
-- Pages build: success
-- Pages artifact upload: success
-- Generated repository output artifact: success
-- 科目B: 167問
-- 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
-- Pull Request workflow run ID `31105741489`, run number `238`: success
-- Pull Request検証source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
+- 問題番号入力は`1`から総問題数までの整数だけを受け付ける
+- Enterと移動ボタンの両方で実行できるようにする
+- 範囲外入力は現在問題を変えず、入力可能範囲を通知する
+- 問題一覧はレスポンシブな列数を維持し、高さ上限を超えた場合だけ内部縦スクロールを使用する
+- 問題移動後は現在問題のボタンが一覧内で見える位置へ移動する
+- 解説は正答、正答の根拠、選択肢ごとの判断、関連知識の順で表示する
+- 問題データまたは選択肢データに個別解説がある場合は優先する
+- 個別解説がない場合、具体的な技術理由を捏造せず、未登録であることを明示した汎用説明を表示する
+- 関連知識は保存済み単元、キーワード、タグだけから構成する
+- 通常演習と完了後レビューは同一の詳細解説コンポーネントを使用する
 
-## External blocker
+## Change targets
 
-### Authoritative push run
-
-- Workflow run ID: `31105739031`
-- Run number: `237`
-- Source revision: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
-- Build job ID: `92630289040`
-- Build job: success
-- Preflight: success
-- Deploy job ID: `92630432990`
-- Deploy job: failure
-- Pages artifact ID: `8969439155`
-- Deployment creation: success
-- Deployment state: `deployment_queued`
-- Queue observation period: 2026-08-06 13:25:06 UTCから13:34:42 UTC
-- Result: 600秒timeout後に`Deployment cancelled.`
-
-### Confirmed diagnosis
-
-次を実施済み。
-
-1. 残留Pages deploymentを公式REST APIで解除
-2. 復旧処理によるBranch更新競合を除去
-3. `.github/workflows/pages.yml`へ旧deployment確認preflightを追加
-4. API状態`deployment_cancelled`を終端状態として処理
-5. 新しいsourceとartifactでdeployを再実行
-
-authoritative run `237`ではpreflight、build、artifact upload、deployment作成が成功した後、約10分間`deployment_queued`が継続した。残留deployment競合、アプリケーション、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のqueue処理が外部Blockerである。
-
-## Excluded transient run
-
-最終確認中の一時ファイルcommit `67d137930063321048c91641c919b177b17542eb`はcommit `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`で削除済み。このcommitによりrun ID `31107033694`、run number `239`が起動したが、deployment `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`との競合で新規deployment作成前にHTTP 400となった。
-
-一時ファイルは存在せず、競合deploymentは隔離Branchから解除して`deployment_cancelled`を確認した。run `239`はqueue障害の根拠から除外し、run `237`をauthoritative evidenceとする。
-
-## Resume procedure
-
-1. `task-list.md`とこのファイルでBlockerを再確認する
-2. Pull Request #1がDraft / Open / Unmergedであることを確認する
-3. GitHub PagesとActionsの状態を確認する
-4. `.github/workflows/pages.yml`のpreflightを維持したまま、`work`の最新sourceでpush workflowを再実行する
-5. build、artifact upload、deployをsuccessにする
-6. 公開`build-info.json`のsourceRevisionをdeploy sourceと照合する
-7. 公開`index.html`のJS/CSSをRepository内`docs/`と照合する
-8. 公開問題データ、favicon、科目A問5・6・7の図表をHTTP取得する
-9. 375px、768px、1280px以上で絞り込み表示を確認する
-10. 科目B公式サンプル模試、試験中の正誤非表示、終了後レビュー、複数正答、未回答、履歴セット名を確認する
-11. キーボード、フォーカス、Console / Page / Networkを確認する
-12. `prototype/qa/pages-deployment.json`へ成功証拠を記録する
-13. `prototype/qa/pages-deployment-failure.json`を削除する
-14. `task-list.md`を`review_ready`へ更新する
-15. `NEXT_WORK.md`を確認担当向けに更新する
-16. Pull Request #1を更新し、最新PR CIを確認する
-17. 再確認対象HEADを固定する
+- `DESIGN.md`
+- `prototype/DESIGN.md`
+- `prototype/src/FeSessionView.jsx`
+- `prototype/src/feExplanation.js`
+- `prototype/src/fe-session-enhancements.css`
+- `prototype/src/main.jsx`
+- `prototype/tests/fe-explanation.test.mjs`
+- `docs/`
+- `task-list.md`
+- `NEXT_WORK.md`
+- Pull Request #1の説明
 
 ## Change forbidden
 
@@ -111,36 +64,54 @@ authoritative run `237`ではpreflight、build、artifact upload、deployment作
 - Pull RequestのReady for review変更
 - `work`の削除
 - force push、rebase、squash
-- 同じqueue状態が継続している間のアプリケーションコード、build設定、artifact生成変更
-- 新しい復旧workflowの追加
-- 問題一覧の番号入力と一覧スクロールの実装
-- 演習解説詳細化の実装
+- 新しいPages復旧workflowの追加
+- 既存の公式問題本文、選択肢、正答、図表の改変
 - Java Learning Labの実装開始
 
-## Completion criteria after resume
+## Completion criteria
 
-- 最新Pages deploy: success
-- 公開RevisionとRepository内`docs/`: 一致
-- 公開スモーク: success
-- Pull Request CI: success
-- `task-list.md`: `review_ready`
-- `NEXT_WORK.md`: 確認担当向け
-- Pull Request #1: Draft / Open / Unmerged
-- 再確認対象HEAD: 固定済み
+- 問題番号入力、Enter、移動ボタンで指定問題へ移動できる
+- 無効値で移動せず、エラーを支援技術へ通知できる
+- 問題一覧の現在問題、回答済み、見直し状態を維持する
+- 大量問題時に一覧領域だけが縦スクロールする
+- 現在問題を移動後も一覧内で確認できる
+- 通常演習と結果レビューに詳細解説を表示する
+- 個別解説データ優先と安全なfallbackを単体テストで確認する
+- 375px、768px、1280px以上で横スクロールを発生させない
+- `npm run verify:fe`が成功する
+- `docs/`を最新sourceから再生成する
+- Pull Request CIを確認する
+- Pages deployと公開Revisionを確認する。外部queue障害が再現した場合は証拠を更新して`blocked`へ戻す
 
-## Non-blocking issues
+## Required validation
 
-- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
-- 一部GitHub ActionのNode.js 20非推奨warning
-- Repository default branchが`work`である点
-- 隔離用Branch `pages-recovery`が残っているが、workflowは手動実行専用へ戻している
+1. 解説純粋関数の単体テスト
+2. 全Nodeテスト
+3. TypeScript
+4. ESLint
+5. 通常build
+6. Pages build
+7. 生成`docs/`差分
+8. 375px、768px、1280px以上のレイアウト
+9. キーボード操作、フォーカス、エラー通知
+10. 通常演習回答直後の詳細解説
+11. 模擬試験中の正誤・解説非表示
+12. 模擬試験終了後レビューの詳細解説
+13. Pull Request workflow
+14. GitHub Pages workflowと公開スモーク
 
-## User memo for next implementation
+## Known external blocker
 
-- 問題一覧の進捗表示「1 / 10」の左側を数値入力にし、入力した問題番号へ移動する
-- 問題一覧が多い場合、問題一覧領域内へスクロールバーを表示する
-- 基本情報の演習解説を、根拠、選択肢ごとの判断、関連知識まで含む内容へ改善する
+GitHub Pagesのauthoritative run `31105739031`では、build、artifact、preflight、deployment作成後に`deployment_queued`が約10分継続しtimeoutした。改修後も同じ障害が再現した場合、アプリケーション修正の失敗と混同せず、固定HEADと新しいrun IDを記録して停止する。
+
+## Work completion updates
+
+- `task-list.md`の状態、現在HEAD、検証結果、Pages結果を更新する
+- `NEXT_WORK.md`を確認担当向け、または外部Blocker再開向けに更新する
+- Pull Request #1の説明を最新状態へ更新する
+- `work`へcommit、pushする
+- 最新HEADのCIを確認する
 
 ## Next user command
 
-`修正`
+実装完了後、Pagesを含めて`review_ready`なら`確認`。外部Blockerで停止した場合も、次回の再開指示はRepository状態に従う。
