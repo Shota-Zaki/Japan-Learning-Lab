@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import "./fe-rich-content-fixes.css";
 
 function fallbackBlocks(value) {
   const text = String(value || "").replace(/\r\n?/g, "\n").trim();
@@ -32,13 +33,14 @@ export function FeRichContent({ blocks, fallback = "", className = "", compact =
         if (block.type === "table") {
           const headers = Array.isArray(block.headers) ? block.headers : [];
           const rows = Array.isArray(block.rows) ? block.rows : [];
+          const tableClassName = headers.length === 2 ? "is-two-column" : "";
           return (
             <div className="fe-table-block" key={key}>
-              {block.caption && <p className="fe-table-caption">{block.caption}</p>}
               <div className="fe-table-scroll" tabIndex={0}>
-                <table>
-                  {headers.length > 0 && <thead><tr>{headers.map((cell, cellIndex) => <th key={`${key}-h-${cellIndex}`}>{cell}</th>)}</tr></thead>}
-                  <tbody>{rows.map((row, rowIndex) => <tr key={`${key}-r-${rowIndex}`}>{row.map((cell, cellIndex) => <td key={`${key}-r-${rowIndex}-${cellIndex}`}>{cell}</td>)}</tr>)}</tbody>
+                <table className={tableClassName}>
+                  {block.caption && <caption className="fe-table-caption">{block.caption}</caption>}
+                  {headers.length > 0 && <thead><tr>{headers.map((cell, cellIndex) => <th scope="col" key={`${key}-h-${cellIndex}`}><TextWithBreaks text={cell} /></th>)}</tr></thead>}
+                  <tbody>{rows.map((row, rowIndex) => <tr key={`${key}-r-${rowIndex}`}>{row.map((cell, cellIndex) => <td key={`${key}-r-${rowIndex}-${cellIndex}`}><TextWithBreaks text={cell} /></td>)}</tr>)}</tbody>
                 </table>
               </div>
             </div>
