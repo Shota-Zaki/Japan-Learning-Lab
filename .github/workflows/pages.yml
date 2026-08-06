@@ -3,6 +3,8 @@ name: Build and deploy GitHub Pages
 on:
   push:
     branches: [work]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
