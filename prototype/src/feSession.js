@@ -1,6 +1,6 @@
 export const FE_SESSION_SCHEMA_VERSION = 2;
 export const FE_SESSION_STATUSES = new Set(["in_progress", "paused", "completed", "abandoned"]);
-export const FE_PRACTICE_SCOPES = new Set(["all", "incorrect", "unanswered", "review"]);
+export const FE_PRACTICE_SCOPES = new Set(["all", "correct", "incorrect", "unanswered", "review"]);
 export const FE_QUESTION_COUNTS = new Set([10, 20, 30, "all"]);
 
 function unique(values) {
@@ -11,6 +11,10 @@ function normalizedList(value, fallback = []) {
   if (Array.isArray(value)) return unique(value.map(String));
   if (value === null || value === undefined || value === "" || value === "all") return [...fallback];
   return [String(value)];
+}
+
+function normalizedReviewScopes(value) {
+  return normalizedList(value).filter((scope) => FE_PRACTICE_SCOPES.has(scope) && scope !== "all");
 }
 
 function shuffled(items, random = Math.random) {
@@ -53,20 +57,19 @@ function validSelection(question, selected) {
   return selectedIds.every((selectedId) => question.choices.some((choice) => String(choice.id) === selectedId));
 }
 
-export function buildReviewQuestionIds(sessions, scope) {
-  if (!FE_PRACTICE_SCOPES.has(scope) || scope === "all") return [];
+export function buildReviewQuestionIds(sessions, scopes) {
+  const selectedScopes = normalizedReviewScopes(scopes);
+  if (selectedScopes.length === 0) return [];
   const ids = [];
 
   for (const session of [...sessions].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))) {
-    if (scope === "review") {
-      ids.push(...session.reviewQuestionIds);
-      continue;
-    }
+    if (selectedScopes.includes("review")) ids.push(...session.reviewQuestionIds);
 
     for (const questionId of session.questionIds) {
       const answer = session.answers[questionId];
-      if (scope === "incorrect" && answer && !answer.correct) ids.push(questionId);
-      if (scope === "unanswered" && session.status === "completed" && !answer) ids.push(questionId);
+      if (selectedScopes.includes("correct") && answer?.correct) ids.push(questionId);
+      if (selectedScopes.includes("incorrect") && answer && !answer.correct) ids.push(questionId);
+      if (selectedScopes.includes("unanswered") && session.status === "completed" && !answer) ids.push(questionId);
     }
   }
 
@@ -87,15 +90,15 @@ function matchesSelected(value, selected) {
 }
 
 export function filterPracticeQuestions(questionBank, config, sessions = []) {
-  const scope = FE_PRACTICE_SCOPES.has(config.scope) ? config.scope : "all";
-  const reviewIds = new Set(buildReviewQuestionIds(sessions, scope));
+  const reviewScopes = normalizedReviewScopes(config.reviewScopes ?? config.scopes ?? config.scope);
+  const reviewIds = new Set(buildReviewQuestionIds(sessions, reviewScopes));
   const filters = configFilters(config);
   return questionBank.filter((question) => (
     matchesSelected(question.subject || "A", filters.subjects)
     && matchesSelected(question.domain, filters.domains)
     && matchesSelected(question.unitId, filters.unitIds)
     && matchesSelected(question.periodId, filters.periodIds)
-    && (scope === "all" || reviewIds.has(question.id))
+    && (reviewScopes.length === 0 || reviewIds.has(question.id))
   ));
 }
 
@@ -107,6 +110,7 @@ export function selectPracticeQuestions(config, questionBank, sessions = [], ran
 
 function normalizeConfig(config = {}) {
   const filters = configFilters(config);
+  const reviewScopes = normalizedReviewScopes(config.reviewScopes ?? config.scopes ?? config.scope);
   return {
     type: config.type === "mock" ? "mock" : "topic",
     subjects: filters.subjects,
@@ -117,7 +121,8 @@ function normalizeConfig(config = {}) {
     domain: filters.domains.length === 1 ? filters.domains[0] : "all",
     periodId: filters.periodIds.length === 1 ? filters.periodIds[0] : "all",
     periodLabel: config.periodLabel || (filters.periodIds.length > 1 ? `${filters.periodIds.length}開催回` : "すべての開催回"),
-    scope: FE_PRACTICE_SCOPES.has(config.scope) ? config.scope : "all",
+    reviewScopes,
+    scope: reviewScopes.length === 1 ? reviewScopes[0] : "all",
     count: config.count === "all" ? "all" : Number(config.count || 10),
   };
 }
@@ -281,5 +286,7 @@ export function normalizeFeSession(value, questionBank) {
 }
 
 export function scopeLabel(scope) {
-  return { all: "通常演習", incorrect: "間違えた問題", unanswered: "未回答問題", review: "見直し対象" }[scope] || "通常演習";
+  const labels = { correct: "正解した問題", incorrect: "間違えた問題", unanswered: "未回答問題", review: "見直し対象" };
+  const scopes = normalizedReviewScopes(scope);
+  return scopes.length === 0 ? "通常演習" : scopes.map((value) => labels[value]).filter(Boolean).join("・");
 }
