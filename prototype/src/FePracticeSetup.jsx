@@ -15,7 +15,7 @@ function toggleValue(values, value) {
   return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
 }
 
-function MultiChoiceGroup({ title, description, values, options, onChange, emptyLabel }) {
+function MultiChoiceGroup({ title, description = "", values, options, onChange, emptyLabel = "" }) {
   return (
     <fieldset className="fe-filter-group">
       <legend>{title}</legend>
@@ -48,7 +48,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
   const [unitIds, setUnitIds] = useState([]);
   const [periodIds, setPeriodIds] = useState([]);
   const [scope, setScope] = useState("all");
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(/** @type {number | "all"} */ (10));
 
   const subjectOptions = useMemo(() => ["A", "B"].map((value) => ({
     value,
@@ -169,7 +169,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
       <section className="fe-start-panel" aria-labelledby="fe-count-heading">
         <div><p className="section-kicker">Question count</p><h2 id="fe-count-heading">問題数</h2></div>
         <div className="fe-count-options">
-          {[10, 20, 30, "all"].map((value) => <button className={count === value ? "is-selected" : ""} key={value} onClick={() => setCount(value)}>{value === "all" ? "全問" : `${value}問`}</button>)}
+          {[10, 20, 30, "all"].map((value) => <button className={count === value ? "is-selected" : ""} key={value} onClick={() => setCount(/** @type {number | "all"} */ (value))}>{value === "all" ? "全問" : `${value}問`}</button>)}
         </div>
         <div className={`fe-match-result ${available.length === 0 ? "is-empty" : ""}`} role="status">
           <strong>{available.length}問が条件に一致</strong>
