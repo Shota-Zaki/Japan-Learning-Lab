@@ -29,6 +29,7 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 - Latest failure evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
 - Latest task status commit: `daa94256c896a83a8d42dd4191fe9fbbe6255b4a`
 - Recovery marker removal commit: `f2c064fdc1aef6e64db15ac426f6db75d0039dbf`
+- Accidental temporary file cleanup commit: `dfad4dceb877446fe5d9b447f82e4bdb4f329a2f`
 - Current Pages workflow: `.github/workflows/pages.yml`
 - Temporary recovery and patch workflows on `work`: removed
 - この管理文書更新後の`work` HEADを最終報告の固定HEADとする
