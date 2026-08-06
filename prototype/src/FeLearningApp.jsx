@@ -127,7 +127,7 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
     const questions = sourceSession.questionIds.map((questionId) => questionBank.find((question) => question.id === questionId)).filter((question) => question && requested.has(question.id));
     if (questions.length === 0) return;
     const baseSessions = abandonActiveSessions();
-    const session = createFeSession({ config: { ...sourceSession.config, scope: "incorrect", count: questions.length }, questions });
+    const session = createFeSession({ config: { ...sourceSession.config, type: "topic", scope: "incorrect", count: questions.length }, questions });
     persistSession(session, baseSessions);
     navigate("practice", "session");
   };
@@ -190,7 +190,7 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
       {view !== "session" && (
         <div className="course-site-intro">
           <nav className="breadcrumbs" aria-label="パンくずリスト"><button onClick={goEngineer}>Engineer Learning Lab</button><span>›</span><span aria-current="page">FE Learning Lab</span></nav>
-          <div className="course-site-title"><span>Fundamental Information Technology Engineer</span><strong>FE Learning Lab</strong><p>科目A・科目Bの公式問題を、複数条件で絞り込んで演習できます。</p></div>
+          <div className="course-site-title"><span>Fundamental Information Technology Engineer</span><strong>FE Learning Lab</strong><p>科目A・科目Bの公開問題と演習用問題を、単元別演習または模擬試験で学習できます。</p></div>
         </div>
       )}
 
