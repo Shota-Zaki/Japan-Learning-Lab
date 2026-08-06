@@ -27,34 +27,27 @@ jobs:
             -H "Authorization: Bearer ${GH_TOKEN}"
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
-
-          read_code="$(curl -sS -L -o /tmp/deployment.json -w '%{http_code}' "${headers[@]}" "${api}")"
-          if [[ "${read_code}" == "200" ]]; then
-            status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/deployment.json", "utf8")); process.stdout.write(String(value.status ?? "unknown"));')"
-            echo "Stale deployment status: ${status}"
+          code="$(curl -sS -L -o /tmp/deployment.json -w '%{http_code}' "${headers[@]}" "${api}")"
+          if [[ "${code}" == "200" ]]; then
+            status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/deployment.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
+            echo "Status before cancellation: ${status}"
             case "${status}" in
-              succeed|success|cancelled|canceled|error|failure)
-                ;;
+              succeed|success|cancelled|canceled|error|failure) ;;
               *)
                 cancel_code="$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{http_code}' "${headers[@]}" "${api}/cancel")"
-                if [[ "${cancel_code}" != "204" && "${cancel_code}" != "404" ]]; then
-                  cat /tmp/cancel.json
-                  exit 1
-                fi
+                [[ "${cancel_code}" == "204" || "${cancel_code}" == "404" ]]
                 for attempt in {1..24}; do
                   check_code="$(curl -sS -L -o /tmp/check.json -w '%{http_code}' "${headers[@]}" "${api}")"
                   if [[ "${check_code}" == "404" ]]; then break; fi
-                  if [[ "${check_code}" != "200" ]]; then cat /tmp/check.json; exit 1; fi
-                  current_status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/check.json", "utf8")); process.stdout.write(String(value.status ?? "unknown"));')"
-                  echo "Cancellation check ${attempt}: ${current_status}"
-                  case "${current_status}" in
-                    cancelled|canceled|error|failure) break 2 ;;
-                  esac
+                  [[ "${check_code}" == "200" ]]
+                  current="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/check.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
+                  echo "Cancellation check ${attempt}: ${current}"
+                  case "${current}" in cancelled|canceled|error|failure) break 2 ;; esac
                   sleep 5
                 done
                 ;;
             esac
-          elif [[ "${read_code}" != "404" ]]; then
+          elif [[ "${code}" != "404" ]]; then
             cat /tmp/deployment.json
             exit 1
           fi
@@ -75,30 +68,17 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28"
           )
           curl -sS -L -o /tmp/existing.json "${headers[@]}" "${api}?ref=work"
-          existing_sha="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const value = JSON.parse(readFileSync("/tmp/existing.json", "utf8")); process.stdout.write(String(value.sha ?? ""));')"
-          REQUESTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" STALE_DEPLOYMENT="${STALE_DEPLOYMENT}" RECOVERY_SHA="${RECOVERY_SHA}" node --input-type=module <<'NODE'
+          EXISTING_SHA="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/existing.json","utf8")); process.stdout.write(String(data.sha ?? ""));')" \
+          COMPLETED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          STALE_DEPLOYMENT="${STALE_DEPLOYMENT}" \
+          RECOVERY_SHA="${RECOVERY_SHA}" \
+          node --input-type=module <<'NODE'
           import { writeFileSync } from "node:fs";
           const marker = {
             status: "cancelled",
             staleDeployment: process.env.STALE_DEPLOYMENT,
             recoveryRevision: process.env.RECOVERY_SHA,
-            completedAt: process.env.REQUESTED_AT,
-          };
-          const content = Buffer.from(`${JSON.stringify(marker, null, 2)}\n`).toString("base64");
-          writeFileSync("/tmp/payload.json", JSON.stringify({
-            message: "ci: record Pages cancellation completion",
-            content,
-            sha: process.env.EXISTING_SHA,
-            branch: "work",
-          }));
-          NODE
-          EXISTING_SHA="${existing_sha}" REQUESTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)" STALE_DEPLOYMENT="${STALE_DEPLOYMENT}" RECOVERY_SHA="${RECOVERY_SHA}" node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync } from "node:fs";
-          const marker = {
-            status: "cancelled",
-            staleDeployment: process.env.STALE_DEPLOYMENT,
-            recoveryRevision: process.env.RECOVERY_SHA,
-            completedAt: process.env.REQUESTED_AT,
+            completedAt: process.env.COMPLETED_AT,
           };
           writeFileSync("/tmp/payload.json", JSON.stringify({
             message: "ci: record Pages cancellation completion",
@@ -107,5 +87,7 @@ jobs:
             branch: "work",
           }));
           NODE
-          code="$(curl -sS -L -X PUT -o /tmp/response.json -w '%{http_code}' "${headers[@]}" -H "Content-Type: application/json" --data-binary @/tmp/payload.json "${api}")"
-          if [[ "${code}" != "200" ]]; then cat /tmp/response.json; exit 1; fi
+          response="$(curl -sS -L -X PUT -o /tmp/response.json -w '%{http_code}' "${headers[@]}" -H "Content-Type: application/json" --data-binary @/tmp/payload.json "${api}")"
+          [[ "${response}" == "200" ]]
+
+# Final cancellation trigger
