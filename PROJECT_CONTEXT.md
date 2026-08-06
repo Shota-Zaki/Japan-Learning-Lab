@@ -1,6 +1,42 @@
 # Project Context
 
-## 1. Project
+このファイルは、Japan Learning Labで使用するプロジェクト固有情報の正本とする。
+チャットや作業指示内にプレースホルダーがある場合は、以下の値へ置き換える。
+
+## 1. Chat project context values
+
+| 項目 | プロジェクト固有値 |
+|---|---|
+| Repository | `Shota-Zaki/Japan-Learning-Lab` |
+| Base Branch | `main` |
+| Permanent working Branch | `work` |
+| Repository default Branch | `work` |
+| Pull Request direction | `work` → `main` |
+| Application directory | `prototype/` |
+| GitHub Pages output | `work` BranchのRepository直下`docs/` |
+| GitHub Pages URL | `https://shota-zaki.github.io/Japan-Learning-Lab/` |
+| CI runtime | Node.js 22 |
+| Package manager | npm |
+| Frontend | React 19.2 |
+| Build tool | Vite 6.4 |
+| Main language | JavaScript / JSX |
+| Type validation | TypeScript compiler 7による`tsc --noEmit` |
+| Lint | ESLint 10 |
+| Test runner | Node.js built-in test runner |
+| Install command | `cd prototype && npm ci` |
+| Development command | `cd prototype && npm run dev` |
+| Build command | `cd prototype && npm run build` |
+| Test command | `cd prototype && npm test` |
+| Typecheck command | `cd prototype && npm run typecheck` |
+| Lint command | `cd prototype && npm run lint` |
+| Pages build command | `cd prototype && npm run build:pages` |
+| Full FE verification | `cd prototype && npm run verify:fe` |
+| CI workflow | `.github/workflows/pages.yml` |
+
+`work`は継続利用する恒久Branchであり、タスク完了後も削除しない。
+GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。実際の検証・artifact upload・公開はGitHub Actions Workflowから実行する。
+
+## 2. Project
 
 - Project name: `Japan Learning Lab`
 - Repository: `Shota-Zaki/Japan-Learning-Lab`
@@ -8,12 +44,10 @@
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Repository default Branch: `work`
-- Pull Request direction: `work` -> `main`
+- Pull Request direction: `work` → `main`
 - GitHub Pages artifact: Repository root `docs/`
 
-`work`は継続利用する恒久Branchであり、タスク完了後も削除しない。
-
-## 2. Service purpose
+## 3. Service purpose
 
 日本語で学習できる複数の学習サイトを、共通プラットフォーム上で提供する。
 
@@ -24,34 +58,51 @@
 
 各学習サイトは、共通プラットフォームから遷移できるだけでなく、固有URLから直接利用できる独立した入口を持つ。
 
-## 3. Current priority
+## 4. Information priority
 
-現在の進行中タスクは、情報技術者試験向け演習機能の修正と検証である。
+情報が競合する場合は、次の順番で判断する。
 
-最新の実装では、複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録まで進んでいる。
+1. 最新のユーザー指示
+2. 現在のRepository内容とGitHub設定
+3. `task-list.md`
+4. `NEXT_WORK.md`
+5. `AGENTS.md`
+6. この`PROJECT_CONTEXT.md`
+7. `DESIGN.md`
+8. Pull Request、Issue、CI、GitHub Pagesの実状態
+9. 過去チャット
+10. 推測または一般的慣習
 
-ただし、2022年12月公開の科目Aサンプル問題の図表保持テストが1件失敗しているため、状態は`needs_fix`である。Java学習サイトの再開は、このタスクの確認合格後に行う。
+進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの最新状態は、このファイルへ固定値として重複記録しない。`task-list.md`と`NEXT_WORK.md`およびGitHub実状態を確認する。
 
-現在状態の詳細は`task-list.md`と`NEXT_WORK.md`を正本とする。
+## 5. Current priority
 
-## 4. Technical stack
+現在の進行中タスクは、FE Learning Labの演習機能の修正と検証である。
+
+複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録まで実装が進んでいる。
+
+ただし、最新状態は`task-list.md`を正本とする。FEタスクが`completed`になるまで、Java Learning Labの実装を同時進行させない。
+
+## 6. Technical stack
 
 アプリケーション本体は`prototype/`配下にある。
 
 - Runtime used by CI: Node.js 22
 - Package manager: npm
-- Frontend: React 19
-- Build tool: Vite 6
+- Frontend: React 19.2
+- Build tool: Vite 6.4
 - Language: JavaScript / JSX
-- Type validation: TypeScript compilerによる`checkJs`相当の検査
-- Lint: ESLint
+- Type validation: TypeScript compiler 7による`tsc --noEmit`
+- Lint: ESLint 10
 - Test runner: Node.js built-in test runner
 - Hosting:
   - GitHub Pages
   - 静的成果物はRepository直下`docs/`
   - 別ホスティング向けworkerとserver buildも保持
 
-## 5. Commands
+依存パッケージの正確なversionは`prototype/package.json`とlockfileを正本とする。
+
+## 7. Commands
 
 Repository rootから実行する場合は`prototype/`へ移動する。
 
@@ -69,14 +120,14 @@ npm run verify:fe
 
 主な用途:
 
-- `npm run build`: 通常buildと配布準備
+- `npm run build`: FE問題同期、通常build、配布準備
 - `npm test`: 全自動テスト
 - `npm run typecheck`: 型検査
 - `npm run lint`: 静的解析
 - `npm run build:pages`: GitHub Pages用成果物をRepository直下`docs/`へ生成
 - `npm run verify:fe`: FE同期、通常build、テスト、型検査、Lint、Pages buildを一括実行
 
-## 6. Repository structure
+## 8. Repository structure
 
 ```text
 /
@@ -105,7 +156,7 @@ npm run verify:fe
 
 `prototype/AGENTS.md`と`prototype/DESIGN.md`は、`prototype/`固有の補足規則として扱う。Repository全体の正本はRoot文書である。
 
-## 7. Product hierarchy
+## 9. Product hierarchy
 
 ```text
 Japan Learning Lab
@@ -122,7 +173,7 @@ Japan Learning Lab
 - 学習時間、推定時間、経過時間は表示しない
 - 保存値や進捗値を捏造しない
 
-## 8. FE Learning Lab scope
+## 10. FE Learning Lab scope
 
 FE演習は、公式に出典を確認できる問題だけを使用する。
 
@@ -144,7 +195,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
-## 9. Source data policy
+## 11. Source data policy
 
 FE問題データの同期元は、Repository内の管理文書と同期スクリプトで固定された別Repositoryの特定commitとblobを使用する。
 
@@ -154,16 +205,21 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 - 重複は、科目、問題文、選択肢、正答を正規化した指紋で扱う
 - 図表付き問題は、本文、選択肢、図表、正答が揃うまで公開セットとして完成扱いにしない
 
-## 10. Current GitHub state at document creation
+## 12. Chat startup rule
 
-- Open Pull Request: `#1`
-- Pull Request state: Draft / Open / Unmerged
-- Base: `main`
-- Head: `work`
-- Implementation review target HEAD before management-document commits: `64ac59b5631507da07da459c1cc52e9ed9ffdffc`
-- Latest failed workflow run: `31073454949`
-- Failure: 42 tests中1件失敗
-- Failed requirement: 科目Aサンプル問5の公式図表が`image`ブロックとして保持されていない
-- Last successful Pages source revision: `a0a3f665dbe9ccb8cbcd829cd7d8af69171996a7`
+新しいチャットでは、過去チャットの説明だけで作業を開始しない。
 
-管理文書追加後のBranch HEADは、この値より後のcommitになる。実装レビューでは、管理文書commitとアプリケーション実装HEADを区別する。
+最初に次を確認する。
+
+1. Repositoryとアクセス権
+2. `main`と`work`
+3. Open Pull Request
+4. Root `AGENTS.md`
+5. Root `PROJECT_CONTEXT.md`
+6. Root `task-list.md`
+7. Root `NEXT_WORK.md`
+8. 必要に応じてRootおよび`prototype/`の`DESIGN.md`
+9. 最新CI
+10. `docs/`とGitHub Pagesの公開状態
+
+新しいチャットでユーザーが送る起動コマンドは、原則として`実装`、`修正`、`確認`のいずれかとする。
