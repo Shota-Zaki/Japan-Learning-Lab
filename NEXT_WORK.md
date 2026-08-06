@@ -6,17 +6,21 @@
 
 ## Current phase
 
-`blocked`（GitHub Pages deployment service）
+`review_ready`
 
 ## Role
 
-実装担当。Pull Request #1はDraft / Open / Unmergedのまま維持し、`main`へマージしない。
+次の担当は確認担当。実装担当とは別の新しいチャットで開始する。
+
+Pull Request #1はDraft / Open / Unmergedのまま維持する。実装担当は`main`へマージしない。
 
 ## Objective
 
-問題ナビゲーションと詳細解説のアプリケーション実装は完了している。アプリケーションコードを変更せず、GitHub PagesのRepository固有deployment処理が回復した後に、最新`work`から既存workflowを再実行して公開確認へ進む。
+FE演習の実装、回帰テスト、型検査、Lint、通常build、Pages build、artifact uploadは完了している。
 
-同じ状態で連続retryしない。
+2026-08-07のユーザー指示「ここはスキップして続けて」により、GitHub Pages deployment、公開Revision一致、公開画面確認、`docs/`成功同期は今回の確認・マージに対するBlocking条件から除外し、延期項目として扱う。
+
+確認担当は最新`work` HEADを固定し、実装差分と自動検証を独立確認する。Pages公開失敗だけを理由に`needs_fix`へ戻さない。
 
 ## Repository state
 
@@ -30,18 +34,20 @@
 - Pages workflow correction HEAD: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
 - Latest deployment trigger HEAD: `1c102065233d67253ea89f71f41ff6c9e4aaca3d`
 - Latest failure evidence commit: `4b52a065ab085d4879ee33f40a2c28272dee7376`
-- Task state blocked update commit: `64410c415756065c69cc9ef4873d268b4424bb25`
-- Current management HEAD: この文書の更新commit
+- Review-ready task update commit: `993b5b643d483c251a0758ec50a4a2cdb82a666c`
+- Review preparation HEAD: この文書の更新後にPR #1のHead SHAを固定する
 
 ## Implemented scope
 
 1. 問題番号入力、Enter、移動ボタンによる直接移動
-2. 範囲外入力時の非移動とエラー通知
+2. 範囲外入力時の非移動と入力可能範囲の表示
 3. 問題一覧領域の内部縦スクロール
 4. 移動後の現在問題ボタンの自動視認
 5. 正答、正答根拠、選択肢ごとの判断、関連知識を含む詳細解説
 6. 通常演習と完了後レビューで共通する詳細解説表示
 7. 個別解説データ優先と、技術的根拠を捏造しないfallback
+8. コンパクトグリッド型絞り込み、項目名全文表示、条件群の可変高さ、条件群内スクロール廃止
+9. 科目A・科目B、公式サンプル模試、履歴、復習、再挑戦、保存・復元
 
 ## Automated validation
 
@@ -60,7 +66,17 @@
 - Pages artifact upload: success
 - Deploy: Pull Request eventのため仕様どおりskipped
 
-最新sourceのauthoritative push workflow:
+問題データ検証:
+
+- Question count: 1977
+- 科目A: 1810問
+- 科目B: 167問
+- 構造化済み科目B: 142問
+- 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
+
+## Deferred Pages issue
+
+Authoritative push workflow:
 
 - Run ID: `31112855574`
 - Run number: `249`
@@ -71,75 +87,80 @@
 - Pages artifact ID: `8972432604`
 - Stale deployment cancellation request: success
 - New Pages deployment creation: success
-- New deployment ID: `1c102065233d67253ea89f71f41ff6c9e4aaca3d`
 - New deployment status: `deployment_in_progress`が600秒継続
 - Result: `actions/deploy-pages@v4` timeout後にdeploymentをcancel
 - Public revision verification: skipped
-- Public smoke: skipped
+- Public resource smoke: skipped
 - `docs/` success sync: skipped
-- Failure evidence commit: `4b52a065ab085d4879ee33f40a2c28272dee7376`
+- Failure evidence: `prototype/qa/pages-deployment-failure.json`
 
-## Blocking condition
+この問題は未解決だが、ユーザー指示によりNon-blockingの延期項目とする。
 
-最新sourceのbuild、全検証、Pages build、artifact upload、権限、旧deploymentキャンセル要求、新規deployment作成は成功している。
+## Confirmation procedure
 
-新規deploymentは2026-08-06 14:51:28 UTCに作成された後、2026-08-06 14:51:33 UTCから15:01:31 UTCまで`deployment_in_progress`のまま変化せず、600秒timeoutとなった。workflowはdeploymentをcancelした。
+1. Repository、`main`、`work`、PR #1、`task-list.md`、この文書を確認する
+2. PR #1の最新Head SHAをレビュー対象HEADとして固定する
+3. `main`との差分、変更対象、変更禁止範囲を独立確認する
+4. アプリケーション実装、テスト、型検査、Lint、build結果を確認する
+5. 問題番号入力、Enter、移動ボタン、範囲外エラーを確認する
+6. 問題一覧内部スクロールと現在問題の視認性を確認する
+7. 通常演習回答直後と模擬試験終了後レビューの詳細解説を確認する
+8. 模擬試験中に正誤・解説が表示されないことを確認する
+9. 絞り込みの全文表示、可変高さ、条件群内スクロール廃止を確認する
+10. 保存、復元、履歴、復習、再挑戦の回帰を確認する
+11. `task-list.md`、この文書、PR本文の整合を確認する
+12. Pages公開失敗は延期項目として記録し、Blocking判定から除外する
+13. Blocking問題がなければ管理文書を`completed`と次タスク向けへ更新する
+14. 管理文書更新後のHEADを再検証する
+15. PR #1をmerge commit方式で`main`へマージする
+16. `main`のCIを確認する
+17. `work`を最新`main`へ同期する
+18. `work`を削除しない
+19. `JLL-JAVA-001`を次の進行対象として準備する
 
-過去run attempt 2では一度deploymentが成功したが、最新sourceの新規runで同じtimeoutが再現した。Repository固有のPages deployment処理は安定して回復していない。アプリケーションまたはworkflow build工程の問題ではない。
+## Blocking review criteria
 
-## Resume procedure
+- 実装がタスク目的または完了条件と不一致
+- 主要機能の実装漏れまたは回帰
+- テスト、型検査、Lint、通常build、Pages buildの失敗
+- 問題データ、正答、図表の破壊
+- セキュリティ、データ破壊、互換性上の重大問題
+- 管理文書とGitHub実状態の重大な不一致
 
-1. Repository、`work`、PR #1、`task-list.md`、この文書を再確認する
-2. 最新HEADと`prototype/qa/pages-deployment-failure.json`を固定する
-3. GitHub PagesのRepository固有deployment処理が完了可能になったことを確認する
-4. 回復確認後のみ、アプリケーション差分を追加せず最新`work`から既存workflowを再実行する
-5. buildとdeploy jobを確認する
-6. deploy成功時は公開`build-info.json`のsourceRevisionを確認する
-7. 公開JS、CSS、問題データ、図表を確認する
-8. 375px、768px、1280px以上で表示を確認する
-9. 問題番号入力、一覧スクロール、詳細解説、模擬試験非表示、結果レビューを確認する
-10. キーボード、フォーカス、Console、Networkを確認する
-11. `docs/`と成功証拠が`work`へ同期されたことを確認する
-12. `task-list.md`を`review_ready`へ更新する
-13. `NEXT_WORK.md`を確認担当向けに更新する
-14. Pull Request #1の説明を更新する
-15. Pull RequestはDraftのまま維持する
+GitHub Pages deployment失敗、公開Revision不一致、公開画面未確認、`docs/`成功同期未実施は、今回のBlocking review criteriaに含めない。
 
-## Change targets on resume
+## Change allowed for confirmation
 
-Pages成功時に限り、workflow自動同期または管理更新で次を変更する。
-
-- `docs/`
-- `prototype/public/data/fe-official-past-questions.json`
-- `prototype/qa/pages-deployment.json`
-- `prototype/qa/pages-deployment-failure.json`
 - `task-list.md`
 - `NEXT_WORK.md`
-- Pull Request #1の説明
+- レビュー結果や検証証拠を記録する管理文書
+- 明白な管理メタデータ不一致
+- 合格時のmerge commitと`work`同期
 
 ## Change forbidden
 
-- アプリケーションコードの追加修正
-- `main`へのマージ
-- Pull RequestのReady for review変更
+- 確認担当によるアプリケーションコード修正
+- Squash merge
+- Rebase merge
+- Force push
 - `work`の削除
-- force push、rebase、squash
-- 新しいPages復旧workflowの追加
-- 既存の公式問題本文、選択肢、正答、図表の改変
-- Java Learning Labの実装開始
-- 外部Blocker継続中の連続retry
-- 過去runの再実行
+- 問題本文、選択肢、正答、図表の変更
+- GitHub Pages障害を理由にした無条件の`needs_fix`判定
+- Java Learning Labの実装開始（FE確認・マージ完了前）
 
 ## Completion criteria remaining
 
-- 最新`work` sourceのPages deployが成功する
-- 公開Revisionが最新sourceと一致する
-- 公開リソースのスモークが成功する
-- `docs/`と成功証拠が最新sourceから同期される
-- 375px、768px、1280px以上の公開表示を確認する
-- 問題番号移動、一覧スクロール、詳細解説を公開画面で確認する
-- 確認担当が固定HEADを独立検証できる状態にする
+- 最新PR Head SHAを固定して独立確認する
+- Blocking問題がないことを確認する
+- 管理文書を`completed`と次タスク向けへ更新する
+- PR #1をmerge commit方式で`main`へマージする
+- `main`のCIを確認する
+- `work`を最新`main`へ同期する
+
+## User latest instruction
+
+2026-08-07: GitHub Pages公開工程はスキップして先へ進む。
 
 ## Next user command
 
-`実装`
+`確認`
