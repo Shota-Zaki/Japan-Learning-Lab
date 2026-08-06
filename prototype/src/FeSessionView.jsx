@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BookmarkSimple, CheckCircle, Pause, Play, ShieldCheck, Timer, WarningCircle } from "@phosphor-icons/react";
 import { FeRichContent } from "./FeRichContent.jsx";
+import { buildChoiceJudgments, correctAnswerLabel, relatedKnowledgeLabels } from "./feExplanation.js";
 import { buildSessionReviewItems, choiceLabels } from "./fePresentation.js";
 import {
   answerSessionQuestion,
@@ -37,8 +38,7 @@ const unitLabels = {
 };
 
 function answerLabel(question) {
-  const expected = new Set(correctAnswerIds(question));
-  return question.choices.filter((choice) => expected.has(String(choice.id))).map((choice) => choice.label || choice.id).join("、");
+  return correctAnswerLabel(question);
 }
 
 function mockDurationMinutes(session) {
@@ -62,21 +62,86 @@ function formatRemaining(totalSeconds) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function DetailedExplanation({ question, headingId, headingLevel = 2 }) {
+  const judgments = buildChoiceJudgments(question);
+  const Heading = headingLevel === 3 ? "h3" : "h2";
+  const SectionHeading = headingLevel === 3 ? "h4" : "h3";
+  const relatedKnowledge = relatedKnowledgeLabels(question);
+
+  return (
+    <div className="fe-detailed-explanation">
+      <div className="fe-explanation-heading">
+        <Heading id={headingId}>解説</Heading>
+        <span>正答 {answerLabel(question) || "情報なし"}</span>
+      </div>
+
+      <section className="fe-explanation-section" aria-labelledby={`${headingId}-reason`}>
+        <SectionHeading id={`${headingId}-reason`}>正答の根拠</SectionHeading>
+        <FeRichContent blocks={question.explanationBlocks} fallback={question.explanation} className="fe-explanation-content" />
+      </section>
+
+      <section className="fe-explanation-section" aria-labelledby={`${headingId}-choices`}>
+        <SectionHeading id={`${headingId}-choices`}>選択肢ごとの判断</SectionHeading>
+        <ul className="fe-choice-judgments">
+          {judgments.map(({ choice, choiceId, isCorrect, reasonText, reasonBlocks }) => (
+            <li key={choiceId} className={`fe-choice-judgment ${isCorrect ? "is-correct" : "is-incorrect"}`}>
+              <div className="fe-choice-judgment-header">
+                <span>{isCorrect ? "正答" : "不正解"}</span>
+                <strong>{choice.label || choice.id}</strong>
+              </div>
+              <FeRichContent blocks={choice.contentBlocks} fallback={choice.text} compact className="choice-content" />
+              {reasonBlocks
+                ? <FeRichContent blocks={reasonBlocks} fallback={reasonText} compact className="fe-choice-reason" />
+                : <p className="fe-choice-reason">{reasonText}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="fe-explanation-section" aria-labelledby={`${headingId}-knowledge`}>
+        <SectionHeading id={`${headingId}-knowledge`}>関連知識</SectionHeading>
+        {relatedKnowledge.length > 0 ? (
+          <>
+            <p>同じ論点の問題へ応用できるよう、次の単元・用語も合わせて確認します。</p>
+            <ul className="fe-knowledge-tags">
+              {relatedKnowledge.map((label) => <li key={label}>{label}</li>)}
+            </ul>
+          </>
+        ) : (
+          <p>問題文の条件と正答の根拠を対応付け、条件が変わった場合にも同じ判断手順を使えるよう整理します。</p>
+        )}
+      </section>
+    </div>
+  );
+}
+
 export function FeSessionView({ session, questionBank, persistSession, pauseSession, completeSession, retrySession, reviewSession, exitSession }) {
   const [confirmFinish, setConfirmFinish] = useState(false);
   const [clockMs, setClockMs] = useState(() => Date.now());
+  const [questionNumberError, setQuestionNumberError] = useState("");
+  const questionNumberInputRef = useRef(null);
+  const questionNumberGridRef = useRef(null);
+  const sessionId = session?.id;
+  const sessionStatus = session?.status;
+  const currentQuestionIndex = session?.currentIndex;
   const isMock = session?.config?.type === "mock";
   const remainingSeconds = calculateRemainingSeconds(session, clockMs);
 
   useEffect(() => {
-    if (!session || session.status !== "in_progress" || !isMock) return undefined;
+    if (!sessionId || sessionStatus !== "in_progress" || !isMock) return undefined;
     const timerId = window.setInterval(() => setClockMs(Date.now()), 1000);
     return () => window.clearInterval(timerId);
-  }, [session?.id, session?.status, isMock]);
+  }, [sessionId, sessionStatus, isMock]);
 
   useEffect(() => {
     if (session && session.status === "in_progress" && isMock && remainingSeconds === 0) completeSession(session);
   }, [session, isMock, remainingSeconds, completeSession]);
+
+  useEffect(() => {
+    if (sessionStatus !== "in_progress" || currentQuestionIndex === undefined) return;
+    const activeButton = questionNumberGridRef.current?.querySelector('[aria-current="step"]');
+    activeButton?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+  }, [sessionId, currentQuestionIndex, sessionStatus]);
 
   if (!session) return <MissingSession exitSession={exitSession} />;
   if (session.status === "completed") return <FeResultView session={session} questionBank={questionBank} retrySession={retrySession} reviewSession={reviewSession} exitSession={exitSession} />;
@@ -92,8 +157,20 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
   const nextUnanswered = session.questionIds.findIndex((questionId, index) => index > session.currentIndex && !session.answers[questionId]);
   const moveTo = (index) => {
     persistSession(moveSession(session, index));
+    if (questionNumberInputRef.current) questionNumberInputRef.current.value = String(index + 1);
+    setQuestionNumberError("");
     setConfirmFinish(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const jumpToQuestion = (event) => {
+    event.preventDefault();
+    const targetNumber = Number(questionNumberInputRef.current?.value);
+    if (!Number.isInteger(targetNumber) || targetNumber < 1 || targetNumber > session.questionIds.length) {
+      setQuestionNumberError(`1から${session.questionIds.length}の問題番号を入力してください。`);
+      return;
+    }
+    setQuestionNumberError("");
+    moveTo(targetNumber - 1);
   };
   const finish = () => {
     if (summary.unanswered > 0 && !confirmFinish) {
@@ -158,8 +235,7 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
           ) : (
             <section className={`answer-feedback ${answer.correct ? "is-correct" : "is-wrong"}`} aria-labelledby="fe-explanation-heading" role="status">
               <div className="feedback-title"><CheckCircle size={24} weight="fill" /><strong>{answer.correct ? "正解です" : `正答は「${answerLabel(question)}」です`}</strong></div>
-              <h2 id="fe-explanation-heading">解説</h2>
-              <FeRichContent blocks={question.explanationBlocks} fallback={question.explanation} className="fe-explanation-content" />
+              <DetailedExplanation question={question} headingId="fe-explanation-heading" />
             </section>
           )}
 
@@ -184,8 +260,27 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
           </dl>
           <span className="official-badge"><ShieldCheck size={18} weight="fill" /> 出典情報を記録</span>
           <div className="question-navigator">
-            <div><strong>問題一覧</strong><small>{summary.answered} / {summary.total}問回答</small></div>
-            <div className="question-number-grid">
+            <div className="question-navigator-summary"><strong>問題一覧</strong><small>{summary.answered} / {summary.total}問回答</small></div>
+            <form className="question-jump-form" onSubmit={jumpToQuestion} noValidate>
+              <label htmlFor="question-number-input">問題番号を入力して移動</label>
+              <input
+                id="question-number-input"
+                type="number"
+                inputMode="numeric"
+                min="1"
+                max={session.questionIds.length}
+                step="1"
+                ref={questionNumberInputRef}
+                defaultValue={session.currentIndex + 1}
+                aria-invalid={Boolean(questionNumberError)}
+                aria-describedby={questionNumberError ? "question-number-error" : undefined}
+                onChange={() => setQuestionNumberError("")}
+              />
+              <span aria-hidden="true">/ {session.questionIds.length}</span>
+              <button className="button button-secondary" type="submit">移動</button>
+              {questionNumberError && <p id="question-number-error" className="question-jump-error" role="alert">{questionNumberError}</p>}
+            </form>
+            <div className="question-number-grid" ref={questionNumberGridRef} tabIndex="0" aria-label="問題番号一覧">
               {session.questionIds.map((questionId, index) => (
                 <button key={questionId} className={`${index === session.currentIndex ? "is-current" : ""} ${session.answers[questionId] ? "is-answered" : ""} ${session.reviewQuestionIds.includes(questionId) ? "is-review" : ""}`} aria-label={`問題${index + 1}、${session.answers[questionId] ? "回答済み" : "未回答"}${session.reviewQuestionIds.includes(questionId) ? "、見直し対象" : ""}`} aria-current={index === session.currentIndex ? "step" : undefined} onClick={() => moveTo(index)}>{index + 1}</button>
               ))}
@@ -222,7 +317,7 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
       <section className="result-review-section" aria-labelledby="result-review-heading">
         <div className="result-review-heading">
           <h2 id="result-review-heading">問題別レビュー</h2>
-          <p>各問題を開くと、問題文、回答、正答、正誤、解説を確認できます。</p>
+          <p>各問題を開くと、問題文、回答、正答、正誤、正答根拠、選択肢別の判断、関連知識を確認できます。</p>
         </div>
         <div className="result-question-list">
           {reviewItems.map(({ questionId, index, question, selectedIds, correctIds, status }) => {
@@ -264,8 +359,7 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
                         );
                       })}
                     </div>
-                    <h3>解説</h3>
-                    <FeRichContent blocks={question.explanationBlocks} fallback={question.explanation} className="fe-explanation-content" />
+                    <DetailedExplanation question={question} headingId={`result-explanation-${index + 1}`} headingLevel={3} />
                   </div>
                 ) : (
                   <div className="result-question-detail" role="alert">問題データを読み込めませんでした。</div>
