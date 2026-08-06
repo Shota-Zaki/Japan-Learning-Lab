@@ -89,12 +89,13 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 `a1912c53719b64bfcc5b4e83bb5eb2bcf8ef5796`
 
-### Implementation and generated output
+### Current implementation and generated output
 
-- Implementation source revision: `10af5e9e9489a39eec43efb77ca13087f748f07d`
-- Generated output commit: `d832cddb2949a12c9fb1d53a031ac989f4400c19`
-- `docs/build-info.json` sourceRevision: `10af5e9e9489a39eec43efb77ca13087f748f07d`
+- Review handoff source revision: `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`
+- Generated output commit: `5700b363fe233594c7717d483da44fe37aecf81f`
+- `docs/build-info.json` sourceRevision: `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`
 - Fix audit: `prototype/qa/fe-result-filter-fix-2026-08-06/audit.md`
+- 管理文書更新後の最新HEADは確認開始時に再取得する
 
 ### Implemented fixes
 
@@ -108,6 +109,7 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 ### Verification result
 
 - Pull request workflow run: `31082788764` / run number `195` / success
+- Final pull request workflow run: `31083188418` / run number `197` / success
 - `npm run verify:fe`: success
 - Tests: 50 / 50 passed
 - TypeScript: success
@@ -125,7 +127,7 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 - `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
 - GitHub Actionsで一部ActionのNode.js 20非推奨warning
-- 実装環境からGitHub Pages公開URLへ直接接続できないため、最終実ブラウザ確認は確認担当が行う
+- 最新Pages成果物は生成済みだが、`prototype/qa/pages-deployment.json`は旧Revisionの公開スモーク成功を示したままのため、最新Revisionの実公開とスモーク結果は確認担当が独立確認する
 
 ### Merge commit
 
@@ -134,8 +136,10 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Repository内の最新Pages成果物は実装Revision `10af5e9e9489a39eec43efb77ca13087f748f07d`から生成済み
-- 最新公開スモークテスト結果は、最終push workflowのdeployment evidenceで確認する
+- Repository内の最新Pages成果物はsource revision `93cfb3bcc3c67668f10bd87c9a4f32deb8453849`から生成済み
+- `docs/build-info.json`も同Revisionを記録済み
+- 現在の`prototype/qa/pages-deployment.json`は旧source revision `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`、workflow run number `191`の成功証拠であり、最新Revisionの公開成功証拠ではない
+- 確認担当は最新固定HEAD、公開画面、公開資産、Console / Page / Networkを再確認する
 
 ### Next task
 
