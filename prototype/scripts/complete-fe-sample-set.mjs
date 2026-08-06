@@ -19,7 +19,7 @@ const requiredIds = new Set([
 
 const domainUnits = {
   technology: new Set([
-    "basic-theory", "algorithm-programming", "computer-components", "system-components", "software", "hardware",
+    "unclassified", "basic-theory", "algorithm-programming", "computer-components", "system-components", "software", "hardware",
     "human-interface", "multimedia", "database", "network", "security", "system-development", "software-development-management",
   ]),
   management: new Set(["project-management", "service-management", "system-audit"]),
