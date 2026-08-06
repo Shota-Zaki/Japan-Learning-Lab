@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`blocked`
+`in_progress`
 
 ### Purpose
 
@@ -101,7 +101,8 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 
 - Application implementation HEAD: `a38c9af1ce63ac98cd870d2ce3f175636cc7ac46`
 - Pages workflow correction HEAD: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
-- Latest failure evidence commit before management update: `63c8920e4f5cf79f6620f8e70571c57763b6a01a`
+- Previous blocked handoff HEAD: `76d8a20d4c578fb62391863c31a9e75ac07a6bac`
+- Retry failure evidence commit: `834e18a`（full SHAは最新HEAD確認時に固定する）
 
 ### Automated validation
 
@@ -121,41 +122,33 @@ Pull Request workflow run ID `31110519907`、run number `248`、build job ID `92
 - 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
 - Generated Pages assets: `index-Ck9d4Xmf.css`, `index-C7PAGcGn.js`
 
-Push workflow run ID `31110515900`、run number `247`でもbuild job ID `92646789661`は成功した。
+### Pages recovery attempt 2
 
-- `npm run verify:fe`: success
-- Pages artifact ID: `8971468045`
-- Generated repository output artifact ID: `8971469109`
+2026-08-06、GitHub公式ステータスでActionsとPagesがOperationalであることを確認し、push workflow run ID `31110515900`のfailed jobsを再実行した。
+
+- Run attempt: `2`
+- Rebuilt build job ID: `92652535075` / success
+- Re-run deploy job ID: `92652494381`
 - Stale deployment cancellation request: success
-- New Pages deployment creation: success
-- Public verification: deploy未完了のためskipped
+- Pages deployment for source `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`: success
+- Public revision verification: failure
+- Expected public revision: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
+- Observed public revision: `8515d2c8773a16c559b461f2351a3487fba54765`
+- Failure evidence was committed by workflow to `work` as commit prefix `834e18a`
 
-### Blocking B-03: GitHub Pages deployment service
+Pages deployment service自体は回復しており、前回の`deployment_in_progress` timeoutは再現しなかった。一方、過去runの再実行は古いsourceを使用するため、既に公開されているより新しいRevisionを置き換えず、公開Revision一致検証に失敗した。
 
-Push workflow run `31110515900`では、固定された旧deploymentの状態が`deployment_in_progress`のままだったが、キャンセル要求が受理されたためworkflowは停止せず、正式な`actions/deploy-pages@v4`まで進んだ。
+この結果から、次は過去runを再実行せず、最新`work` HEADをsourceとするpush workflowを新規起動する。アプリケーションコードは変更しない。
 
-source `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`、artifact `8971468045`の新規Pages deploymentは2026-08-06 14:23:35 UTCに作成された。その後、2026-08-06 14:23:41 UTCから14:33:36 UTCまで約10分間`deployment_in_progress`のまま変化せず、600秒timeoutで失敗し、workflowがdeploymentをキャンセルした。
+### Previous blocker B-03: GitHub Pages deployment service
 
-次は成功しているため、アプリケーション、テスト、型検査、Lint、通常build、Pages build、artifact生成、artifact upload、権限、旧deploymentキャンセル要求、deployment作成は原因から除外する。
+初回push workflow run `31110515900` attempt 1では、source `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`のPages deploymentが`deployment_in_progress`のまま600秒timeoutとなった。
 
-GitHub Pages側でdeployment処理が完了しない外部Blockerであり、Completion criteria 16、17、18は未達。`main`へマージしない。
-
-### Failure evidence
-
-- Evidence file: `prototype/qa/pages-deployment-failure.json`
-- Evidence commit: `63c8920e4f5cf79f6620f8e70571c57763b6a01a`
-- Source revision: `77d71a8cddc86cbc709f6113ca66f3cfd469e2ed`
-- Push workflow run ID: `31110515900`
-- Run number: `247`
-- Build job ID: `92646789661` / success
-- Deploy job ID: `92646971036` / failure
-- Pages artifact ID: `8971468045`
-- Generated output artifact ID: `8971469109`
-- Failure: deployment remained `deployment_in_progress` until 600-second timeout
+Attempt 2では同じdeploymentが成功したため、外部Pages deployment service blockerは解消済みと判断する。
 
 ### Pending validation
 
-Pages公開成功後、固定された公開Revisionに対して次を確認する。
+最新`work` sourceのPages公開成功後、固定された公開Revisionに対して次を確認する。
 
 - 375px、768px、1280px以上の表示
 - ページ全体の横スクロール有無
@@ -179,15 +172,20 @@ Pages公開成功後、固定された公開Revisionに対して次を確認す�
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Latest successful evidence source: `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`
-- Current implementation sourceのPages buildとartifact upload: success
-- Current implementation sourceのPages deployment: `deployment_in_progress`のままtimeout / failure
-- Current implementation sourceの公開Revision確認: 未実施
-- `docs/`の成功時同期: deploy失敗により未実施
+- Observed public source revision after attempt 2: `8515d2c8773a16c559b461f2351a3487fba54765`
+- Attempt 2 Pages deploy: success
+- Attempt 2 public revision verification: failure because the rerun source was older than the published revision
+- Latest `work` source deployment: 実行待ち
+- `docs/`の成功時同期: 最新source deployment成功後に実施
 
-### Resume condition
+### Resume procedure
 
-GitHub Pagesのdeployment処理が完了可能になった時点で、最新`work`から同じworkflowを再実行する。アプリケーションの追加修正は行わず、deploy、公開Revision、公開スモークが成功した場合に`review_ready`へ進める。
+1. `task-list.md`を`in_progress`へ更新する
+2. `NEXT_WORK.md`を最新`work` sourceのPages deploy工程へ更新する
+3. `NEXT_WORK.md`更新commitをpush workflowのtriggerとして使用する
+4. 新規runのbuild、deploy、公開Revision、公開スモーク、`docs/`同期を確認する
+5. 成功時に`review_ready`へ更新する
+6. 失敗時は新しい固定HEAD、run ID、job ID、原因を記録する
 
 ### Next task
 
