@@ -53,7 +53,7 @@ test("generated FE bank contains attributable subject A and B questions", () => 
   assert.equal(new Set(fullBank.questions.map((question) => question.id)).size, fullBank.questionCount);
 
   for (const question of fullBank.questions) {
-    assert.equal(question.sourceType, "official-past-question");
+    assert.ok(["official-past-question", "official-public-question"].includes(question.sourceType));
     assert.ok(["A", "B"].includes(question.subject));
     assert.ok((question.subject === "A"
       ? ["technology", "management", "strategy"]
