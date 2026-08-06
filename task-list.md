@@ -90,38 +90,44 @@ FE演習機能を、公式問題データ、複合絞り込み、科目A・科�
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
+- Generated repository output artifact: success
 - 科目B: 167問
 - 2022年12月公開サンプル: 科目A 60問 / 科目B 20問
-- Pull Request workflow run ID `31100569052`, run number `211`: success
+- Pull Request workflow run ID `31101991400`, run number `213`: success
+- Pull Request検証source: `7c53501e52aedf31560c6102c71221dfb68e9436`
 
 ### Blocking B-03: GitHub Pages deployment queue
 
-最新source `9d75f3269a7c01acbed4844cc9bea17394c0e538`のpush workflow run ID `31100563343`、run number `210`で、build、`npm run verify:fe`、Pages artifact upload、生成成果物artifact uploadはすべて成功した。
+2026-08-06の再開工程で、残留していたsource `5ab4919c73371b6df8311b0e4a9c2e27578d797f`のPages deploymentを公式REST APIのcancel endpointで解除した。その後、source `7c53501e52aedf31560c6102c71221dfb68e9436`のpush workflow run ID `31101987545`、run number `212`を実行した。
 
-`actions/deploy-pages@v4`はartifact ID `8967283019`を取得し、source revision `9d75f3269a7c01acbed4844cc9bea17394c0e538`のPages deployment作成にも成功した。しかしGitHub Pages側の状態が2026-08-06 12:15:29 UTCから12:25:02 UTCまで`deployment_queued`のまま変化せず、actionの600秒timeoutで`Deployment cancelled.`となった。
+run `212`ではbuild、`npm run verify:fe`、Pages artifact upload、生成成果物artifact upload、Pages deployment作成がすべて成功した。artifact ID `8967866811`から新規deploymentが作成されたが、2026-08-06 12:35:30 UTCから12:45:02 UTCまで`deployment_queued`のまま変化せず、`actions/deploy-pages@v4`の600秒timeoutで`Deployment cancelled.`となった。
 
-直前のsource `80dc9748122060efa437540fb4474b5ce69fda19`でもrun ID `31099619029`、run number `208`が同じ理由で失敗した。Branchをdeploy前に変更しないworkflowへ修正したうえで再試行しても再現している。
-
-したがって、アプリケーション、テスト、build、artifact、権限、deployment作成ではなく、GitHub Pages側のdeployment queue処理が外部Blockerである。Completion criteria 10および12は未達であり、`main`へマージしない。
+残留deploymentを解除した後に新しいsourceとartifactで再現したため、既存deploymentの競合、アプリケーション、テスト、build、artifact、権限、deployment作成は原因ではない。GitHub Pages側のdeployment queue処理が外部Blockerである。Completion criteria 10および12は未達であり、`main`へマージしない。
 
 ### Failure evidence
 
-- Latest failure evidence commit: `f56eafee55059bc46621a7288553f827ddb1d4d2`
+- Latest failure evidence commit: `fb1661e0222477d35d46203f241adb3899a0c75f`
 - Evidence file: `prototype/qa/pages-deployment-failure.json`
-- Source revision: `9d75f3269a7c01acbed4844cc9bea17394c0e538`
-- Push workflow run ID: `31100563343`
-- Push workflow run number: `210`
+- Source revision: `7c53501e52aedf31560c6102c71221dfb68e9436`
+- Push workflow run ID: `31101987545`
+- Push workflow run number: `212`
+- Build job ID: `92617517969`
 - Build job: success
-- Deploy job ID: `92612988173`
+- Deploy job ID: `92617656706`
 - Deploy job: failure
+- Pages artifact ID: `8967866811`
+- Deployment creation: success
 - Failure: Pages state remained `deployment_queued` for 600 seconds, then cancelled
-- PR workflow run ID: `31100569052`
-- PR workflow run number: `211`
+- Pull Request workflow run ID: `31101991400`
+- Pull Request workflow run number: `213`
 - PR build job: success
+- One-time cleanup workflow removal commit: `1c9d6e78f575e24a8a05891285b9c3b1e19d51a3`
 
 ### Resume condition
 
 GitHub Pages deployment queueが処理可能な状態へ戻った後、`work`の最新sourceでpush workflowを再実行する。deploy成功後に公開`build-info.json`、JS/CSS、問題データ、図表を照合し、公開画面の独立確認を完了する。
+
+同じqueue状態が継続している間は、アプリケーションコード、build設定、artifact生成を変更しない。再試行前に現在のPages deployment状態を確認し、進行中deploymentがある場合のみ公式cancel endpointで解除する。
 
 ### Non-blocking issues
 
@@ -137,6 +143,7 @@ GitHub Pages deployment queueが処理可能な状態へ戻った後、`work`の
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
 - 最新sourceのPages buildとartifact upload: success
+- 最新sourceのPages deployment作成: success
 - 最新sourceのPages deployment: queuedのままtimeout / failure
 - 最新公開Revisionと公開スモーク: 未固定
 
