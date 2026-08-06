@@ -7,6 +7,13 @@ function fallbackBlocks(value) {
   return text.split(/\n{2,}/).map((part) => ({ type: "paragraph", text: part.trim() })).filter((block) => block.text);
 }
 
+function imageSource(value) {
+  const source = String(value || "").trim();
+  if (!source || /^javascript:/iu.test(source)) return "";
+  if (/^(?:https?:|data:|blob:)/iu.test(source) || source.startsWith("/")) return source;
+  return `${import.meta.env.BASE_URL}${source.replace(/^\.\//u, "")}`;
+}
+
 export function TextWithBreaks({ text }) {
   return String(text || "").split("\n").map((line, index, lines) => (
     <Fragment key={`${index}-${line.slice(0, 12)}`}>
@@ -52,10 +59,10 @@ export function FeRichContent({ blocks, fallback = "", className = "", compact =
         if (block.type === "note") {
           return <aside className="fe-content-note" key={key}><TextWithBreaks text={block.text} /></aside>;
         }
-        if (block.type === "image" && block.src) {
+        if (block.type === "image" && imageSource(block.src)) {
           return (
             <figure className="fe-content-figure" key={key}>
-              <img src={block.src} alt={block.alt || "問題資料"} loading="lazy" />
+              <img src={imageSource(block.src)} alt={block.alt || "問題資料"} loading="lazy" />
               {block.caption && <figcaption>{block.caption}</figcaption>}
             </figure>
           );
