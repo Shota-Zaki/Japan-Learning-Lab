@@ -16,6 +16,13 @@ const requiredIds = new Set([
   "fe-ipa-2022sample-a-007",
   "fe-ipa-2022sample-a-009",
 ]);
+const localFigureAssets = new Map([
+  ["fe-ipa-2022sample-a-005", [{
+    src: "assets/fe/a-2022-005-figure.svg",
+    alt: "選択肢アからエの二分木図",
+    caption: "",
+  }]],
+]);
 
 const domainUnits = {
   technology: new Set([
@@ -88,9 +95,12 @@ function assetSource(asset) {
 function normalizeAsset(asset) {
   const source = assetSource(asset);
   if (!source) return null;
+  const isPortableSource = /^(?:https?:|data:|blob:)/u.test(source)
+    || source.startsWith("/")
+    || source.startsWith("assets/");
   return {
     type: "image",
-    src: /^https?:\/\//u.test(source) ? source : `https://raw.githubusercontent.com/${sourceRepository}/${sourceCommit}/${source.replace(/^\/+/, "")}`,
+    src: isPortableSource ? source : `https://raw.githubusercontent.com/${sourceRepository}/${sourceCommit}/${source.replace(/^\/+/, "")}`,
     alt: asset?.alt || asset?.description || asset?.label || "問題図表",
     caption: asset?.caption || asset?.title || "",
   };
@@ -178,6 +188,7 @@ function questionAssetsFor(question, choiceImageIds) {
     ...directAssetsFor(question),
     ...(Array.isArray(question.prompt?.assets) ? question.prompt.assets : []),
     ...(Array.isArray(question.extensions?.exam?.assets) ? question.extensions.exam.assets : []),
+    ...(localFigureAssets.get(question.id) || []),
   ];
   const unassignedReferences = referencedAssets(question).filter((asset) => {
     const id = asset && typeof asset === "object" ? asset.id : null;
