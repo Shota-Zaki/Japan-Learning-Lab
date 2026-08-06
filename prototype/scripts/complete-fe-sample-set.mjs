@@ -119,13 +119,17 @@ function convert(question) {
   const choices = choicesFor(question);
   const correctAnswers = correctAnswersFor(question);
   const assets = assetsFor(question);
-  const questionBlocks = Array.isArray(question.questionBlocks) && question.questionBlocks.length > 0 ? [...question.questionBlocks] : paragraphBlocks(questionText);
-  questionBlocks.push(...assets);
+  const questionBlocks = Array.isArray(question.questionBlocks) && question.questionBlocks.length > 0
+    ? question.questionBlocks.map((block) => block?.type === "image" ? (normalizeAsset(block) || block) : block)
+    : paragraphBlocks(questionText);
+  const knownImageSources = new Set(questionBlocks.filter((block) => block?.type === "image").map((block) => block.src));
+  questionBlocks.push(...assets.filter((asset) => !knownImageSources.has(asset.src)));
+  const hasFigure = questionBlocks.some((block) => block?.type === "image");
   const explanationBlocks = Array.isArray(question.explanationBlocks) && question.explanationBlocks.length > 0
     ? question.explanationBlocks
     : paragraphBlocks(explanationText || `公式解答の正答は${correctAnswers.join("、")}です。`);
 
-  if (!domain || choices.length !== 4 || correctAnswers.length !== 1 || assets.length === 0) {
+  if (!domain || choices.length !== 4 || correctAnswers.length !== 1 || !hasFigure) {
     throw new Error(`2022 sample question is incomplete: ${question.id}`);
   }
 
