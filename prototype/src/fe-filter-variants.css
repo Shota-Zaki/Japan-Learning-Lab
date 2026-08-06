@@ -6,37 +6,43 @@
   box-shadow: 0 10px 30px rgb(28 34 44 / 10%);
 }
 
+.fe-subject-selector,
 .fe-filter-view-switch {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.85rem 1rem;
+  padding: 0.8rem 1rem;
   margin: 1rem 0;
   border: 1px solid var(--line, #d9dee8);
   border-radius: 14px;
   background: var(--surface, #fff);
 }
 
+.fe-subject-selector > div:first-child,
 .fe-filter-view-switch > span {
   display: grid;
   gap: 0.15rem;
 }
 
+.fe-subject-selector small,
 .fe-filter-view-switch small {
   color: var(--muted, #667085);
 }
 
+.fe-subject-selector > div:last-child,
 .fe-filter-view-switch > div {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
 }
 
+.fe-subject-selector button,
 .fe-filter-view-switch button,
-.fe-filter-panel-actions button {
+.fe-filter-panel-actions button,
+.fe-mock-options > button {
   min-height: 40px;
-  padding: 0.45rem 0.75rem;
+  padding: 0.42rem 0.7rem;
   border: 1px solid var(--line, #d9dee8);
   border-radius: 10px;
   background: #fff;
@@ -45,7 +51,20 @@
   cursor: pointer;
 }
 
-.fe-filter-view-switch button.is-selected {
+.fe-subject-selector button {
+  display: grid;
+  min-width: 138px;
+  gap: 0.05rem;
+  text-align: left;
+}
+
+.fe-subject-selector button small {
+  font-size: 0.72rem;
+}
+
+.fe-subject-selector button.is-selected,
+.fe-filter-view-switch button.is-selected,
+.fe-mock-options > button.is-selected {
   border-color: var(--exam-accent, #2768d7);
   background: color-mix(in srgb, var(--exam-accent, #2768d7) 10%, #fff);
   font-weight: 700;
@@ -73,8 +92,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 52px;
-  padding: 0.75rem 1rem;
+  min-height: 48px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   list-style-position: inside;
@@ -83,6 +103,7 @@
 .fe-filter-disclosure summary small {
   margin-left: auto;
   color: var(--muted, #667085);
+  font-size: 0.74rem;
   font-weight: 600;
 }
 
@@ -93,56 +114,56 @@
 
 .fe-filter-panel-body {
   min-width: 0;
-  padding: 0.85rem;
+  padding: 0.75rem;
 }
 
 .fe-filter-panel-body > p {
-  margin: 0.45rem 0 0.75rem;
+  margin: 0.35rem 0 0.6rem;
   color: var(--muted, #667085);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
 }
 
 .fe-filter-panel-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.65rem;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
 }
 
 .fe-filter-panel-actions > span {
   color: var(--muted, #667085);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 700;
 }
 
 .fe-filter-panel-actions > div {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .fe-filter-panel-actions button {
-  min-height: 36px;
-  padding: 0.35rem 0.65rem;
-  font-size: 0.82rem;
+  min-height: 32px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.75rem;
 }
 
 .fe-filter-variant-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.7rem;
   align-items: stretch;
 }
 
 .fe-filter-group-compact {
   min-width: 0;
   margin: 0;
-  padding: 0.7rem;
+  padding: 0.65rem;
 }
 
 .fe-filter-group-compact legend {
-  padding: 0 0.25rem;
-  font-size: 0.95rem;
+  padding: 0 0.2rem;
+  font-size: 0.86rem;
 }
 
 .fe-filter-group-compact .fe-filter-panel-body {
@@ -150,34 +171,85 @@
 }
 
 .fe-filter-group-compact .fe-check-grid-compact {
-  max-height: 230px;
+  max-height: 210px;
   overflow-y: auto;
-  padding-right: 0.2rem;
+  padding-right: 0.15rem;
   overscroll-behavior: contain;
 }
 
 .fe-check-grid-compact {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.32rem;
 }
 
 .fe-check-grid-compact label {
-  min-height: 44px;
-  padding: 0.5rem 0.65rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 36px;
+  padding: 0.35rem 0.48rem;
+  gap: 0.35rem;
+  font-size: 0.78rem;
 }
 
-.fe-check-grid-compact label span {
+.fe-check-grid-compact label > span {
+  display: flex;
+  align-items: baseline;
   min-width: 0;
+  gap: 0.3rem;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .fe-check-grid-compact label strong {
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.fe-check-grid-compact label small {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  white-space: nowrap;
 }
 
 .fe-filter-chips .is-select-all {
   border-style: solid;
   font-weight: 700;
+}
+
+.fe-filter-chips button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.fe-mock-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.fe-mock-options > button {
+  display: grid;
+  gap: 0.2rem;
+  min-height: 76px;
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.fe-mock-options > button small {
+  color: var(--muted, #667085);
+  font-size: 0.78rem;
+}
+
+.fe-mock-summary {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 @media (max-width: 960px) {
@@ -191,31 +263,49 @@
     position: static;
   }
 
+  .fe-subject-selector,
   .fe-filter-view-switch,
   .fe-filter-panel-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .fe-subject-selector > div:last-child,
   .fe-filter-view-switch > div,
   .fe-filter-panel-actions > div {
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
 
+  .fe-subject-selector button,
   .fe-filter-view-switch button,
   .fe-filter-panel-actions button {
-    min-height: 44px;
+    min-height: 42px;
   }
 
-  .fe-filter-variant-grid {
+  .fe-subject-selector button {
+    min-width: 0;
+  }
+
+  .fe-filter-variant-grid,
+  .fe-mock-options {
     grid-template-columns: 1fr;
   }
 
   .fe-filter-group-compact .fe-check-grid-compact {
-    max-height: 190px;
+    max-height: 180px;
   }
 
+  .fe-check-grid-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fe-mock-summary {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 430px) {
   .fe-check-grid-compact {
     grid-template-columns: 1fr;
   }
