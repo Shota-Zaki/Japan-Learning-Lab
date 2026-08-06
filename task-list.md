@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
@@ -37,6 +37,8 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 - 2022年12月公開サンプル問題の固定模擬試験
 - 科目A免除制度問題の補足収録
 - セッション保存、再開、履歴、復習、再挑戦
+- 完了済み模擬試験の回答・正答・解説レビュー
+- 模擬試験種別と対象セットを識別できる履歴表示
 - CI、GitHub Pages、公開スモークテスト
 - 管理文書とGitHub実状態の整合
 
@@ -59,10 +61,12 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 6. 全自動テスト、TypeScript、ESLint、通常build、Pages buildが成功する
 7. `docs/`が最新の実装Revisionから再生成される
 8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を利用できる
-9. Draft Pull Request #1の最新実装HEADに対するCIが成功する
-10. GitHub Pagesが最新実装相当の成果物を公開し、公開スモークテストが成功する
-11. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
-12. 確認担当が固定HEAD、実差分、複数画面幅、コンソール、ネットワークを独立検証できる
+9. 模擬試験中は正誤と解説を隠し、完了後は各問題のユーザー回答、正答、正誤、解説を確認できる
+10. 公式サンプル模試の履歴が「通常演習」と誤表示されず、対象セットを識別できる
+11. Draft Pull Request #1の最新実装HEADに対するCIが成功する
+12. GitHub Pagesが最新実装相当の成果物を公開し、公開スモークテストが成功する
+13. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
+14. 確認担当が固定HEAD、実差分、複数画面幅、コンソール、ネットワークを独立検証できる
 
 ### Dependencies
 
@@ -85,74 +89,96 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 `af7be0dbc73b8bce193defefdd013e13a667596f`
 
-### Review target HEAD
+### Fixed review target HEAD
 
-`10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
+`64a8c62bd8af80e20715b4c8b03d95f56788cdfd`
 
-このHEADは修正済みアプリケーション、回帰テスト、最新生成データ、`docs/`を含む。以後の管理文書のみのcommitを含む最新PR HEADは確認開始時に再取得する。
+### Verified implementation and deployment
 
-### Fix summary
+- Implementation source revision: `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`
+- Generated output commit: `a6ce158e3c5daaf5f3d5cbd9e65f32666d5154be`
+- Pages evidence commit: `64a8c62bd8af80e20715b4c8b03d95f56788cdfd`
+- Push workflow run: `31079968039` / run number `191` / success
+- Pull request workflow run: `31079972458` / run number `192` / success
+- Public smoke check: success
+- Independent review audit: `prototype/qa/fe-independent-review-2026-08-06/audit.md`
 
-確認担当が検出した実行時問題バンク統合の科目B誤除外を修正した。
+### Independent review passed checks
 
-- 統合処理を`prototype/src/feQuestionBank.js`へ分離
-- `prototype/src/FeLearningApp.jsx`から共通統合処理を使用
-- 重複fingerprintへ科目、出典座標、問題本文、構造化本文、選択肢、構造化選択肢、正答を含めた
-- 同一出典番号を再利用する別問題を保持し、ID一致または内容一致の真の重複だけを除外
-- 実行時と同じ統合処理を通す回帰テストを追加
-
-### Verification result
-
-#### Passed checks
-
-- 実行時統合結果: 1,997問
+- 実行時相当の統合結果: 1,997問
 - 科目A: 1,830問
 - 科目B: 167問
 - 2022年12月公開サンプル科目A: 60問、公式問番号順
 - 2022年12月公開サンプル科目B: 20問、公式問番号順
-- 科目B公式サンプルの設定件数20問でセッション選択成功
-- 科目B複数正答の完全一致判定成功
-- 回答、レビュー、停止、保存状態の正規化、復元、再開、完了の自動テスト成功
-- 履歴由来の不正解、未回答、要復習スコープの自動テスト成功
-- 科目A問5・問6・問7の図表参照を維持
-- 科目A問9の本文、4選択肢、正答`エ`を維持
-- `npm run verify:fe`: success
-- Tests: 47 / 47 passed
-- TypeScript: success
-- ESLint: 0 errors / 1 existing warning
-- Normal build: success
-- Pages build: success
-- Generated output commit: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
-- Push workflow run `31079687176` run number `185`: build / deploy / public smoke success
-- Pull request workflow run `31079690171` run number `186`: build success
-- GitHub Pages deployment evidence source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
-- Audit: `prototype/qa/fe-question-bank-merge-fix-2026-08-06/audit.md`
+- 科目B公式サンプルは20問対象で開始ボタン有効
+- 科目B公式サンプルの開始、回答、見直し、全問完了、結果保存、履歴、再挑戦が動作
+- 新規ページで進行中セッションを復元し、現在問、回答済み件数、選択済み回答を保持
+- 科目A問5、問6、問7の図表を表示
+- 科目A問9は画像なし、本文、4選択肢を表示
+- 375px、768px、1280pxで全体の横スクロールなし
+- 狭幅のコード表示は内部横スクロール
+- キーボードフォーカス表示あり
+- 検証中のConsole error、Page error、Request failureなし
+- CI、Pages artifact、公開資産の整合を確認
 
-#### Independent review required
+### Blocking issues
 
-確認担当は最新PR HEADを固定し、科目B公式サンプル画面で20問表示、開始ボタン、回答、解説、再読込後の復元、履歴、復習、再挑戦を実ブラウザで独立確認する。
+#### B-01: 模擬試験終了後に解説を閲覧できない
 
-### Non-blocking issue
+模擬試験中は「正誤と解説を試験終了後に表示します」と案内されるが、終了後の結果画面は得点、集計、各問題の正誤だけを表示する。問題文、ユーザー回答、正答、解説へアクセスできる詳細レビュー導線がない。
 
-- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件。今回のBlocking修正とは分離する。
-- GitHub Actionsが使用する一部ActionのNode.js 20非推奨warning。Workflow自体はNode.js 22で検証成功している。
+「間違えた問題を復習」は新しい未回答セッションを開始する機能であり、完了済み模擬試験の解説確認ではない。
+
+主な修正対象候補:
+
+- `prototype/src/FeSessionView.jsx`
+- 必要に応じて`prototype/src/FeRichContent.jsx`
+- 結果画面関連CSS
+- 結果画面関連テスト
+
+#### B-02: 公式サンプル模試の履歴種別が誤表示される
+
+科目Bの2022年12月公開サンプル模試を完了した履歴が「通常演習・20問」と表示される。公式サンプル模試であることと対象セットを履歴から識別できない。
+
+主な修正対象候補:
+
+- `prototype/src/FeHistoryView.jsx`
+- 履歴表示関連テスト
+
+### Required fixes
+
+1. 完了済み模擬試験の結果から、各問題の詳細レビューを開けるようにする
+2. 詳細レビューに問題文、ユーザー回答、正答、正誤、構造化解説を表示する
+3. 模擬試験中は従来どおり正誤と解説を表示しない
+4. 未回答、単一正答、複数正答を正しく表示する
+5. 結果詳細のキーボード操作、フォーカス表示、見出し構造、読み上げ可能なラベルを整備する
+6. 履歴ラベルを`mockMode`、`sampleSetLabel`などから生成し、公式サンプル模試を「通常演習」と表示しない
+7. 完了後解説と履歴ラベルの自動テストを追加する
+8. 既存の問題バンク統合、公式サンプル件数、図表、保存・復元を回帰させない
+9. `npm run verify:fe`、Pages build、公開スモークテストを成功させる
+
+### Non-blocking issues
+
+- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
+- GitHub Actionsが使用する一部ActionのNode.js 20非推奨warning。検証ランタイムはNode.js 22で成功
 
 ### Merge commit
 
-未マージ。実装担当のためマージ禁止。確認合格時に確認担当がmerge commit方式で処理する。
+未マージ。Blocking問題があるためPull Request #1をマージしない。
 
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Source revision: `191749c850bd14b97b038a44024bb17b270af2b1`
-- Generated output commit: `10acc296f2d051d14a5c7f7d11b032ccf07fe46c`
-- Workflow run: `31079687176` / run number `185`
+- Verified source revision: `eeb71ff55296687c4908240c7f92aae7ff9d3f6d`
+- Generated output commit: `a6ce158e3c5daaf5f3d5cbd9e65f32666d5154be`
+- Workflow run: `31079968039` / run number `191`
 - Deploy: success
 - Public smoke check: success
+- 公開自体は成功しているが、Blocking機能不足があるため確認合格とはしない
 
 ### Next task
 
-`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が独立確認、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
+`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が修正、再確認、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
 
 ---
 
