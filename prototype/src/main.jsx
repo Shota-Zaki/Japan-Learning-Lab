@@ -4,6 +4,7 @@ import { AppV5 } from "./AppV5.jsx";
 import "./styles.css";
 import "./fe-v5.css";
 import "./fe-filter-variants.css";
+import "./fe-result-review.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
