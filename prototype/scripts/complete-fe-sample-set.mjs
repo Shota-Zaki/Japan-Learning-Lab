@@ -16,10 +16,25 @@ const requiredIds = new Set([
   "fe-ipa-2022sample-a-007",
   "fe-ipa-2022sample-a-009",
 ]);
+const figureRequiredIds = new Set([
+  "fe-ipa-2022sample-a-005",
+  "fe-ipa-2022sample-a-006",
+  "fe-ipa-2022sample-a-007",
+]);
 const localFigureAssets = new Map([
   ["fe-ipa-2022sample-a-005", [{
     src: "assets/fe/a-2022-005-figure.svg",
     alt: "選択肢アからエの二分木図",
+    caption: "",
+  }]],
+  ["fe-ipa-2022sample-a-006", [{
+    src: "assets/fe/a-2022-006-figure.svg",
+    alt: "配列変換の流れ図と変換前後の配列",
+    caption: "",
+  }]],
+  ["fe-ipa-2022sample-a-007", [{
+    src: "assets/fe/a-2022-007-figure.svg",
+    alt: "位置0から12に対応するハッシュ表の配列",
     caption: "",
   }]],
 ]);
@@ -253,7 +268,7 @@ function convert(question) {
   if (choices.length !== 4 || correctAnswers.length !== 1 || questionBlocks.length === 0) {
     throw new Error(`2022 sample question is incomplete: ${question.id} (choices=${choices.length}, answers=${correctAnswers.length}, blocks=${questionBlocks.length})`);
   }
-  if (requiredIds.has(question.id) && !hasRichImage(questionBlocks, choices)) {
+  if (figureRequiredIds.has(question.id) && !hasRichImage(questionBlocks, choices)) {
     throw new Error(`2022 sample figure is missing after normalization: ${question.id}`);
   }
 
@@ -314,7 +329,7 @@ payload.questions = questions;
 payload.questionCount = questions.length;
 payload.countsBySubject = Object.fromEntries(["A", "B"].map((subject) => [subject, questions.filter((question) => question.subject === subject).length]));
 payload.canonicalSha256 = crypto.createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
-payload.filter.subjectA = { assets: "official sample set keeps question and choice figures", choices: 4, correctAnswers: 1 };
+payload.filter.subjectA = { assets: "official sample set keeps required question figures", choices: 4, correctAnswers: 1 };
 payload.officialSampleSets = { "2022-12": { periodId: "2022-sample", countsBySubject: sampleCounts, preserveOrderBy: "sourceQuestionNumber" } };
 
 await writeFile(bankPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
