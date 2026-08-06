@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "sync:fe": "node scripts/sync-fe-question-bank.mjs && node scripts/validate-fe-question-bank.mjs",
+    "sync:fe": "node scripts/sync-fe-question-bank.mjs && node scripts/complete-fe-sample-set.mjs && node scripts/validate-fe-question-bank.mjs",
     "build": "npm run sync:fe && vite build && node scripts/prepare-sites-build.mjs && node scripts/prepare-fe-migrations.mjs",
     "build:pages": "npm run sync:fe && vite build --mode pages && node scripts/prepare-pages-build.mjs",
     "preview": "vite preview",
