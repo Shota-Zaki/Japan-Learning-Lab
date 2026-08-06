@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`needs_fix`
+`review_ready`
 
 ### Purpose
 
@@ -44,30 +44,46 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 - Java Learning Labの新規実装または再開
 - FEとJavaの同時進行
-- `main`へのマージ
-- Pull RequestをReady for reviewへ変更すること
+- 実装担当による`main`へのマージ
+- 実装担当によるPull RequestのReady for review変更
 - 公式図表を欠落させた状態で固定サンプル模試を公開すること
 - テスト要件を弱めてCIを通すこと
 
 ### Completion criteria
 
 1. 科目A 60問、科目B 20問の2022年12月公開サンプルが公式問番号順で揃う
-2. 科目Aの図表依存問題、少なくとも問5、問6、問7、問9に公式図表の`image`ブロックが保持される
-3. 画像参照先がbuild後とGitHub Pages上で取得可能である
-4. `npm run verify:fe`が成功する
-5. 全自動テスト、TypeScript、ESLint、通常build、Pages buildが成功する
-6. `docs/`が最新のソースRevisionから再生成される
-7. 375px、768px、1280px以上で主要画面を確認する
-8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を確認する
-9. Console error、Console warning、HTTP error、Request failureが0件である
-10. Draft Pull Request #1のCIが成功する
-11. GitHub Pagesが最新HEAD相当の成果物を公開し、公開スモークテストが成功する
-12. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
+2. 公式冊子上で図表が必要な科目A問5、問6、問7に`image`ブロックが保持される
+3. 科目A問9は公式構成どおり、本文と4選択肢を持つテキスト問題として保持される
+4. 画像参照先がbuild後とGitHub Pages上で取得可能である
+5. `npm run verify:fe`が成功する
+6. 全自動テスト、TypeScript、ESLint、通常build、Pages buildが成功する
+7. `docs/`が最新の実装Revisionから再生成される
+8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を維持する
+9. Draft Pull Request #1のCIが成功する
+10. GitHub Pagesが最新実装相当の成果物を公開し、公開スモークテストが成功する
+11. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
+12. 確認担当が固定HEAD、実差分、複数画面幅、コンソール、ネットワークを独立検証できる
+
+### Completion status
+
+- 条件1: 達成。科目A 60問、科目B 20問、公式問番号順を自動テストで確認
+- 条件2: 達成。問5、問6、問7の補完SVGを構造化`image`ブロックとして保持
+- 条件3: 達成。問9をテキスト問題として検証
+- 条件4: 達成。公開スモークテストで3 SVGをHTTP取得し、非空を確認
+- 条件5: 達成
+- 条件6: 達成。ESLintは0 errors、既存のHook依存warningが1件
+- 条件7: 達成
+- 条件8: 既存自動テストを含む全43テスト成功
+- 条件9: 達成
+- 条件10: 達成
+- 条件11: 本管理文書更新とPR本文更新で達成
+- 条件12: 確認担当の独立検証待ち
 
 ### Dependencies
 
-- 公式サンプル問題の図表データまたは図表参照元を、固定された正規データから取得できること
-- GitHub ActionsとGitHub Pagesが利用可能であること
+- 固定された公式問題データ同期元
+- 公式冊子と整合するRepository管理下の補完図表
+- GitHub ActionsとGitHub Pages
 
 ### Branch
 
@@ -84,25 +100,49 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 `af7be0dbc73b8bce193defefdd013e13a667596f`
 
-### Application review target HEAD
+### Fixed implementation HEAD
 
-`64ac59b5631507da07da459c1cc52e9ed9ffdffc`
+`56482206a7aa24910148aff661fb0ab598316261`
 
-このHEAD以後に管理文書commitが追加される。アプリケーション修正の再レビューでは、新しい実装HEADを改めて固定する。
+このHEADで、問5・問6・問7の公開図表検証を含むWorkflow定義まで固定した。
+
+### Generated output and deployment evidence HEAD before management-document updates
+
+`bd339fd9355216fea3c381b8ff14d9491949e35a`
+
+管理文書更新後の最終`work` HEADは、確認担当がPull Request #1から再取得して固定する。
 
 ### Verification result
 
-Latest workflow at application review target:
+#### Pull Request verification
 
 - Workflow: `Build and deploy GitHub Pages`
-- Run ID: `31073454949`
-- Result: `failure`
-- `npm run verify:fe`: failure
-- Tests: 42 total / 41 passed / 1 failed
-- Failed test: `subject A sample retains the four figure-dependent questions`
-- Failure detail: `fe-ipa-2022sample-a-005 must retain its official figure`
-- Typecheck, Lint, Pages build: 未実行。テスト失敗で後続工程が停止
-- Deploy job: skipped
+- Run ID: `31077350598`
+- Run number: `162`
+- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
+- Result: success
+- `npm run verify:fe`: success
+- Tests: 43 total / 43 passed / 0 failed / 0 skipped
+- TypeScript: success
+- ESLint: 0 errors / 1 warning
+- Existing warning: `prototype/src/FeSessionView.jsx`の`react-hooks/exhaustive-deps`
+- Normal build: success
+- Pages build: success
+- Pages artifact: success
+
+#### Work push and public deployment
+
+- Workflow run ID: `31077346989`
+- Run number: `161`
+- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
+- Build: success
+- Generated data and`docs/` commit: success
+- Deploy: success
+- Public resource smoke test: success
+- Verified published figures:
+  - `assets/fe/a-2022-005-figure.svg`
+  - `assets/fe/a-2022-006-figure.svg`
+  - `assets/fe/a-2022-007-figure.svg`
 
 ### Merge commit
 
@@ -111,26 +151,33 @@ Latest workflow at application review target:
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Last successful deployment record: Run `31068718621`
-- Last successful source revision: `a0a3f665dbe9ccb8cbcd829cd7d8af69171996a7`
-- Current application review target is newer than the published source revision
-- 最新変更は未公開
+- Deployment status: success
+- Public smoke check: success
+- Published source revision: `56482206a7aa24910148aff661fb0ab598316261`
+- Evidence: `prototype/qa/pages-deployment.json`
 
-### Current blocking issue
+### Resolved blocking issue
 
-科目Aの2022年12月公開サンプル問5に、公式図表を表す`image`ブロックが保持されていない。サンプル60問の件数と順序は満たしているが、公開に必要な図表完全性を満たしていない。
+固定同期元の問5・問6・問7レコードには、公式冊子に存在する図表データが含まれていなかった。同期元に存在しない情報を推測フィールドから抽出する方法では復元できないため、公式冊子と照合した補完SVGをRepository管理下へ追加し、同期時に該当問題へだけ付与した。
 
-### Required fix
+以前の引継ぎでは問9も図表必須としていたが、公式冊子上の問9はテキスト問題であるため、その前提を訂正した。問9は問題文、4選択肢、正答を自動テストで固定している。
 
-- 正規データ内で問5の図表が格納されている実際のフィールド構造を特定する
-- `prototype/scripts/complete-fe-sample-set.mjs`の図表抽出処理を修正する
-- 問5、問6、問7、問9の図表を保持する
-- テストを弱めずに全検証を成功させる
-- Pages成果物を再生成し、公開画面で図表を確認する
+### Remaining review items
+
+確認担当は、最新Pull Request HEADを固定し、次を独立検証する。
+
+- `main`との差分と変更禁止範囲
+- `npm ci`と`npm run verify:fe`
+- 375px、768px、1280px以上で問5・問6・問7を表示
+- 図表、本文、選択肢の可読性
+- ページ全体の横スクロールがないこと
+- Console error、Console warning、HTTP error、Request failure
+- GitHub Pagesの実表示と公開資産
+- 管理文書、PR、CI、Pagesの整合性
 
 ### Next task
 
-`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が`completed`になるまで開始しない。
+`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が確認合格、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
 
 ---
 
@@ -158,4 +205,4 @@ Java Learning Labの現在設計と進捗を再確認して実装を再開する
 
 ### Pull Request
 
-未作成。必要に応じて既存PR完了後に新しいDraft Pull Requestを作成する。
+未作成。既存PR完了後に必要に応じて新しいDraft Pull Requestを作成する。
