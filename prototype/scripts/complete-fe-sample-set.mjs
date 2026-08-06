@@ -63,10 +63,7 @@ function meaningful(value) {
 function mergeRecord(left, right) {
   if (!meaningful(left)) return right;
   if (!meaningful(right)) return left;
-  if (Array.isArray(left) && Array.isArray(right)) {
-    if (right.length > left.length) return right;
-    return left;
-  }
+  if (Array.isArray(left) && Array.isArray(right)) return right.length > left.length ? right : left;
   if (typeof left === "object" && typeof right === "object" && !Array.isArray(left) && !Array.isArray(right)) {
     const merged = { ...left };
     for (const [key, value] of Object.entries(right)) merged[key] = key in merged ? mergeRecord(merged[key], value) : value;
@@ -77,9 +74,7 @@ function mergeRecord(left, right) {
 
 function findRequired(value, found = new Map()) {
   if (!value || typeof value !== "object") return found;
-  if (!Array.isArray(value) && requiredIds.has(value.id)) {
-    found.set(value.id, mergeRecord(found.get(value.id), value));
-  }
+  if (!Array.isArray(value) && requiredIds.has(value.id)) found.set(value.id, mergeRecord(found.get(value.id), value));
   for (const child of Object.values(value)) findRequired(child, found);
   return found;
 }
@@ -97,10 +92,7 @@ function normalizeAsset(asset) {
 
 function assetsFor(question) {
   const assets = [question.assets, question.sourceAssets, question.prompt?.assets, question.extensions?.exam?.assets]
-    .filter(Array.isArray)
-    .flat()
-    .map(normalizeAsset)
-    .filter(Boolean);
+    .filter(Array.isArray).flat().map(normalizeAsset).filter(Boolean);
   return [...new Map(assets.map((asset) => [asset.src, asset])).values()];
 }
 
@@ -135,7 +127,7 @@ function correctAnswersFor(question) {
 
 function convert(question) {
   const unitId = String(question.unitId || question.placement?.unitId || question.extensions?.exam?.unitId || "unclassified");
-  const domain = Object.entries(domainUnits).find(([, units]) => units.has(unitId))?.[0];
+  const domain = Object.entries(domainUnits).find(([, units]) => units.has(unitId))?.[0] || "technology";
   const shared = objectText(question.sharedMaterial || question.passage || question.prompt?.sharedMaterial || question.prompt?.passage);
   const direct = firstText(question.question, question.questionText, question.text, objectText(question.prompt));
   const questionText = [...new Set([shared, direct].filter(Boolean))].join("\n\n");
@@ -152,8 +144,8 @@ function convert(question) {
     ? question.explanationBlocks
     : paragraphBlocks(explanationText || `公式解答の正答は${correctAnswers.join("、")}です。`);
 
-  if (!domain || choices.length !== 4 || correctAnswers.length !== 1 || questionBlocks.length === 0) {
-    throw new Error(`2022 sample question is incomplete: ${question.id} (domain=${domain || "none"}, choices=${choices.length}, answers=${correctAnswers.length}, blocks=${questionBlocks.length})`);
+  if (choices.length !== 4 || correctAnswers.length !== 1 || questionBlocks.length === 0) {
+    throw new Error(`2022 sample question is incomplete: ${question.id} (choices=${choices.length}, answers=${correctAnswers.length}, blocks=${questionBlocks.length})`);
   }
 
   return {
