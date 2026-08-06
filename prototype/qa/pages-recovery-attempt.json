@@ -1,7 +1,6 @@
 {
   "status": "requested",
   "staleDeployment": "55540ec5f4de178dae8426b27480babc36a3b363",
-  "recoveryRevision": "1d4beb6b0a8e22e06edd00cf75637e1869ac1935",
-  "requestedAt": "2026-08-06T13:04:30Z",
-  "trigger": "external-connector"
+  "recoveryRevision": "ffd3f996dacaddf52ea744d8d8aee0a754c9ed6a",
+  "requestedAt": "2026-08-06T13:05:52Z"
 }
