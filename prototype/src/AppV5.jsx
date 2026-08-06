@@ -10,8 +10,18 @@ function appPath(relativePath = "") {
   return `${appBase}${clean}`.replace(/\/{2,}/g, "/");
 }
 
+function routeParams() {
+  const query = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return {
+    get(name) {
+      return hash.has(name) ? hash.get(name) : query.get(name);
+    },
+  };
+}
+
 function readRoute() {
-  const params = new URLSearchParams(window.location.search);
+  const params = routeParams();
   const explicit = params.get("screen");
   const tab = params.get("tab") || (params.get("mode") === "lesson" ? "lesson" : "practice");
   const view = params.get("view") === "session" ? "session" : "home";
@@ -39,22 +49,24 @@ function routePath(screen, tab = "home", view = "home") {
   return appPath("");
 }
 
+function routeUrl(screen, tab = "home", view = "home") {
+  const canonical = routePath(screen, tab, view);
+  const hash = new URLSearchParams({ jll: canonical, screen, tab, view }).toString();
+  return `${appBase}#${hash}`;
+}
+
 export function AppV5() {
   const [route, setRoute] = useState(readRoute);
   const navigate = (screen, tab = "home", view = "home") => {
     const next = { screen, tab, view };
     setRoute(next);
-    const path = routePath(screen, tab, view);
-    const hash = new URLSearchParams({ jll: path, screen, tab, view }).toString();
-    window.history.pushState({}, "", `${path}#${hash}`);
+    window.history.pushState({}, "", routeUrl(screen, tab, view));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   useEffect(() => {
     const current = readRoute();
-    const canonical = routePath(current.screen, current.tab, current.view);
-    const hash = new URLSearchParams({ jll: canonical, screen: current.screen, tab: current.tab, view: current.view }).toString();
-    window.history.replaceState({}, "", `${canonical}#${hash}`);
+    window.history.replaceState({}, "", routeUrl(current.screen, current.tab, current.view));
     const onPopState = () => setRoute(readRoute());
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
