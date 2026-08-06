@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">二分探索木の選択肢</title>
+  <desc id="desc">ア、イ、ウ、エの四つの二分木を示す。</desc>
+  <rect width="1200" height="650" fill="white"/>
+  <g fill="none" stroke="#111" stroke-width="4" stroke-linecap="round">
+    <path d="M270 95 L170 190 M270 95 L370 190 M170 190 L105 285 M170 190 L235 285"/>
+    <path d="M870 95 L770 190 M870 95 L970 190 M770 190 L705 285 M770 190 L835 285 M970 190 L905 285"/>
+    <path d="M270 390 L170 485 M270 390 L370 485 M170 485 L105 580 M170 485 L235 580 M370 485 L435 580"/>
+    <path d="M870 390 L770 485 M870 390 L970 485 M770 485 L705 580 M770 485 L835 580 M970 485 L905 580 M970 485 L1035 580"/>
+  </g>
+  <g fill="white" stroke="#111" stroke-width="4">
+    <circle cx="270" cy="95" r="32"/><circle cx="170" cy="190" r="32"/><circle cx="370" cy="190" r="32"/><circle cx="105" cy="285" r="32"/><circle cx="235" cy="285" r="32"/>
+    <circle cx="870" cy="95" r="32"/><circle cx="770" cy="190" r="32"/><circle cx="970" cy="190" r="32"/><circle cx="705" cy="285" r="32"/><circle cx="835" cy="285" r="32"/><circle cx="905" cy="285" r="32"/>
+    <circle cx="270" cy="390" r="32"/><circle cx="170" cy="485" r="32"/><circle cx="370" cy="485" r="32"/><circle cx="105" cy="580" r="32"/><circle cx="235" cy="580" r="32"/><circle cx="435" cy="580" r="32"/>
+    <circle cx="870" cy="390" r="32"/><circle cx="770" cy="485" r="32"/><circle cx="970" cy="485" r="32"/><circle cx="705" cy="580" r="32"/><circle cx="835" cy="580" r="32"/><circle cx="905" cy="580" r="32"/><circle cx="1035" cy="580" r="32"/>
+  </g>
+  <g fill="#111" font-family="sans-serif" font-size="28" text-anchor="middle" dominant-baseline="central">
+    <text x="270" y="95">16</text><text x="170" y="190">15</text><text x="370" y="190">19</text><text x="105" y="285">10</text><text x="235" y="285">14</text>
+    <text x="870" y="95">17</text><text x="770" y="190">14</text><text x="970" y="190">19</text><text x="705" y="285">10</text><text x="835" y="285">16</text><text x="905" y="285">18</text>
+    <text x="270" y="390">18</text><text x="170" y="485">16</text><text x="370" y="485">19</text><text x="105" y="580">15</text><text x="235" y="580">14</text><text x="435" y="580">20</text>
+    <text x="870" y="390">20</text><text x="770" y="485">18</text><text x="970" y="485">19</text><text x="705" y="580">10</text><text x="835" y="580">14</text><text x="905" y="580">15</text><text x="1035" y="580">16</text>
+  </g>
+  <g fill="#111" font-family="sans-serif" font-size="34">
+    <text x="35" y="90">ア</text><text x="635" y="90">イ</text><text x="35" y="385">ウ</text><text x="635" y="385">エ</text>
+  </g>
+</svg>
