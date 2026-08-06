@@ -14,7 +14,7 @@ FE演習の公開構成、複合絞り込み、科目B、公式サンプル模�
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
@@ -51,33 +51,18 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 ### Completion criteria
 
-1. 科目A 60問、科目B 20問の2022年12月公開サンプルが公式問番号順で揃う
+1. 科目A 60問、科目B 20問の2022年12月公開サンプルが、実際に画面へ渡される統合済み問題バンク上で公式問番号順に揃う
 2. 公式冊子上で図表が必要な科目A問5、問6、問7に`image`ブロックが保持される
 3. 科目A問9は公式構成どおり、本文と4選択肢を持つテキスト問題として保持される
 4. 画像参照先がbuild後とGitHub Pages上で取得可能である
 5. `npm run verify:fe`が成功する
 6. 全自動テスト、TypeScript、ESLint、通常build、Pages buildが成功する
 7. `docs/`が最新の実装Revisionから再生成される
-8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を維持する
-9. Draft Pull Request #1のCIが成功する
+8. 科目Bの回答、解説、保存、復元、履歴、復習、再挑戦を実ブラウザで利用できる
+9. Draft Pull Request #1の最新実装HEADに対するCIが成功する
 10. GitHub Pagesが最新実装相当の成果物を公開し、公開スモークテストが成功する
 11. `task-list.md`、`NEXT_WORK.md`、監査記録、Pull Requestの説明がGitHub実状態と一致する
 12. 確認担当が固定HEAD、実差分、複数画面幅、コンソール、ネットワークを独立検証できる
-
-### Completion status
-
-- 条件1: 達成。科目A 60問、科目B 20問、公式問番号順を自動テストで確認
-- 条件2: 達成。問5、問6、問7の補完SVGを構造化`image`ブロックとして保持
-- 条件3: 達成。問9をテキスト問題として検証
-- 条件4: 達成。公開スモークテストで3 SVGをHTTP取得し、非空を確認
-- 条件5: 達成
-- 条件6: 達成。ESLintは0 errors、既存のHook依存warningが1件
-- 条件7: 達成
-- 条件8: 既存自動テストを含む全43テスト成功
-- 条件9: 達成
-- 条件10: 達成
-- 条件11: 本管理文書更新とPR本文更新で達成
-- 条件12: 確認担当の独立検証待ち
 
 ### Dependencies
 
@@ -100,84 +85,85 @@ FE Learning Labの演習機能を、公式問題データ、複合絞り込み�
 
 `af7be0dbc73b8bce193defefdd013e13a667596f`
 
-### Fixed implementation HEAD
+### Review target HEAD
 
-`56482206a7aa24910148aff661fb0ab598316261`
+`9633c88f214c719ee8413e93be87821a9dd31257`
 
-このHEADで、問5・問6・問7の公開図表検証を含むWorkflow定義まで固定した。
-
-### Generated output and deployment evidence HEAD before management-document updates
-
-`bd339fd9355216fea3c381b8ff14d9491949e35a`
-
-管理文書更新後の最終`work` HEADは、確認担当がPull Request #1から再取得して固定する。
+確認担当はこのHEADのPages artifactと実画面を独立確認した。管理文書更新後のHEADはPull Requestから再取得する。
 
 ### Verification result
 
-#### Pull Request verification
+#### Passed checks
 
-- Workflow: `Build and deploy GitHub Pages`
-- Run ID: `31077350598`
-- Run number: `162`
-- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
-- Result: success
-- `npm run verify:fe`: success
-- Tests: 43 total / 43 passed / 0 failed / 0 skipped
-- TypeScript: success
-- ESLint: 0 errors / 1 warning
-- Existing warning: `prototype/src/FeSessionView.jsx`の`react-hooks/exhaustive-deps`
-- Normal build: success
-- Pages build: success
-- Pages artifact: success
+- Pull Request #1はDraft / Open / Unmerged、Base `main`、Head `work`
+- PR用Workflow run `31077783324` run number `172`のbuildは成功
+- Pages deployment evidenceはsource revision `b7ec726bc36e4d051344ee9c62adbd2dfcdd7349`、run `31077780284` run number `171`、public smoke check success
+- Pages artifactを取得し、`index.html`、`404.html`、`.nojekyll`相当、静的アセット、問題JSON、問5・問6・問7のSVGを確認
+- 公開問題JSONには1,977問、科目A 1,810問、科目B 167問、2022年12月サンプルは科目A 60問・科目B 20問存在
+- 375px、768px、1280pxで科目A問5・問6・問7を実ブラウザ表示
+- 3図表に代替テキストがあり、ページ全体の横スクロールなし
+- 科目A問9は画像なし、4選択肢、正答`エ`
+- 上記画面でConsole error、Page error、HTTP error、Request failureは0件
+- キーボードフォーカスの可視アウトラインを確認
 
-#### Work push and public deployment
+#### Blocking issue
 
-- Workflow run ID: `31077346989`
-- Run number: `161`
-- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
-- Build: success
-- Generated data and`docs/` commit: success
-- Deploy: success
-- Public resource smoke test: success
-- Verified published figures:
-  - `assets/fe/a-2022-005-figure.svg`
-  - `assets/fe/a-2022-006-figure.svg`
-  - `assets/fe/a-2022-007-figure.svg`
+実行時に画面へ渡される統合済み問題バンクから、科目Bの159問が誤って除外される。
+
+実測:
+
+- 配信済み基本問題JSON: 1,977問（科目A 1,810 / 科目B 167）
+- 補足問題JSON: 科目A 20問
+- 期待する統合結果: 1,997問（科目A 1,830 / 科目B 167）
+- 実際の画面上の統合結果: 1,838問（科目A 1,830 / 科目B 8）
+- 誤除外: 科目B 159問
+- 2022年12月公開サンプル科目B: JSONには20問あるが画面では0問
+- 科目B公式サンプル開始ボタン: disabled
+
+再現手順:
+
+1. GitHub Pages成果物または同一artifactを開く
+2. FE Learning Lab → 演習・模試
+3. 科目Bを選択する
+4. 模擬試験 → 2022年12月公開サンプル問題
+5. 「0問が対象」と表示され、「公式サンプル問題を開始」が無効になる
+
+原因:
+
+- `prototype/src/FeLearningApp.jsx`の`normalizedFingerprint()`が、出典ベースの重複判定キーを`sourceCategory`、`periodId`、`sourceQuestionNumber`だけで作成している
+- 科目をキーに含めていないため、同一開催回・同一問番号の科目Aと科目Bが同一問題と誤判定される
+- 例: `fe-ipa-2022sample-b-001`は科目A問1と衝突する
+- 現行`prototype/tests/fe-official-sample.test.mjs`は生の基本問題JSONを直接`selectPracticeQuestions()`へ渡しており、実行時の`mergeQuestionBanks()`を経由しないため不具合を検出できない
+
+### Required fix
+
+1. 出典ベースの重複判定キーへ少なくとも`subject`を含め、科目Aと科目Bを別問題として扱う
+2. 実行時と同じ問題バンク統合処理をテスト可能なモジュールへ分離またはexportする
+3. 基本1,977問と補足20問を統合した結果が1,997問、科目A 1,830問、科目B 167問になる回帰テストを追加する
+4. 統合済み問題バンクに対し、2022年12月公開サンプルが科目A 60問・科目B 20問で公式問番号順になるテストを追加する
+5. 科目B公式サンプル画面で20問が対象となり、開始可能であることをブラウザ検証する
+6. 科目Bの回答、解説、保存、再読込後の復元、履歴、復習、再挑戦をブラウザ検証する
+7. `npm run verify:fe`、最新HEADのCI、`docs/`再生成、GitHub Pages再公開を行う
+8. Pull Request本文、監査記録、`task-list.md`、`NEXT_WORK.md`を実結果へ更新する
+
+### Non-blocking issue
+
+- `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件。今回のBlocking修正とは分離してよいが、残存を記録すること。
 
 ### Merge commit
 
-未マージ
+未マージ。Blocking問題のためマージ禁止。
 
 ### GitHub Pages result
 
 - Public URL: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Deployment status: success
-- Public smoke check: success
-- Published source revision: `56482206a7aa24910148aff661fb0ab598316261`
-- Evidence: `prototype/qa/pages-deployment.json`
-
-### Resolved blocking issue
-
-固定同期元の問5・問6・問7レコードには、公式冊子に存在する図表データが含まれていなかった。同期元に存在しない情報を推測フィールドから抽出する方法では復元できないため、公式冊子と照合した補完SVGをRepository管理下へ追加し、同期時に該当問題へだけ付与した。
-
-以前の引継ぎでは問9も図表必須としていたが、公式冊子上の問9はテキスト問題であるため、その前提を訂正した。問9は問題文、4選択肢、正答を自動テストで固定している。
-
-### Remaining review items
-
-確認担当は、最新Pull Request HEADを固定し、次を独立検証する。
-
-- `main`との差分と変更禁止範囲
-- `npm ci`と`npm run verify:fe`
-- 375px、768px、1280px以上で問5・問6・問7を表示
-- 図表、本文、選択肢の可読性
-- ページ全体の横スクロールがないこと
-- Console error、Console warning、HTTP error、Request failure
-- GitHub Pagesの実表示と公開資産
-- 管理文書、PR、CI、Pagesの整合性
+- 最新確認済み公開source revision: `b7ec726bc36e4d051344ee9c62adbd2dfcdd7349`
+- 科目A図表の公開確認: 合格
+- 科目B実行時統合: 不合格
 
 ### Next task
 
-`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が確認合格、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
+`JLL-JAVA-001`は`planned`のまま維持する。`JLL-FE-001`が修正、再確認、merge、`work`同期、公開再確認を経て`completed`になるまで開始しない。
 
 ---
 
