@@ -37,3 +37,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "ci: accept Pages deployment terminal statuses [skip ci]"
           git push origin HEAD:work
+
+# trigger
