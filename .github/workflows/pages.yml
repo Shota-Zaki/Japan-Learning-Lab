@@ -26,34 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Record Pages deployment attempt
-        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
-        working-directory: .
-        env:
-          SOURCE_SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
-          REPOSITORY: ${{ github.repository }}
-          SOURCE_BRANCH: ${{ github.ref_name }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { mkdir, writeFile } from "node:fs/promises";
-          await mkdir("prototype/qa", { recursive: true });
-          await writeFile("prototype/qa/pages-deployment-attempt.json", `${JSON.stringify({
-            status: "running",
-            sourceBranch: process.env.SOURCE_BRANCH,
-            sourceRevision: process.env.SOURCE_SHA,
-            workflowRunId: Number(process.env.RUN_ID),
-            workflowRunNumber: Number(process.env.RUN_NUMBER),
-            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
-          }, null, 2)}\n`, "utf8");
-          NODE
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prototype/qa/pages-deployment-attempt.json
-          git commit -m "docs: record Pages deployment attempt [skip ci]"
-          git push origin HEAD:work
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
