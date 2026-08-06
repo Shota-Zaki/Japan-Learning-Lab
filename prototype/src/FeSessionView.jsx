@@ -280,7 +280,7 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
               <button className="button button-secondary" type="submit">移動</button>
               {questionNumberError && <p id="question-number-error" className="question-jump-error" role="alert">{questionNumberError}</p>}
             </form>
-            <div className="question-number-grid" ref={questionNumberGridRef} tabIndex="0" aria-label="問題番号一覧">
+            <div className="question-number-grid" ref={questionNumberGridRef} tabIndex={0} aria-label="問題番号一覧">
               {session.questionIds.map((questionId, index) => (
                 <button key={questionId} className={`${index === session.currentIndex ? "is-current" : ""} ${session.answers[questionId] ? "is-answered" : ""} ${session.reviewQuestionIds.includes(questionId) ? "is-review" : ""}`} aria-label={`問題${index + 1}、${session.answers[questionId] ? "回答済み" : "未回答"}${session.reviewQuestionIds.includes(questionId) ? "、見直し対象" : ""}`} aria-current={index === session.currentIndex ? "step" : undefined} onClick={() => moveTo(index)}>{index + 1}</button>
               ))}
