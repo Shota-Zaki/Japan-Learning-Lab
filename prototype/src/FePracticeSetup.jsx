@@ -47,7 +47,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
   const [domains, setDomains] = useState([]);
   const [unitIds, setUnitIds] = useState([]);
   const [periodIds, setPeriodIds] = useState([]);
-  const [scope, setScope] = useState("all");
+  const [reviewScopes, setReviewScopes] = useState([]);
   const [count, setCount] = useState(/** @type {number | "all"} */ (10));
 
   const subjectOptions = useMemo(() => ["A", "B"].map((value) => ({
@@ -74,8 +74,18 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     label,
     count: relevantByUnit.filter((question) => question.periodId === value).length,
   })), [relevantByUnit]);
+  const reviewScopeOptions = ["correct", "incorrect", "unanswered", "review"].map((value) => ({ value, label: scopeLabel(value) }));
 
-  const config = { type: sessionType, subjects, domains, unitIds, periodIds, scope, count };
+  const config = {
+    type: sessionType,
+    subjects,
+    domains,
+    unitIds,
+    periodIds,
+    reviewScopes,
+    scope: reviewScopes.length === 1 ? reviewScopes[0] : "all",
+    count,
+  };
   const available = filterPracticeQuestions(questionBank, config, sessions);
   const requestedCount = count === "all" ? available.length : Number(count);
   const actualCount = Math.min(requestedCount, available.length);
@@ -86,7 +96,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     ...domains.map((value) => ({ group: "domains", value, label: selectedLabel(value) })),
     ...unitIds.map((value) => ({ group: "unitIds", value, label: value })),
     ...periodIds.map((value) => ({ group: "periodIds", value, label: periodOptions.find((option) => option.value === value)?.label || value })),
-    ...(scope !== "all" ? [{ group: "scope", value: scope, label: scopeLabel(scope) }] : []),
+    ...reviewScopes.map((value) => ({ group: "reviewScopes", value, label: scopeLabel(value) })),
   ];
 
   const removeChip = (chip) => {
@@ -94,7 +104,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     if (chip.group === "domains") setDomains((current) => current.filter((value) => value !== chip.value));
     if (chip.group === "unitIds") setUnitIds((current) => current.filter((value) => value !== chip.value));
     if (chip.group === "periodIds") setPeriodIds((current) => current.filter((value) => value !== chip.value));
-    if (chip.group === "scope") setScope("all");
+    if (chip.group === "reviewScopes") setReviewScopes((current) => current.filter((value) => value !== chip.value));
   };
 
   const clearFilters = () => {
@@ -102,7 +112,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     setDomains([]);
     setUnitIds([]);
     setPeriodIds([]);
-    setScope("all");
+    setReviewScopes([]);
   };
 
   return (
@@ -110,7 +120,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
       <header className="fe-page-heading">
         <p className="eyebrow">Official question practice</p>
         <h1 id="fe-practice-heading">公式問題で演習する</h1>
-        <p>科目・分野・単元・開催回を組み合わせて、必要な問題だけを問題セットにできます。</p>
+        <p>科目・分野・単元・開催回・回答状態を組み合わせて、必要な問題だけを問題セットにできます。</p>
       </header>
 
       <div className="official-source-note">
@@ -144,18 +154,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
         <MultiChoiceGroup title="2. 分野" description="同じ条件群ではOR、他の条件群とはANDで絞り込みます。" values={domains} options={domainOptions} onChange={(next) => { setDomains(next); setUnitIds([]); setPeriodIds([]); }} />
         <MultiChoiceGroup title="3. 単元" values={unitIds} options={unitOptions} onChange={(next) => { setUnitIds(next); setPeriodIds([]); }} />
         <MultiChoiceGroup title="4. 開催回・公開区分" values={periodIds} options={periodOptions} onChange={setPeriodIds} />
-
-        <fieldset className="fe-filter-group">
-          <legend>5. 回答状態</legend>
-          <div className="fe-radio-grid">
-            {[
-              ["all", "通常演習"],
-              ["incorrect", "間違えた問題"],
-              ["unanswered", "未回答問題"],
-              ["review", "見直し対象"],
-            ].map(([value, label]) => <label className={scope === value ? "is-selected" : ""} key={value}><input type="radio" name="scope" value={value} checked={scope === value} onChange={() => setScope(value)} /><span>{label}</span></label>)}
-          </div>
-        </fieldset>
+        <MultiChoiceGroup title="5. 回答・復習状態" description="複数選択はORです。未選択の場合は回答履歴で絞り込みません。" values={reviewScopes} options={reviewScopeOptions} onChange={setReviewScopes} />
       </div>
 
       <div className="fe-selected-filters">
@@ -173,7 +172,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
         </div>
         <div className={`fe-match-result ${available.length === 0 ? "is-empty" : ""}`} role="status">
           <strong>{available.length}問が条件に一致</strong>
-          {available.length === 0 && <span>条件を減らすか、回答状態を通常演習へ戻してください。</span>}
+          {available.length === 0 && <span>条件を減らすか、回答・復習状態を解除してください。</span>}
           {shortage && <span>指定数に満たないため、{actualCount}問で開始します。</span>}
         </div>
         <button className="button button-primary fe-start-button" disabled={available.length === 0 || actualCount === 0} onClick={() => startSession({ ...config, count: count === "all" ? "all" : actualCount })}>この条件で演習を開始 <ArrowRight size={19} /></button>
