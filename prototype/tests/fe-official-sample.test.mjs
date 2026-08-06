@@ -35,23 +35,27 @@ for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {
   });
 }
 
-test("subject A sample retains rich media for the four figure-dependent questions", () => {
-  const ids = new Set(bank.questions.map((question) => question.id));
-  for (const number of [5, 6, 7, 9]) {
+test("subject A sample retains the three official figure-dependent questions", () => {
+  const expectedAssets = new Map([
+    [5, "assets/fe/a-2022-005-figure.svg"],
+    [6, "assets/fe/a-2022-006-figure.svg"],
+    [7, "assets/fe/a-2022-007-figure.svg"],
+  ]);
+  for (const [number, expectedAsset] of expectedAssets) {
     const id = `fe-ipa-2022sample-a-${String(number).padStart(3, "0")}`;
-    assert.ok(ids.has(id), `${id} is missing`);
     const question = bank.questions.find((item) => item.id === id);
+    assert.ok(question, `${id} is missing`);
     const imageBlocks = richImageBlocks(question);
-    assert.ok(imageBlocks.length > 0, `${id} must retain its official figure in the question or choices`);
+    assert.ok(imageBlocks.length > 0, `${id} must retain its official figure`);
     assert.ok(imageBlocks.every((block) => isSafeImageSource(block.src)), `${id} contains an invalid figure URL`);
+    assert.ok(imageBlocks.some((block) => block.src === expectedAsset), `${id} must reference ${expectedAsset}`);
   }
 });
 
-test("subject A sample question 5 keeps the supplemental tree figure", () => {
-  const question = bank.questions.find((item) => item.id === "fe-ipa-2022sample-a-005");
-  assert.ok(question, "subject A sample question 5 is missing");
-  assert.ok(
-    richImageBlocks(question).some((block) => block.src === "assets/fe/a-2022-005-figure.svg"),
-    "subject A sample question 5 must reference the supplemental tree figure",
-  );
+test("subject A sample question 9 remains a complete text-only official question", () => {
+  const question = bank.questions.find((item) => item.id === "fe-ipa-2022sample-a-009");
+  assert.ok(question, "subject A sample question 9 is missing");
+  assert.match(question.question, /コーディング規約/u);
+  assert.equal(question.choices.length, 4);
+  assert.deepEqual(question.correctAnswers, ["エ"]);
 });
