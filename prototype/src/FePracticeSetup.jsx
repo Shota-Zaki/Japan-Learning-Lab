@@ -64,7 +64,7 @@ function ChoicePanelBody({ title, description, values, options, onChange, emptyL
         {options.map((option) => {
           const selected = values.includes(option.value);
           return (
-            <label className={selected ? "is-selected" : ""} key={option.value} title={`${option.label}${option.count !== undefined ? `（${option.count}問）` : ""}`}>
+            <label className={selected ? "is-selected" : ""} key={option.value}>
               <input type="checkbox" checked={selected} onChange={() => onChange(toggleValue(values, option.value))} />
               <span><strong>{option.label}</strong>{option.count !== undefined && <small>{option.count}問</small>}</span>
               <CheckCircle size={16} weight={selected ? "fill" : "regular"} />
@@ -77,16 +77,7 @@ function ChoicePanelBody({ title, description, values, options, onChange, emptyL
   );
 }
 
-function MultiChoiceGroup({ title, description = "", values, options, onChange, emptyLabel = "", variant, defaultOpen = false }) {
-  if (variant === "accordion") {
-    return (
-      <details className="fe-filter-disclosure" open={defaultOpen || undefined}>
-        <summary><span>{title}</span><small>{values.length}/{options.length}件</small></summary>
-        <ChoicePanelBody title={title} description={description} values={values} options={options} onChange={onChange} emptyLabel={emptyLabel} />
-      </details>
-    );
-  }
-
+function MultiChoiceGroup({ title, description = "", values, options, onChange, emptyLabel = "" }) {
   return (
     <fieldset className="fe-filter-group fe-filter-group-compact">
       <legend>{title}</legend>
@@ -127,7 +118,6 @@ function createGroupChips(group, title, values, options) {
 
 export function FePracticeSetup({ questionBank, sessions, activeSession, bankStatus, startSession, resumeSession, retryBank }) {
   const [sessionType, setSessionType] = useState("topic");
-  const [filterVariant, setFilterVariant] = useState("accordion");
   const [subject, setSubject] = useState("A");
   const [mockMode, setMockMode] = useState("random");
   const [domains, setDomains] = useState(null);
@@ -142,7 +132,10 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     count: questionBank.filter((question) => (question.subject || "A") === value).length,
   })), [questionBank]);
 
-  const relevantBySubject = useMemo(() => questionBank.filter((question) => (question.subject || "A") === subject), [questionBank, subject]);
+  const relevantBySubject = useMemo(
+    () => questionBank.filter((question) => (question.subject || "A") === subject),
+    [questionBank, subject],
+  );
   const domainOptions = useMemo(() => [...new Set(relevantBySubject.map((question) => question.domain).filter(Boolean))].map((value) => ({
     value,
     label: domainLabels[value] || value,
@@ -150,22 +143,35 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
   })), [relevantBySubject]);
   const selectedDomains = resolveSelection(domains, domainOptions);
 
-  const relevantByDomain = useMemo(() => relevantBySubject.filter((question) => selectedDomains.includes(question.domain)), [relevantBySubject, selectedDomains]);
-  const unitOptions = useMemo(() => [...new Set(relevantByDomain.map((question) => question.unitId).filter(Boolean))].sort((left, right) => String(left).localeCompare(String(right), "ja")).map((value) => ({
-    value,
-    label: unitLabels[value] || value,
-    count: relevantByDomain.filter((question) => question.unitId === value).length,
-  })), [relevantByDomain]);
+  const relevantByDomain = useMemo(
+    () => relevantBySubject.filter((question) => selectedDomains.includes(question.domain)),
+    [relevantBySubject, selectedDomains],
+  );
+  const unitOptions = useMemo(() => [...new Set(relevantByDomain.map((question) => question.unitId).filter(Boolean))]
+    .sort((left, right) => String(left).localeCompare(String(right), "ja"))
+    .map((value) => ({
+      value,
+      label: unitLabels[value] || value,
+      count: relevantByDomain.filter((question) => question.unitId === value).length,
+    })), [relevantByDomain]);
   const selectedUnitIds = resolveSelection(unitIds, unitOptions);
 
-  const relevantByUnit = useMemo(() => relevantByDomain.filter((question) => selectedUnitIds.includes(question.unitId)), [relevantByDomain, selectedUnitIds]);
-  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, question.periodLabel])).entries()].filter(([value]) => Boolean(value)).map(([value, label]) => ({
-    value,
-    label: label || value,
-    count: relevantByUnit.filter((question) => question.periodId === value).length,
-  })), [relevantByUnit]);
+  const relevantByUnit = useMemo(
+    () => relevantByDomain.filter((question) => selectedUnitIds.includes(question.unitId)),
+    [relevantByDomain, selectedUnitIds],
+  );
+  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, question.periodLabel])).entries()]
+    .filter(([value]) => Boolean(value))
+    .map(([value, label]) => ({
+      value,
+      label: label || value,
+      count: relevantByUnit.filter((question) => question.periodId === value).length,
+    })), [relevantByUnit]);
   const selectedPeriodIds = resolveSelection(periodIds, periodOptions);
-  const reviewScopeOptions = useMemo(() => ["correct", "incorrect", "unanswered", "review"].map((value) => ({ value, label: scopeLabel(value) })), []);
+  const reviewScopeOptions = useMemo(
+    () => ["correct", "incorrect", "unanswered", "review"].map((value) => ({ value, label: scopeLabel(value) })),
+    [],
+  );
 
   const requiredGroupEmpty = selectedDomains.length === 0 || selectedUnitIds.length === 0 || selectedPeriodIds.length === 0;
   const topicConfig = {
@@ -235,7 +241,10 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
 
   const removeChip = (chip) => {
     if (chip.group === "subject") return;
-    if (chip.value === "__all__") return setGroupSelection(chip.group, []);
+    if (chip.value === "__all__") {
+      setGroupSelection(chip.group, []);
+      return;
+    }
     const current = { domains: selectedDomains, unitIds: selectedUnitIds, periodIds: selectedPeriodIds, reviewScopes }[chip.group];
     setGroupSelection(chip.group, current.filter((value) => value !== chip.value));
   };
@@ -318,16 +327,9 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
             </div>
           </div>
 
-          <div className="fe-filter-view-switch" role="group" aria-label="絞り込み表示形式">
-            <span><strong>表示形式</strong><small>選択状態を保持したまま比較できます</small></span>
-            <div>
-              <button type="button" aria-pressed={filterVariant === "accordion"} className={filterVariant === "accordion" ? "is-selected" : ""} onClick={() => setFilterVariant("accordion")}>パターンA：折りたたみ</button>
-              <button type="button" aria-pressed={filterVariant === "grid"} className={filterVariant === "grid" ? "is-selected" : ""} onClick={() => setFilterVariant("grid")}>パターンB：コンパクト配置</button>
-            </div>
-          </div>
-
-          <div className={filterVariant === "grid" ? "fe-filter-variant-grid" : "fe-filter-variant-accordion"}>
-            {filterGroups.map((group, index) => <MultiChoiceGroup key={group.key} {...group} variant={filterVariant} defaultOpen={index === 0} />)}
+          <p className="fe-filter-layout-note">絞り込み項目はコンパクト配置で全件表示します。項目数に応じて各ブロックの高さが変わります。</p>
+          <div className="fe-filter-variant-grid">
+            {filterGroups.map((group) => <MultiChoiceGroup key={group.key} {...group} />)}
           </div>
         </>
       ) : (
