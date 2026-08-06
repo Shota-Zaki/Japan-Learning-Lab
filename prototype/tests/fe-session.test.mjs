@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import test from "node:test";
 import { feQuestions } from "../src/data/feQuestions.js";
 import {
@@ -16,6 +17,8 @@ import {
   toggleSessionReview,
   updateSessionDraft,
 } from "../src/feSession.js";
+
+const fullBank = JSON.parse(fs.readFileSync(new URL("../public/data/fe-official-past-questions.json", import.meta.url), "utf8"));
 
 const config = {
   type: "topic",
@@ -71,13 +74,20 @@ const mixedBank = [
 ];
 
 test("creates a bounded official-question session from conditions", () => {
-  const selected = selectPracticeQuestions({ ...config, type: "mock" }, feQuestions, [], () => 0.5);
-  assert.equal(selected.length, 10);
+  const selected = selectPracticeQuestions({ ...config, type: "mock" }, fullBank.questions, [], () => 0.5);
+  assert.equal(selected.length, Math.min(10, fullBank.questions.length));
 
   const session = createFeSession({ config: { ...config, type: "mock" }, questions: selected, id: "fe-test-session", now: "2026-08-05T00:00:00.000Z" });
   assert.equal(session.status, "in_progress");
-  assert.equal(session.questionIds.length, 10);
-  assert.deepEqual(calculateSessionSummary(session), { total: 10, answered: 0, unanswered: 10, correct: 0, incorrect: 0, score: 0 });
+  assert.equal(session.questionIds.length, selected.length);
+  assert.deepEqual(calculateSessionSummary(session), {
+    total: selected.length,
+    answered: 0,
+    unanswered: selected.length,
+    correct: 0,
+    incorrect: 0,
+    score: 0,
+  });
 });
 
 test("submitted answers are immutable and double submission is idempotent", () => {
