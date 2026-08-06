@@ -73,6 +73,54 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Verify public Pages resources
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          node --input-type=module <<'NODE'
+          const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+          async function fetchWithRetry(url, attempts = 12) {
+            let lastError;
+            for (let attempt = 1; attempt <= attempts; attempt += 1) {
+              try {
+                const response = await fetch(url, { redirect: "follow", cache: "no-store" });
+                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+                return response;
+              } catch (error) {
+                lastError = error;
+                if (attempt < attempts) await delay(5000);
+              }
+            }
+            throw new Error(`Unable to fetch ${url}: ${lastError?.message || lastError}`);
+          }
+
+          const pageUrl = new URL(process.env.PAGE_URL);
+          const indexResponse = await fetchWithRetry(pageUrl);
+          const html = await indexResponse.text();
+          if (!html.includes("Japan Learning Lab")) throw new Error("Published index does not contain the expected application title");
+
+          const resourceUrls = new Set([
+            new URL("data/fe-official-past-questions.json", pageUrl).href,
+            new URL("favicon.svg", pageUrl).href,
+          ]);
+          for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
+            const resourceUrl = new URL(match[1], pageUrl);
+            if (resourceUrl.origin === pageUrl.origin && resourceUrl.pathname.startsWith(pageUrl.pathname)) resourceUrls.add(resourceUrl.href);
+          }
+
+          for (const resourceUrl of resourceUrls) {
+            const response = await fetchWithRetry(resourceUrl);
+            const length = Number(response.headers.get("content-length") || 0);
+            if (length === 0) {
+              const bytes = new Uint8Array(await response.arrayBuffer());
+              if (bytes.length === 0) throw new Error(`Published resource is empty: ${resourceUrl}`);
+            }
+            console.log(`Verified ${resourceUrl}`);
+          }
+          console.log(`Public Pages smoke check passed for ${pageUrl.href} with ${resourceUrls.size} resources`);
+          NODE
+
       - name: Checkout work for deployment evidence
         uses: actions/checkout@v4
         with:
@@ -91,6 +139,7 @@ jobs:
           await mkdir("prototype/qa", { recursive: true });
           await writeFile("prototype/qa/pages-deployment.json", `${JSON.stringify({
             status: "success",
+            publicSmokeCheck: "success",
             pageUrl: process.env.PAGE_URL,
             sourceRevision: process.env.SOURCE_SHA,
             workflowRunId: Number(process.env.RUN_ID),
