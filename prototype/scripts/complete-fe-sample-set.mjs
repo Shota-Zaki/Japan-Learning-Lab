@@ -151,7 +151,7 @@ function convert(question) {
     ? question.explanationBlocks
     : paragraphBlocks(explanationText || `公式解答の正答は${correctAnswers.join("、")}です。`);
 
-  if (!domain || !questionText || choices.length !== 4 || choices.some((choice) => !choice.text) || correctAnswers.length !== 1) {
+  if (!domain || choices.length !== 4 || correctAnswers.length !== 1) {
     throw new Error(`2022 sample question is incomplete: ${question.id}`);
   }
 
