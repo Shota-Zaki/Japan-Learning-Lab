@@ -46,6 +46,14 @@ function mockDurationMinutes(session) {
   return subject === "B" ? 100 : 90;
 }
 
+function calculateRemainingSeconds(session, nowMs) {
+  if (!session || session.config?.type !== "mock" || session.status !== "in_progress") return null;
+  const durationMs = mockDurationMinutes(session) * 60 * 1000;
+  const startedAtMs = Date.parse(session.startedAt);
+  const deadlineMs = Number.isFinite(startedAtMs) ? startedAtMs + durationMs : nowMs + durationMs;
+  return Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000));
+}
+
 function formatRemaining(totalSeconds) {
   const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
   const minutes = Math.floor(safeSeconds / 60);
@@ -55,30 +63,19 @@ function formatRemaining(totalSeconds) {
 
 export function FeSessionView({ session, questionBank, persistSession, pauseSession, completeSession, retrySession, reviewSession, exitSession }) {
   const [confirmFinish, setConfirmFinish] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(null);
+  const [clockMs, setClockMs] = useState(() => Date.now());
   const isMock = session?.config?.type === "mock";
+  const remainingSeconds = calculateRemainingSeconds(session, clockMs);
 
   useEffect(() => {
-    if (!session || session.status !== "in_progress" || !isMock) {
-      setRemainingSeconds(null);
-      return undefined;
-    }
-    const durationMs = mockDurationMinutes(session) * 60 * 1000;
-    const startedAtMs = Date.parse(session.startedAt);
-    const deadlineMs = Number.isFinite(startedAtMs) ? startedAtMs + durationMs : Date.now() + durationMs;
-    let completed = false;
-    const tick = () => {
-      const next = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
-      setRemainingSeconds(next);
-      if (next === 0 && !completed) {
-        completed = true;
-        completeSession(session);
-      }
-    };
-    tick();
-    const timerId = window.setInterval(tick, 1000);
+    if (!session || session.status !== "in_progress" || !isMock) return undefined;
+    const timerId = window.setInterval(() => setClockMs(Date.now()), 1000);
     return () => window.clearInterval(timerId);
-  }, [session?.id, session?.status, session?.startedAt, isMock, completeSession]);
+  }, [session?.id, session?.status, isMock]);
+
+  useEffect(() => {
+    if (session && session.status === "in_progress" && isMock && remainingSeconds === 0) completeSession(session);
+  }, [session, isMock, remainingSeconds, completeSession]);
 
   if (!session) return <MissingSession exitSession={exitSession} />;
   if (session.status === "completed") return <FeResultView session={session} questionBank={questionBank} retrySession={retrySession} reviewSession={reviewSession} exitSession={exitSession} />;
