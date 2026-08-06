@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, CheckCircle, Exam, ListChecks, RotateCcw, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
+import { ArrowRight, CheckCircle, Exam, ListChecks, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { filterPracticeQuestions, scopeLabel } from "./feSession.js";
 
 const subjectLabels = { A: "科目A", B: "科目B" };
@@ -162,7 +162,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
         <div><strong>選択中の条件</strong><small>{chips.length === 0 ? "すべての問題" : `${chips.length}条件`}</small></div>
         <div className="fe-filter-chips">
           {chips.map((chip) => <button key={`${chip.group}-${chip.value}`} onClick={() => removeChip(chip)}>{chip.label}<span aria-hidden="true">×</span></button>)}
-          {chips.length > 0 && <button className="is-clear" onClick={clearFilters}><RotateCcw size={15} /> 全解除</button>}
+          {chips.length > 0 && <button className="is-clear" onClick={clearFilters}>全解除</button>}
         </div>
       </div>
 
