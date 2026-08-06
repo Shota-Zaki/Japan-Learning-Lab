@@ -75,6 +75,42 @@ function validQuestion(question) {
   );
 }
 
+function normalizedFingerprint(question) {
+  const sourceIdentity = [question.sourceCategory, question.periodId, question.sourceQuestionNumber]
+    .filter((value) => value !== null && value !== undefined && value !== "")
+    .join("|");
+  if (sourceIdentity) return `source:${sourceIdentity}`;
+  return [
+    question.subject,
+    question.question,
+    ...(question.choices || []).map((choice) => choice.text),
+    ...(question.correctAnswers || []),
+  ].join("|").normalize("NFKC").replace(/\s+/gu, "").toLowerCase();
+}
+
+function mergeQuestionBanks(primaryQuestions, supplementalQuestions) {
+  const seenIds = new Set();
+  const seenFingerprints = new Set();
+  const merged = [];
+  for (const source of [...supplementalQuestions, ...primaryQuestions]) {
+    const question = normalizeQuestion(source);
+    if (!validQuestion(question)) continue;
+    const fingerprint = normalizedFingerprint(question);
+    if (seenIds.has(question.id) || seenFingerprints.has(fingerprint)) continue;
+    seenIds.add(question.id);
+    seenFingerprints.add(fingerprint);
+    merged.push(question);
+  }
+  return merged;
+}
+
+async function readQuestionPayload(url, signal, optional = false) {
+  const response = await fetch(url, { signal });
+  if (optional && response.status === 404) return { questions: [] };
+  if (!response.ok) throw new Error(`FE question bank request failed: ${response.status}`);
+  return response.json();
+}
+
 function FeLessonHome() {
   const lessonBlocks = [
     { type: "paragraph", text: "科目Bでは、問題文の条件を先に整理し、擬似言語を処理のまとまりごとに追跡します。通常本文とコードを分けて読むことで、変数の更新や分岐条件を見落としにくくなります。" },
@@ -184,15 +220,16 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    const dataUrl = new URL("data/fe-official-past-questions.json", `${window.location.origin}${import.meta.env.BASE_URL}`).toString();
-    fetch(dataUrl, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`FE question bank request failed: ${response.status}`);
-        return response.json();
-      })
-      .then((payload) => {
-        const questions = (payload?.questions || []).map(normalizeQuestion);
-        if (questions.length === 0 || !questions.every(validQuestion)) throw new Error("FE question bank validation failed");
+    const dataBaseUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+    const primaryUrl = new URL("data/fe-official-past-questions.json", dataBaseUrl).toString();
+    const supplementalUrl = new URL("data/fe-official-supplemental-questions.json", dataBaseUrl).toString();
+    Promise.all([
+      readQuestionPayload(primaryUrl, controller.signal),
+      readQuestionPayload(supplementalUrl, controller.signal, true),
+    ])
+      .then(([primaryPayload, supplementalPayload]) => {
+        const questions = mergeQuestionBanks(primaryPayload?.questions || [], supplementalPayload?.questions || []);
+        if (questions.length === 0) throw new Error("FE question bank validation failed");
         setQuestionBank(questions);
         setBankStatus("ready");
       })
