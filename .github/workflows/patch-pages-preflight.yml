@@ -3,8 +3,7 @@ name: Patch Pages deployment preflight
 on:
   push:
     branches: [work]
-    paths:
-      - .github/workflows/patch-pages-preflight.yml
+    paths: [.github/workflows/patch-pages-preflight.yml]
 
 permissions:
   contents: write
@@ -16,30 +15,68 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: work
-
-      - name: Add stale deployment preflight
+      - name: Patch Pages workflow
         run: |
-          node --input-type=module <<'NODE'
-          import { readFile, writeFile } from "node:fs/promises";
-          const path = ".github/workflows/pages.yml";
-          const current = await readFile(path, "utf8");
-          const anchor = `    steps:\n      - name: Deploy to GitHub Pages\n`;
-          if (current.includes("Cancel stale Pages deployment before deploy")) {
-            console.log("Preflight already exists.");
-            process.exit(0);
-          }
-          if (!current.includes(anchor)) {
-            throw new Error("Pages deploy anchor was not found");
-          }
-          const preflight = `    steps:\n      - name: Cancel stale Pages deployment before deploy\n        env:\n          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}\n          REPOSITORY: \${{ github.repository }}\n          STALE_DEPLOYMENT: 7ac17dd605546149649223e88dd67f22d32c70d3\n        run: |\n          set -euo pipefail\n          api=\"https://api.github.com/repos/\${REPOSITORY}/pages/deployments/\${STALE_DEPLOYMENT}\"\n          headers=(\n            -H \"Accept: application/vnd.github+json\"\n            -H \"Authorization: Bearer \${GH_TOKEN}\"\n            -H \"X-GitHub-Api-Version: 2022-11-28\"\n          )\n          code=\"$(curl -sS -L -o /tmp/deployment.json -w '%{http_code}' \"\${headers[@]}\" \"\${api}\")\"\n          if [[ \"\${code}\" == \"200\" ]]; then\n            status=\"$(node --input-type=module -e 'import { readFileSync } from \\\"node:fs\\\"; const data=JSON.parse(readFileSync(\\\"/tmp/deployment.json\\\",\\\"utf8\\\")); process.stdout.write(String(data.status ?? \\\"unknown\\\"));')\"\n            echo \"Stale Pages deployment status: \${status}\"\n            case \"\${status}\" in\n              succeed|success|cancelled|canceled|error|failure) ;;\n              *)\n                cancel_code=\"$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{http_code}' \"\${headers[@]}\" \"\${api}/cancel\")\"\n                [[ \"\${cancel_code}\" == \"204\" || \"\${cancel_code}\" == \"404\" ]]\n                for attempt in {1..24}; do\n                  check_code=\"$(curl -sS -L -o /tmp/check.json -w '%{http_code}' \"\${headers[@]}\" \"\${api}\")\"\n                  if [[ \"\${check_code}\" == \"404\" ]]; then break; fi\n                  [[ \"\${check_code}\" == \"200\" ]]\n                  current_status=\"$(node --input-type=module -e 'import { readFileSync } from \\\"node:fs\\\"; const data=JSON.parse(readFileSync(\\\"/tmp/check.json\\\",\\\"utf8\\\")); process.stdout.write(String(data.status ?? \\\"unknown\\\"));')\"\n                  echo \"Cancellation check \${attempt}: \${current_status}\"\n                  case \"\${current_status}\" in cancelled|canceled|error|failure) break 2 ;; esac\n                  sleep 5\n                done\n                ;;\n            esac\n          elif [[ \"\${code}\" != \"404\" ]]; then\n            cat /tmp/deployment.json\n            exit 1\n          fi\n\n      - name: Deploy to GitHub Pages\n`;
-          await writeFile(path, current.replace(anchor, preflight), "utf8");
-          NODE
+          python - <<'PY'
+          from pathlib import Path
 
+          path = Path('.github/workflows/pages.yml')
+          text = path.read_text()
+          anchor = '    steps:\n      - name: Deploy to GitHub Pages\n'
+          if 'Cancel stale Pages deployment before deploy' in text:
+              raise SystemExit(0)
+          if anchor not in text:
+              raise SystemExit('deploy anchor not found')
+
+          expr = '$' + '{{'
+          preflight = f'''    steps:
+      - name: Cancel stale Pages deployment before deploy
+        env:
+          GH_TOKEN: {expr} secrets.GITHUB_TOKEN }}}}
+          REPOSITORY: {expr} github.repository }}}}
+          STALE_DEPLOYMENT: 7ac17dd605546149649223e88dd67f22d32c70d3
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${{REPOSITORY}}/pages/deployments/${{STALE_DEPLOYMENT}}"
+          headers=(
+            -H "Accept: application/vnd.github+json"
+            -H "Authorization: Bearer ${{GH_TOKEN}}"
+            -H "X-GitHub-Api-Version: 2022-11-28"
+          )
+          code="$(curl -sS -L -o /tmp/deployment.json -w '%{{http_code}}' "${{headers[@]}}" "${{api}}")"
+          if [[ "${{code}}" == "200" ]]; then
+            status="$(node --input-type=module -e 'import {{ readFileSync }} from "node:fs"; const data=JSON.parse(readFileSync("/tmp/deployment.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
+            echo "Stale Pages deployment status: ${{status}}"
+            case "${{status}}" in
+              succeed|success|cancelled|canceled|error|failure) ;;
+              *)
+                cancel_code="$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{{http_code}}' "${{headers[@]}}" "${{api}}/cancel")"
+                [[ "${{cancel_code}}" == "204" || "${{cancel_code}}" == "404" ]]
+                for attempt in {{1..24}}; do
+                  check_code="$(curl -sS -L -o /tmp/check.json -w '%{{http_code}}' "${{headers[@]}}" "${{api}}")"
+                  if [[ "${{check_code}}" == "404" ]]; then break; fi
+                  [[ "${{check_code}}" == "200" ]]
+                  current="$(node --input-type=module -e 'import {{ readFileSync }} from "node:fs"; const data=JSON.parse(readFileSync("/tmp/check.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
+                  echo "Cancellation check ${{attempt}}: ${{current}}"
+                  case "${{current}}" in cancelled|canceled|error|failure) break 2 ;; esac
+                  sleep 5
+                done
+                ;;
+            esac
+          elif [[ "${{code}}" != "404" ]]; then
+            cat /tmp/deployment.json
+            exit 1
+          fi
+
+      - name: Deploy to GitHub Pages
+'''
+          path.write_text(text.replace(anchor, preflight))
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .github/workflows/pages.yml
-          if git diff --cached --quiet; then
-            exit 0
-          fi
+          git diff --cached --quiet && exit 0
           git commit -m "ci: add Pages stale deployment preflight [skip ci]"
           git push origin HEAD:work
+
+# trigger
