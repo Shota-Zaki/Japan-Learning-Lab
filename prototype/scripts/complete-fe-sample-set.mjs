@@ -147,12 +147,11 @@ function convert(question) {
     : paragraphBlocks(questionText);
   const knownImageSources = new Set(questionBlocks.filter((block) => block?.type === "image").map((block) => block.src));
   questionBlocks.push(...assets.filter((asset) => !knownImageSources.has(asset.src)));
-  const hasFigure = questionBlocks.some((block) => block?.type === "image");
   const explanationBlocks = Array.isArray(question.explanationBlocks) && question.explanationBlocks.length > 0
     ? question.explanationBlocks
     : paragraphBlocks(explanationText || `公式解答の正答は${correctAnswers.join("、")}です。`);
 
-  if (!domain || choices.length !== 4 || correctAnswers.length !== 1 || !hasFigure) {
+  if (!domain || !questionText || choices.length !== 4 || choices.some((choice) => !choice.text) || correctAnswers.length !== 1) {
     throw new Error(`2022 sample question is incomplete: ${question.id}`);
   }
 
