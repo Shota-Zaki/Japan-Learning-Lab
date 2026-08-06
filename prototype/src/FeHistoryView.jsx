@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, ChartBar, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
-import { calculateSessionSummary, scopeLabel } from "./feSession.js";
+import { calculateSessionSummary } from "./feSession.js";
+import { sessionHistoryDescription } from "./fePresentation.js";
 
 function formatDate(value) {
   if (!value) return "—";
@@ -32,7 +33,7 @@ export function FeHistoryView({ sessions, resumeSession, openSession, retrySessi
               <article key={session.id} className="session-history-card">
                 <div className="history-card-top"><span className={`status-pill is-${session.status}`}>{session.status === "completed" ? "完了" : session.status === "paused" ? "一時停止" : "進行中"}</span><time dateTime={session.updatedAt}>{formatDate(session.completedAt || session.updatedAt)}</time></div>
                 <h2>{sessionLabel(session)}</h2>
-                <p>{scopeLabel(session.config.reviewScopes ?? session.config.scope)}・{session.questionIds.length}問</p>
+                <p>{sessionHistoryDescription(session)}・{session.questionIds.length}問</p>
                 <div className="history-card-metrics"><span><small>正解</small><strong>{summary.correct}</strong></span><span><small>不正解</small><strong>{summary.incorrect}</strong></span><span><small>未回答</small><strong>{summary.unanswered}</strong></span>{session.status === "completed" && <span className="score"><small>得点</small><strong>{summary.score}%</strong></span>}</div>
                 <div className="history-card-actions">{session.status === "completed" ? <><button className="button button-secondary" onClick={() => openSession(session)}>結果を見る</button><button className="button button-tertiary" onClick={() => retrySession(session)}>再挑戦</button></> : <button className="button button-primary" onClick={() => resumeSession(session)}>再開する</button>}</div>
               </article>
