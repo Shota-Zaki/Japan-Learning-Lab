@@ -5,6 +5,7 @@ import "./styles.css";
 import "./fe-v5.css";
 import "./fe-filter-variants.css";
 import "./fe-result-review.css";
+import "./fe-session-enhancements.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
