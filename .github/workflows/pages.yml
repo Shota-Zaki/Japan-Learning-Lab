@@ -72,3 +72,34 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Checkout work for deployment evidence
+        uses: actions/checkout@v4
+        with:
+          ref: work
+
+      - name: Record successful Pages deployment
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { mkdir, writeFile } from "node:fs/promises";
+          await mkdir("prototype/qa", { recursive: true });
+          await writeFile("prototype/qa/pages-deployment.json", `${JSON.stringify({
+            status: "success",
+            pageUrl: process.env.PAGE_URL,
+            sourceRevision: process.env.SOURCE_SHA,
+            workflowRunId: Number(process.env.RUN_ID),
+            workflowRunNumber: Number(process.env.RUN_NUMBER),
+            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
+          }, null, 2)}\n`, "utf8");
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prototype/qa/pages-deployment.json
+          git commit -m "docs: record successful Pages deployment [skip ci]"
+          git push origin HEAD:work
