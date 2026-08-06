@@ -2,5 +2,6 @@
   "status": "requested",
   "staleDeployment": "5a5396e32a5159d932a4455f3e0ad632d8b41499",
   "recoveryRevision": "60a9b75876ba77d0e9cdc671a79b9c64d01858f2",
-  "requestedAt": "2026-08-06T12:59:31Z"
+  "requestedAt": "2026-08-06T13:01:00Z",
+  "trigger": "external-connector"
 }
