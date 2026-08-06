@@ -28,6 +28,7 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 - Latest deployment source: `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`
 - Latest failure evidence commit: `7800509b3840780dbcd2d6eee1ae115e1e34a70a`
 - Latest task status commit: `daa94256c896a83a8d42dd4191fe9fbbe6255b4a`
+- Recovery marker removal commit: `f2c064fdc1aef6e64db15ac426f6db75d0039dbf`
 - Current Pages workflow: `.github/workflows/pages.yml`
 - Temporary recovery and patch workflows on `work`: removed
 - この管理文書更新後の`work` HEADを最終報告の固定HEADとする
@@ -66,17 +67,15 @@ GitHub Pages側のdeployment queueが処理可能になった後、最新`work`�
 
 ### Confirmed diagnosis
 
-再開工程で次を実施した。
+次を実施済み。
 
-1. 残留していたPages deploymentを公式REST APIで解除した
-2. 復旧処理によるBranch更新競合を除去した
-3. workflowへ旧deployment確認preflightを追加した
-4. GitHub Pages APIの`deployment_cancelled`を終端状態として扱うよう修正した
-5. 新しいsourceとartifactでdeployを再実行した
+1. 残留Pages deploymentを公式REST APIで解除
+2. 復旧処理によるBranch更新競合を除去
+3. `.github/workflows/pages.yml`へ旧deployment確認preflightを追加
+4. API状態`deployment_cancelled`を終端状態として処理
+5. 新しいsourceとartifactでdeployを再実行
 
-最新runではpreflightが成功し、source `3cf01154f44a3fa8d101bf5aa04b983e99e819a7`とartifact `8969439155`から新しいdeploymentの作成にも成功した。その後、約10分間`deployment_queued`が継続した。
-
-したがって、残留deployment競合、アプリケーション、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のqueue処理を外部Blockerと確定する。
+最新runではpreflight、build、artifact upload、deployment作成が成功した後、約10分間`deployment_queued`が継続した。残留deployment競合、アプリケーション、build、artifact、権限、deployment作成、preflightは原因ではなく、GitHub Pages側のqueue処理が外部Blockerである。
 
 ## Resume procedure
 
