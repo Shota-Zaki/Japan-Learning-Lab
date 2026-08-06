@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "auditedArtifact": {
+    "workflowRunId": 31063779893,
+    "sourceRevision": "d476cade599de00e56f7def9ad6a1bb17f804758"
+  },
+  "viewports": [375, 1280],
+  "questionSet": {
+    "subject": "B",
+    "periodLabel": "R8",
+    "questions": 6
+  },
+  "checks": {
+    "sessionStarted": true,
+    "answerConfirmed": true,
+    "reviewMarked": true,
+    "pause": true,
+    "resumeBeforeReload": true,
+    "resumeAfterReload": true,
+    "answeredCountRestored": true,
+    "directSessionReloadRestored": true,
+    "allQuestionsAnswered": true,
+    "resultDisplayed": true,
+    "resultQuestionCount": 6,
+    "historyStored": true,
+    "completedHistoryCards": 1,
+    "retryStartedClean": true,
+    "incorrectReviewAvailable": true,
+    "pageHorizontalOverflow": false,
+    "consoleErrors": 0,
+    "httpErrors": 0
+  },
+  "sampleResult": {
+    "correct": 1,
+    "incorrect": 5,
+    "unanswered": 0,
+    "reviewMarked": 1
+  },
+  "note": "Answers were selected for workflow validation, not score evaluation. Later commits only changed Pages build and deployment automation."
+}
