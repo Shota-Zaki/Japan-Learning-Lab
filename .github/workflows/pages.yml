@@ -39,20 +39,6 @@ jobs:
       - name: Verify FE implementation
         run: npm run verify:fe
 
-      - name: Commit generated FE data and Pages output to work
-        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
-        working-directory: .
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f docs prototype/public/data/fe-official-past-questions.json
-          if git diff --cached --quiet; then
-            echo "generated FE data and docs output are already current"
-          else
-            git commit -m "build: update generated FE data and Pages output [skip ci]"
-            git push origin HEAD:work
-          fi
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -60,6 +46,17 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs
+
+      - name: Upload generated repository output
+        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-pages-source
+          path: |
+            docs
+            prototype/public/data/fe-official-past-questions.json
+          include-hidden-files: true
+          retention-days: 1
 
   deploy:
     if: github.ref == 'refs/heads/work' && github.event_name == 'push'
@@ -73,9 +70,10 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Verify public Pages resources
+      - name: Verify public Pages resources and revision
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           node --input-type=module <<'NODE'
           const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -98,7 +96,16 @@ jobs:
           const pageUrl = new URL(process.env.PAGE_URL);
           const indexResponse = await fetchWithRetry(pageUrl);
           const html = await indexResponse.text();
-          if (!html.includes("Japan Learning Lab")) throw new Error("Published index does not contain the expected application title");
+          if (!html.includes("Japan Learning Lab")) {
+            throw new Error("Published index does not contain the expected application title");
+          }
+
+          const buildInfoUrl = new URL("build-info.json", pageUrl);
+          const buildInfoResponse = await fetchWithRetry(buildInfoUrl);
+          const buildInfo = await buildInfoResponse.json();
+          if (buildInfo.sourceRevision !== process.env.SOURCE_SHA) {
+            throw new Error(`Published source revision mismatch: expected ${process.env.SOURCE_SHA}, received ${buildInfo.sourceRevision}`);
+          }
 
           const dataUrl = new URL("data/fe-official-past-questions.json", pageUrl);
           const dataResponse = await fetchWithRetry(dataUrl);
@@ -110,6 +117,7 @@ jobs:
           ]);
 
           const resourceUrls = new Set([
+            buildInfoUrl.href,
             dataUrl.href,
             new URL("favicon.svg", pageUrl).href,
           ]);
@@ -127,7 +135,9 @@ jobs:
 
           for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
             const resourceUrl = new URL(match[1], pageUrl);
-            if (resourceUrl.origin === pageUrl.origin && resourceUrl.pathname.startsWith(pageUrl.pathname)) resourceUrls.add(resourceUrl.href);
+            if (resourceUrl.origin === pageUrl.origin && resourceUrl.pathname.startsWith(pageUrl.pathname)) {
+              resourceUrls.add(resourceUrl.href);
+            }
           }
 
           for (const resourceUrl of resourceUrls) {
@@ -139,13 +149,22 @@ jobs:
             }
             console.log(`Verified ${resourceUrl}`);
           }
-          console.log(`Public Pages smoke check passed for ${pageUrl.href} with ${resourceUrls.size} resources`);
+          console.log(`Public Pages smoke check passed for ${pageUrl.href} at ${process.env.SOURCE_SHA} with ${resourceUrls.size} resources`);
           NODE
 
-      - name: Checkout work for deployment evidence
+      - name: Checkout work for generated output and evidence
         uses: actions/checkout@v4
         with:
           ref: work
+
+      - name: Fast-forward work before evidence update
+        run: git pull --ff-only origin work
+
+      - name: Download generated repository output
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-pages-source
+          path: .
 
       - name: Record successful Pages deployment
         env:
@@ -154,15 +173,43 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           RUN_NUMBER: ${{ github.run_number }}
           REPOSITORY: ${{ github.repository }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
         run: |
           node --input-type=module <<'NODE'
-          import { mkdir, writeFile } from "node:fs/promises";
+          import { mkdir, readFile, writeFile } from "node:fs/promises";
+
+          const buildInfo = JSON.parse(await readFile("docs/build-info.json", "utf8"));
+          if (buildInfo.sourceRevision !== process.env.SOURCE_SHA) {
+            throw new Error(`Generated build-info revision mismatch: expected ${process.env.SOURCE_SHA}, received ${buildInfo.sourceRevision}`);
+          }
+
+          const html = await readFile("docs/index.html", "utf8");
+          const script = html.match(/<script[^>]+src="([^"]+)"/)?.[1] ?? null;
+          const stylesheet = html.match(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/)?.[1]
+            ?? html.match(/<link[^>]+href="([^"]+)"[^>]+rel="stylesheet"/)?.[1]
+            ?? null;
+          if (!script || !stylesheet) throw new Error("Generated index asset references could not be identified");
+
           await mkdir("prototype/qa", { recursive: true });
           await writeFile("prototype/qa/pages-deployment.json", `${JSON.stringify({
             status: "success",
             publicSmokeCheck: "success",
             pageUrl: process.env.PAGE_URL,
+            sourceBranch: process.env.SOURCE_BRANCH,
             sourceRevision: process.env.SOURCE_SHA,
+            publicBuildInfoSourceRevision: process.env.SOURCE_SHA,
+            repositoryBuildInfoSourceRevision: buildInfo.sourceRevision,
+            publishedAssets: {
+              script,
+              stylesheet,
+            },
+            checks: {
+              index: "success",
+              buildInfo: "success",
+              generatedAssets: "success",
+              questionData: "success",
+              sampleFigures: "success",
+            },
             workflowRunId: Number(process.env.RUN_ID),
             workflowRunNumber: Number(process.env.RUN_NUMBER),
             workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
@@ -170,6 +217,6 @@ jobs:
           NODE
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prototype/qa/pages-deployment.json
-          git commit -m "docs: record successful Pages deployment [skip ci]"
+          git add -f docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json
+          git commit -m "docs: sync successful Pages deployment evidence [skip ci]"
           git push origin HEAD:work
