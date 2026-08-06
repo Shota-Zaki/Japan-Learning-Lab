@@ -151,7 +151,6 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setBankStatus("loading");
     const dataUrl = new URL("data/fe-official-past-questions.json", `${window.location.origin}${import.meta.env.BASE_URL}`).toString();
     fetch(dataUrl, { signal: controller.signal })
       .then((response) => {
@@ -206,7 +205,7 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
       )}
 
       {view === "home" && tab === "lesson" && <FeLessonHome />}
-      {view === "home" && tab === "practice" && <FePracticeSetup questionBank={questionBank} sessions={sessions} activeSession={activeSession} bankStatus={bankStatus} startSession={startSession} resumeSession={resumeSession} retryBank={() => setBankReload((value) => value + 1)} />}
+      {view === "home" && tab === "practice" && <FePracticeSetup questionBank={questionBank} sessions={sessions} activeSession={activeSession} bankStatus={bankStatus} startSession={startSession} resumeSession={resumeSession} retryBank={() => { setBankStatus("loading"); setBankReload((value) => value + 1); }} />}
       {view === "home" && tab === "history" && <FeHistoryView sessions={sessions} resumeSession={resumeSession} openSession={openSession} retrySession={retrySession} goPractice={() => navigate("practice", "home")} storageStatus={storageStatus} clearHistory={clearHistory} />}
       {view === "session" && <FeSessionView key={activeSession?.id || "missing"} session={activeSession} questionBank={questionBank} persistSession={persistSession} pauseSession={pauseSession} completeSession={completeSession} retrySession={retrySession} reviewSession={reviewSession} exitSession={() => navigate("practice", "home")} />}
 
