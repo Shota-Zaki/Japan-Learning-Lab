@@ -15,11 +15,44 @@ import { FeSessionView } from "./FeSessionView.jsx";
 import { FeHistoryView } from "./FeHistoryView.jsx";
 import { FeRichContent } from "./FeRichContent.jsx";
 
+const unitLabels = {
+  "basic-theory": "基礎理論",
+  "algorithm-programming": "アルゴリズムとプログラミング",
+  "computer-components": "コンピュータ構成要素",
+  "system-components": "システム構成要素",
+  software: "ソフトウェア",
+  hardware: "ハードウェア",
+  "human-interface": "ヒューマンインタフェース",
+  multimedia: "マルチメディア",
+  database: "データベース",
+  network: "ネットワーク",
+  security: "情報セキュリティ",
+  "system-development": "システム開発技術",
+  "software-development-management": "ソフトウェア開発管理技術",
+  "project-management": "プロジェクトマネジメント",
+  "service-management": "サービスマネジメント",
+  "system-audit": "システム監査",
+  "system-strategy": "システム戦略",
+  "system-planning": "システム企画",
+  "business-strategy": "経営戦略",
+  "technology-strategy": "技術戦略マネジメント",
+  "business-industry": "ビジネスインダストリ",
+  "corporate-activity": "企業活動",
+  law: "法務",
+  algorithm: "アルゴリズムとプログラミング",
+  "computer-system": "コンピュータシステム",
+  "corporate-legal": "企業と法務",
+  unclassified: "未分類",
+};
+
 function normalizeQuestion(question) {
   const correctAnswers = [...new Set(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : []))];
+  const sourceUnitId = question.unitId || "unclassified";
   return {
     ...question,
     subject: question.subject || "A",
+    sourceUnitId,
+    unitId: unitLabels[sourceUnitId] || sourceUnitId,
     correctAnswers,
     correctAnswer: question.correctAnswer || correctAnswers[0],
     answerMode: question.answerMode || (correctAnswers.length > 1 ? "multiple" : "single"),
