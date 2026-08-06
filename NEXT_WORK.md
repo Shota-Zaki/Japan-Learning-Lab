@@ -206,11 +206,17 @@
 - `prototype/src/FeSessionView.jsx`の既存`react-hooks/exhaustive-deps` warning 1件
 - GitHub Actionsが使用する一部ActionのNode.js 20非推奨warning。検証ランタイムはNode.js 22で成功
 
+## User memo for next implementation
+
+- 問題一覧の進捗表示「1 / 10」の左側を数値入力にし、入力した問題番号へ直接移動できるようにする
+- 問題一覧の件数が多い場合は、問題一覧の領域内にスクロールバーを表示する
+- 現時点では実装せず、次の修正工程で既存UI、レスポンシブ表示、キーボード操作との整合を確認して対応する
+
 ## Latest user request
 
-`確認`
+`メモ`
 
-確認結果は`needs_fix`。Blocking問題を管理文書へ記録し、Pull Request #1は未マージのまま維持した。
+問題一覧の番号入力による直接移動と、多件数時の一覧内スクロールを次回修正項目として記録した。
 
 ## Work completion update targets
 
