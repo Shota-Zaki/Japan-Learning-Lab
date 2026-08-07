@@ -1,0 +1,45 @@
+name: Audit FE mock timer layout
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototype
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+      - run: npm ci
+      - name: Build Pages artifact
+        run: npm run build:pages
+      - name: Audit mock timer placement
+        run: |
+          for attempt in 1 2; do
+            if npm run audit:fe-mock-timer; then
+              break
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+            echo "Mock timer browser audit did not produce valid evidence; retrying once after a short delay"
+            sleep 5
+          done
+      - name: Upload browser evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: fe-mock-timer-evidence
+          path: prototype/qa/jll-fe-004-browser
+          include-hidden-files: true
+          retention-days: 7
