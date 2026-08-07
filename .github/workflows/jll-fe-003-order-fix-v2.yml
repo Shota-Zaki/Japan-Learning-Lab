@@ -1,0 +1,287 @@
+name: Temporary JLL-FE-003 order fix v2
+
+on:
+  push:
+    branches: [work]
+    paths:
+      - .github/jll-fe-003-order-fix-v2.trigger
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work
+          fetch-depth: 0
+
+      - name: Wait for standard workflow from trigger
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            json="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pages.yml --commit "$TRIGGER_SHA" --limit 1 --json status 2>/dev/null || true)"
+            status="$(node --input-type=module -e 'const d=JSON.parse(process.argv[1]||"[]"); process.stdout.write(d[0]?.status||"");' "$json")"
+            [[ "$status" == "completed" ]] && exit 0
+            sleep 10
+          done
+          echo "Standard workflow did not complete" >&2
+          exit 1
+
+      - name: Apply scoped patch on latest work
+        run: |
+          set -euo pipefail
+          git fetch origin work
+          git reset --hard origin/work
+          cat > /tmp/jll-fe-003.patch <<'PATCH'
+          diff --git a/prototype/src/FePracticeSetup.jsx b/prototype/src/FePracticeSetup.jsx
+          --- a/prototype/src/FePracticeSetup.jsx
+          +++ b/prototype/src/FePracticeSetup.jsx
+          @@
+             const filterGroups = [
+               { key: "domains", title: "1. 分野", description: "同じ条件群ではOR、他の条件群とはANDで絞り込みます。", values: selectedDomains, options: domainOptions, onChange: (next) => setGroupSelection("domains", next) },
+          -    { key: "unitIds", title: "2. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
+          +    { key: "reviewScopes", title: "2. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
+               { key: "periodIds", title: "3. 開催回・公開区分", values: selectedPeriodIds, options: periodOptions, onChange: (next) => setGroupSelection("periodIds", next) },
+          -    { key: "reviewScopes", title: "4. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
+          +    { key: "unitIds", title: "4. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
+             ];
+          diff --git a/prototype/src/main.jsx b/prototype/src/main.jsx
+          --- a/prototype/src/main.jsx
+          +++ b/prototype/src/main.jsx
+          @@
+             const leftStackHeight = cards[0].getBoundingClientRect().height
+               + rowGap
+          -    + cards[3].getBoundingClientRect().height;
+          +    + cards[1].getBoundingClientRect().height;
+             const periodHeight = cards[2].getBoundingClientRect().height;
+          diff --git a/prototype/src/fe-filter-variants.css b/prototype/src/fe-filter-variants.css
+          --- a/prototype/src/fe-filter-variants.css
+          +++ b/prototype/src/fe-filter-variants.css
+          @@
+           html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(2) {
+          -  grid-column: span 8;
+          +  grid-column: span 3;
+           }
+           
+           html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(3) {
+          -  grid-column: span 7;
+          +  grid-column: span 5;
+           }
+           
+           html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(4) {
+          -  grid-column: span 5;
+          -}
+          -
+          -html[data-fe-filter-layout="2"] .fe-filter-variant-grid {
+          -  padding-bottom: var(--fe-filter-layout-2-extra-space, 0px);
+          +  grid-column: 1 / -1;
+           }
+           
+           html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(1) {
+             grid-column: 1 / span 5;
+          -  grid-row: 2;
+          +  grid-row: 1;
+           }
+           
+           html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(2) {
+          -  grid-column: 1 / -1;
+          -  grid-row: 1;
+          +  grid-column: 1 / span 5;
+          +  grid-row: 2;
+           }
+           
+           html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(3) {
+             position: absolute;
+             inset-block-start: 0;
+             inset-inline: 0;
+             grid-column: 6 / -1;
+          -  grid-row: 2;
+          +  grid-row: 1 / span 2;
+           }
+           
+           html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(4) {
+          -  grid-column: 1 / span 5;
+          +  grid-column: 1 / -1;
+             grid-row: 3;
+          +  margin-top: var(--fe-filter-layout-2-extra-space, 0px);
+           }
+           
+           html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(1) {
+             grid-column: 1 / span 4;
+          -  grid-row: 2;
+          +  grid-row: 1;
+           }
+           
+           html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(2) {
+             grid-column: 5 / -1;
+          -  grid-row: 2;
+          +  grid-row: 1;
+           }
+           
+           html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(3) {
+             grid-column: 1 / -1;
+          -  grid-row: 1;
+          +  grid-row: 2;
+           }
+          @@
+           @media (min-width: 721px) {
+          -  .fe-filter-variant-grid > :nth-child(2) .fe-check-grid-compact {
+          +  .fe-filter-variant-grid > :nth-child(4) .fe-check-grid-compact {
+               grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+             }
+           }
+          @@
+             html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(2) {
+          -    grid-column: span 5;
+          +    grid-column: span 2;
+             }
+             
+             html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(3) {
+          -    grid-column: span 5;
+          +    grid-column: span 3;
+             }
+             
+             html[data-fe-filter-layout="1"] .fe-filter-variant-grid > :nth-child(4) {
+          -    grid-column: span 3;
+          +    grid-column: 1 / -1;
+             }
+             
+             html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(1) {
+               grid-column: 1 / span 3;
+             }
+          +
+          +  html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(2) {
+          +    grid-column: 1 / span 3;
+          +  }
+             
+             html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(3) {
+               grid-column: 4 / -1;
+             }
+             
+             html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(4) {
+          -    grid-column: 1 / span 3;
+          +    grid-column: 1 / -1;
+             }
+          diff --git a/prototype/tests/fe-filter-layout.test.mjs b/prototype/tests/fe-filter-layout.test.mjs
+          --- a/prototype/tests/fe-filter-layout.test.mjs
+          +++ b/prototype/tests/fe-filter-layout.test.mjs
+          @@
+          -  assert.match(css, /data-fe-filter-layout=\"2\"[^}]*\.fe-filter-variant-grid\s*\{[\s\S]*padding-bottom:\s*var\(--fe-filter-layout-2-extra-space/);
+          -  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(3\)\s*\{[\s\S]*position:\s*absolute;[\s\S]*grid-row:\s*2;/);
+          +  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(4\)\s*\{[\s\S]*margin-top:\s*var\(--fe-filter-layout-2-extra-space/);
+          +  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(3\)\s*\{[\s\S]*position:\s*absolute;[\s\S]*grid-row:\s*1 \/ span 2;/);
+          @@
+          -  assert.match(css, /:nth-child\(2\) \.fe-check-grid-compact[\s\S]*minmax\(min\(100%, 240px\), 1fr\)/);
+          +  assert.match(css, /:nth-child\(4\) \.fe-check-grid-compact[\s\S]*minmax\(min\(100%, 240px\), 1fr\)/);
+          @@
+          -  assert.match(main, /cards\[0\][\s\S]*cards\[3\][\s\S]*cards\[2\]/);
+          +  assert.match(main, /cards\[0\][\s\S]*cards\[1\][\s\S]*cards\[2\]/);
+             assert.ok(setup.indexOf("<SubjectSelector") < setup.indexOf("fe-filter-variant-grid"));
+             assert.equal((setup.match(/fe-filter-variant-grid/g) || []).length, 1);
+          +
+          +  const expectedGroupMarkers = [
+          +    'key: "domains", title: "1. 分野"',
+          +    'key: "reviewScopes", title: "2. 回答・復習状態"',
+          +    'key: "periodIds", title: "3. 開催回・公開区分"',
+          +    'key: "unitIds", title: "4. 単元"',
+          +  ];
+          +  let previousIndex = -1;
+          +  for (const marker of expectedGroupMarkers) {
+          +    const currentIndex = setup.indexOf(marker);
+          +    assert.ok(currentIndex > previousIndex, `Filter group order is incorrect at ${marker}`);
+          +    previousIndex = currentIndex;
+          +  }
+          @@
+             assert.match(audit, /layout2LeftGap/);
+          +  assert.match(audit, /keyboardGroupOrder/);
+          diff --git a/prototype/scripts/audit-fe-filter-layouts.mjs b/prototype/scripts/audit-fe-filter-layouts.mjs
+          --- a/prototype/scripts/audit-fe-filter-layouts.mjs
+          +++ b/prototype/scripts/audit-fe-filter-layouts.mjs
+          @@
+          -const expectedMinimums = { sourceCount: 1900, optionCounts: [3, 20, 20, 4] };
+          +const expectedMinimums = { sourceCount: 1900, optionCounts: [3, 4, 20, 20] };
+          @@
+          -      layout2LeftGap: cards.length === 4 ? round(cards[3].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom) : null,
+          +      layout2LeftGap: cards.length === 4 ? round(cards[1].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom) : null,
+          @@
+               domOrder: cards.map((card) => card.querySelector('legend')?.textContent?.trim() || ''),
+          -    unitLabels: cards[1] ? [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '') : [],
+          -    unitValues: cards[1] ? [...cards[1].querySelectorAll('label input')].map((input) => input.value || '') : []
+          +    keyboardGroupOrder: grid ? [...grid.querySelectorAll('input[type="checkbox"]')].map((input) => input.closest('fieldset')?.querySelector('legend')?.textContent?.trim() || '').filter((legend, index, all) => legend && all.indexOf(legend) === index) : [],
+          +    unitLabels: cards[3] ? [...cards[3].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '') : [],
+          +    unitValues: cards[3] ? [...cards[3].querySelectorAll('label input')].map((input) => input.value || '') : []
+             };
+          @@
+               && JSON.stringify(before.optionCounts) === JSON.stringify(after.optionCounts)
+               && JSON.stringify(before.domOrder) === JSON.stringify(after.domOrder)
+          +    && JSON.stringify(before.keyboardGroupOrder) === JSON.stringify(after.keyboardGroupOrder)
+               && JSON.stringify(before.unitLabels) === JSON.stringify(after.unitLabels)
+          @@
+          -  assert(JSON.stringify(metrics.domOrder) === JSON.stringify(["1. 分野", "2. 単元", "3. 開催回・公開区分", "4. 回答・復習状態"]), `DOM order changed for variant ${variant}`);
+          +  const expectedGroupOrder = ["1. 分野", "2. 回答・復習状態", "3. 開催回・公開区分", "4. 単元"];
+          +  assert(JSON.stringify(metrics.domOrder) === JSON.stringify(expectedGroupOrder), `DOM order changed for variant ${variant}`);
+          +  assert(JSON.stringify(metrics.keyboardGroupOrder) === JSON.stringify(expectedGroupOrder), `Keyboard group order changed for variant ${variant}`);
+          @@
+          -    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, final-data consistency across screenshot capture, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+          +    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, final-data consistency across screenshot capture, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM and keyboard group order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+          diff --git a/DESIGN.md b/DESIGN.md
+          --- a/DESIGN.md
+          +++ b/DESIGN.md
+          @@
+           1. 科目Aまたは科目B
+           2. 分野
+          -3. 単元
+          +3. 回答・復習状態
+           4. 開催回または公開区分
+          -5. 回答状態
+          +5. 単元
+           6. 出題数または模擬試験種別
+          @@
+          -- 受験科目より下にある「分野」「単元」「開催回・公開区分」「回答・復習状態」だけをモジュール不規則型Gridへ配置する
+          +- 受験科目より下にある「分野」「回答・復習状態」「開催回・公開区分」「単元」だけをモジュール不規則型Gridへ配置する
+          @@
+          -- パターンBは単元を全幅の先頭カードとし、その下で分野と回答・復習状態を左側へ縦積みし、開催回・公開区分を右側の縦長領域へ配置する
+          +- パターンBは分野と回答・復習状態を左側へ縦積みし、開催回・公開区分を右側の縦長領域へ配置し、その下に単元を全幅カードとして配置する
+          @@
+          -- 375pxでは全パターンをDOM順の1列へ戻す
+          +- 375pxでは全パターンを「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」のDOM順で1列へ戻す
+          diff --git a/prototype/DESIGN.md b/prototype/DESIGN.md
+          --- a/prototype/DESIGN.md
+          +++ b/prototype/DESIGN.md
+          @@
+          -- Gridの対象は「1. 分野」「2. 単元」「3. 開催回・公開区分」「4. 回答・復習状態」の4ブロックだけとする。
+          +- Gridの対象は「1. 分野」「2. 回答・復習状態」「3. 開催回・公開区分」「4. 単元」の4ブロックだけとする。
+          @@
+          -- パターンBは単元を全幅の先頭カードとする。
+          -- その下は分野と回答・復習状態を左側へ縦積みし、開催回・公開区分を右側で2段相当使用する。
+          +- パターンBは分野と回答・復習状態を左側へ縦積みし、開催回・公開区分を右側で2段相当使用する。
+          +- その下に単元を全幅カードとして配置する。
+          @@
+          -- 375pxではDOM順の1列、768pxでは8列基準、1,280px以上では12列基準とする。
+          +- 375pxでは「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」のDOM順で1列、768pxでは8列基準、1,280px以上では12列基準とする。
+          PATCH
+          sed -i 's/^          //' /tmp/jll-fe-003.patch
+          git apply --check /tmp/jll-fe-003.patch
+          git apply /tmp/jll-fe-003.patch
+
+      - name: Commit scoped fix
+        run: |
+          set -euo pipefail
+          git fetch origin work
+          if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/work)" ]]; then
+            echo "work advanced after patch application; refusing to overwrite concurrent changes" >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DESIGN.md prototype/DESIGN.md prototype/src/FePracticeSetup.jsx prototype/src/main.jsx prototype/src/fe-filter-variants.css prototype/tests/fe-filter-layout.test.mjs prototype/scripts/audit-fe-filter-layouts.mjs
+          git diff --cached --check
+          git commit -m "fix: reorder FE filter groups"
+          git push origin HEAD:work
