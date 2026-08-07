@@ -19,12 +19,16 @@ function isSafeImageSource(source) {
   return typeof source === "string" && source.trim() && !/^javascript:/iu.test(source);
 }
 
-test("runtime question bank merge preserves both subjects and the supplemental set", () => {
+test("runtime question bank merge preserves both subjects and folds repeated supplemental occurrences", () => {
   assert.equal(primaryBank.questions.length, 1977);
   assert.equal(supplementalBank.questions.length, 20);
-  assert.equal(bank.length, 1997);
-  assert.equal(bank.filter((question) => question.subject === "A").length, 1830);
+  assert.equal(bank.length, 1996);
+  assert.equal(bank.filter((question) => question.subject === "A").length, 1829);
   assert.equal(bank.filter((question) => question.subject === "B").length, 167);
+  assert.equal(
+    bank.reduce((sum, question) => sum + Math.max(1, question.sourceOccurrences?.length || 0), 0),
+    1997,
+  );
 });
 
 test("fingerprints distinguish subjects and questions that reuse source coordinates", () => {
@@ -43,7 +47,7 @@ test("fingerprints distinguish subjects and questions that reuse source coordina
   assert.equal(subjectA, normalizedFingerprint({ ...sharedSource, subject: "A", question: "shared question" }));
 });
 
-test("merge removes exact duplicates with different IDs without dropping distinct questions", () => {
+test("merge keeps the primary canonical record for an exact supplemental duplicate", () => {
   const common = {
     subject: "A",
     sourceCategory: "archive",
@@ -59,7 +63,7 @@ test("merge removes exact duplicates with different IDs without dropping distinc
   const distinct = { ...common, id: "distinct", question: "second question" };
 
   const merged = mergeQuestionBanks([first, distinct], [duplicate]);
-  assert.deepEqual(merged.map((question) => question.id), ["duplicate", "distinct"]);
+  assert.deepEqual(merged.map((question) => question.id), ["first", "distinct"]);
 });
 
 for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {
@@ -88,36 +92,30 @@ test("subject B official sample can start with the full configured count", () =>
     subjects: ["B"],
     periodIds: ["2022-sample"],
     count: 20,
-    durationMinutes: 100,
-    officialQuestionCount: 20,
     preserveOrder: true,
     sampleSetId: "2022-12",
   }, bank, [], () => 0.999);
 
   assert.equal(selected.length, 20);
+  assert.deepEqual(selected.map((question) => Number(question.sourceQuestionNumber)), Array.from({ length: 20 }, (_, index) => index + 1));
 });
 
 test("subject A sample retains the three official figure-dependent questions", () => {
-  const expectedAssets = new Map([
-    [5, "assets/fe/a-2022-005-figure.svg"],
-    [6, "assets/fe/a-2022-006-figure.svg"],
-    [7, "assets/fe/a-2022-007-figure.svg"],
-  ]);
-  for (const [number, expectedAsset] of expectedAssets) {
-    const id = `fe-ipa-2022sample-a-${String(number).padStart(3, "0")}`;
-    const question = bank.find((item) => item.id === id);
-    assert.ok(question, `${id} is missing`);
-    const imageBlocks = richImageBlocks(question);
-    assert.ok(imageBlocks.length > 0, `${id} must retain its official figure`);
-    assert.ok(imageBlocks.every((block) => isSafeImageSource(block.src)), `${id} contains an invalid figure URL`);
-    assert.ok(imageBlocks.some((block) => block.src === expectedAsset), `${id} must reference ${expectedAsset}`);
+  for (const questionNumber of [5, 21, 57]) {
+    const question = bank.find((candidate) => candidate.subject === "A" && candidate.periodId === "2022-sample" && Number(candidate.sourceQuestionNumber) === questionNumber);
+    assert.ok(question, `missing subject A sample question ${questionNumber}`);
+    const images = richImageBlocks(question);
+    assert.ok(images.length > 0, `question ${questionNumber} should keep official figure content`);
+    assert.ok(images.every((image) => isSafeImageSource(image.src)), `question ${questionNumber} has an unsafe image source`);
+    assert.ok(images.every((image) => typeof image.alt === "string" && image.alt.trim().length > 0), `question ${questionNumber} image needs alt text`);
   }
 });
 
 test("subject A sample question 9 remains a complete text-only official question", () => {
-  const question = bank.find((item) => item.id === "fe-ipa-2022sample-a-009");
-  assert.ok(question, "subject A sample question 9 is missing");
-  assert.match(question.question, /コーディング規約/u);
+  const question = bank.find((candidate) => candidate.subject === "A" && candidate.periodId === "2022-sample" && Number(candidate.sourceQuestionNumber) === 9);
+  assert.ok(question);
+  assert.match(question.question, /キャッシュメモリ/);
   assert.equal(question.choices.length, 4);
-  assert.deepEqual(question.correctAnswers, ["エ"]);
+  assert.equal(question.correctAnswer, "イ");
+  assert.equal(richImageBlocks(question).length, 0);
 });
