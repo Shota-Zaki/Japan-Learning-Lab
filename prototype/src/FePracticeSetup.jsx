@@ -270,9 +270,9 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
 
   const filterGroups = [
     { key: "domains", title: "1. 分野", description: "同じ条件群ではOR、他の条件群とはANDで絞り込みます。", values: selectedDomains, options: domainOptions, onChange: (next) => setGroupSelection("domains", next) },
-    { key: "unitIds", title: "2. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
+    { key: "reviewScopes", title: "2. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
     { key: "periodIds", title: "3. 開催回・公開区分", values: selectedPeriodIds, options: periodOptions, onChange: (next) => setGroupSelection("periodIds", next) },
-    { key: "reviewScopes", title: "4. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
+    { key: "unitIds", title: "4. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
   ];
 
   return (
