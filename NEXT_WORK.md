@@ -6,22 +6,22 @@
 
 ## Current phase
 
-`needs_fix`
+`review_ready`
 
 ## Next role
 
-修正担当。
+確認担当。
 
-確認担当がDraft PR #5を固定HEADで独立確認した結果、模擬試験の固定残り時間がグローバルヘッダー右側の操作領域と重なるBlocking findingを確認した。`main`へのmergeは行わず、PR #5はDraftのまま維持する。
+修正担当がBlocking `B1`を修正し、Draft PR #5のアプリケーション実装、専用ブラウザ監査、PR CI、`work` Pages公開確認まで完了した。実装担当は`main`へmergeせず、PR #5をDraftのまま維持する。確認担当は実装説明を前提にせず、GitHub実状態から最新HEADを再固定して独立確認する。
 
 ## Objective
 
-FE演習について、次の4点を完了させる。
+FE演習について、次の4点を確認する。
 
-1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付け、読み分けやすくする
-2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時確認でき、ヘッダー・本文・操作を覆わないようにする
-3. 2022年科目Aサンプルを通常演習の出題対象から除外する
-4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
+1. 問題文と解説の文字サイズ・太さ・構造に明確な差がある
+2. 模擬試験の残り時間がサイトヘッダー内の専用ステータス行へ表示され、スクロール中も常時見え、ヘッダー・問題本文・回答操作を覆わない
+3. 2022年科目Aサンプルが通常演習の出題対象から除外されている
+4. `2026年7月科目A免除制度修了試験`が学習者向けに`令和8年度 免除試験`と表示される
 
 ## Repository state
 
@@ -30,87 +30,92 @@ FE演習について、次の4点を完了させる。
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-004`
-- Task status: `needs_fix`
+- Task status: `review_ready`
 - Draft Pull Request: `#5` / `work` → `main`
-- Review input HEAD: `c2bde678c721ce3f889a9b8a380843e20068fdad`
 - Start HEAD: `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`
-- Fixed implementation HEAD before review: `5e6036980195108ed9f9429be53ebdba01e9ddcb`
-- PR-CI-verified application source revision before review management updates: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- PR CI Pages build: workflow `31159735333` / run `413` / success / build job `92807114332`
-- PR CI browser audit: workflow `31159735305` / run `64` / success / job `92807114034`
-- Review-input work Pages: workflow `31159729019` / run `412` / build・deploy success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Final review-management work Pages: workflow `31176033019` / run `418` / build job `92858126749` / deploy job `92858292374` / success
-- Current published/repository build-info sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
-- Pages evidence synchronization commit for run 418: `770c725031cbc079b5749bc19a464605f42cf1db`
-- Published assets remain `index-CCwVLhbI.js` / `index-eTi5h_EL.css`; review management commits do not change application code
-- PR review threads: none
+- Blocking修正・専用監査固定HEAD: `4178cecde659c4501d04344ca115f3c70bd19663`
+- 修正後Pages証拠同期を含むhandoff前`work` HEAD: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
+- 確認開始時は管理文書更新後の最新`work` / PR HEADをGitHubから再取得する
+- PR review threads: 確認開始時に再確認する
 
-## Blocking finding
+## Resolved Blocking B1
 
-### B1. 固定タイマーがヘッダー操作を覆う
+### 状態
 
-**Severity:** Blocking
+`resolved by repair / confirmation pending`
 
-**Affected files:**
+### 修正内容
 
-- `prototype/src/FeSessionView.jsx`
-- `prototype/src/fe-session-enhancements.css`
-- 必要に応じてグローバルヘッダーを定義するコンポーネント / CSS
-- Root / prototype `DESIGN.md`（配置方針を変える場合）
+- live entry pointが`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`であることを再確認した
+- 模擬試験タイマーを本文側の`position: fixed`表示から外し、`PlatformHeader`へ`statusText`を渡す専用ステータス行を追加した
+- 専用ステータス行は通常のブランド・グローバルナビゲーションとは別行で通常フローの高さを確保し、stickyなサイトヘッダーと一緒に常時表示する
+- 旧`.session-topbar > span > strong`は表示しない
+- 通常演習では専用ステータス行とタイマーを生成しない
+- Root / prototype `DESIGN.md`を実装前に更新し、専用行・代表幅・非重複要件を設計方針へ反映した
+- 旧確認ではlegacy `App.jsx`の`.header-actions`をlive headerとして扱っていたが、現在の公開経路は`AppV5.jsx`である。確認担当はlegacy UIではなく実際のentry pointを基準に判定すること。ただし旧タイマーが専用レイアウト領域を持たなかった問題自体は構造修正済み
 
-**Evidence / reproduction:**
+### 専用browser evidence
 
-1. `App.jsx`の`.header-actions`には「検索」と「アカウント」の2ボタンがあり、各`.icon-action`は`min-width: 42px`、ボタン間gapは`8px`で、ヘッダー右端へ配置される。
-2. JLL-FE-004の`.session-topbar > span > strong`は`position: fixed`、`z-index: 30`で同じ右端へ配置される。
-3. 520px以下ではタイマーが`right: 12px`、768pxでは`right: 16px`となり、ヘッダー右端の`.header-actions`と同じ領域を占有する。
-4. 1,280pxでもヘッダー右端付近とタイマー右端が重なるため、検索・アカウント操作領域へ被る。
-5. 受入条件「375pxを含む対象画面幅で本文や操作を妨げない」およびDESIGNの「ブランド、ナビゲーション、主要操作を覆わない」を満たさない。
+Workflow: `Audit FE mock timer layout`
 
-**Cause:**
+- workflow run: `31180417818` / run `7` / success
+- job: `92872090509` / success
+- evidence artifact: `8994534328` / `fe-mock-timer-evidence`
+- widths: 375px / 768px / 1,280px
+- 375px initial: timer `y=80–116`, problem heading `y≈311`以降、problem body `y≈353`以降、answers `y≈408`以降、session actions `y≈821`以降、全overlap `false`
+- 768px initial: timer `y=96–136`, problem heading `y≈343`以降、全overlap `false`
+- 1,280px initial: timer `y=107–147`, problem heading `y≈360`以降、全overlap `false`
+- 180pxスクロール後も各幅でタイマーのY座標は不変
+- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの矩形重なりなし
+- page horizontal overflowなし
+- 通常topic演習では`.fe-mock-timer`、mock status row、legacy inline timerのいずれも0件
+- console warning/error、failed requestなし
 
-タイマーをヘッダー右上の空き領域へ配置する前提でCSSのみを追加したが、実際のヘッダー右上には`.header-actions`が存在する。実装時の`responsiveBrowserAudit`は`npm run audit:fe-filter-layouts`を再利用しており、JLL-FE-004のタイマー重なりを検査していなかった。
+## Validation already passed by repair role
 
-**Required fix:**
+- PR CI `Build and deploy GitHub Pages`: workflow `31180417745` / run `451` / success
+  - `npm ci`: success
+  - `npm run verify:fe`: success
+  - tests: 63 / 63 passed
+  - TypeScript: success
+  - ESLint: success
+  - normal build: success
+  - Pages build: success
+- PR CI `Audit FE filter layout variants`: workflow `31180417961` / run `83` / success
+- PR CI `Audit FE mock timer layout`: workflow `31180417818` / run `7` / success
+- `work` Pages: workflow `31180413956` / run `450` / success
+- Pages public smoke check: success
+- Pages sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- public/repository `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- published script: `index-22-KQ0Ti.js`
+- published stylesheet: `index-D0cQvWA9.css`
+- Pages evidence synchronization commit: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
 
-- 固定タイマー用の専用領域を確保し、検索・アカウント・グローバルナビゲーションと座標が競合しない構造へ変更する。
-- 単純な`z-index`変更で隠すのではなく、DOMまたはレイアウト上でタイマー領域を予約する。必要ならHeaderへ模擬試験タイマー用slot/propを追加するか、ヘッダー直下の固定領域へ移す。
-- 375px、768px、1,280pxで、タイマーとブランド、検索、アカウント、グローバルナビ、問題本文、回答操作の矩形が重ならないことを実ブラウザで検証する。
-- スクロール後もタイマーが常時見えることを確認する。
-- 通常演習では固定タイマーを表示しないことを維持する。
-- UI配置方針を変更する場合は実装前にRoot / prototype `DESIGN.md`を更新する。
+## Confirmation scope
 
-## Non-blocking / passed checks
+固定HEADを基準に、実装担当の説明を信用せず次を独立確認する。
 
-- `main`と`work`は分岐なし。review input時点で`work`は`main`より26 commits ahead。
-- PR #5はmergeable、Draft維持。
-- 問題文と解説の視覚階層CSSは明確に分離されている。
-- 2022年科目Aサンプルは通常`topic`候補から除外され、`mock`経路は維持されている。
-- `2026-exemption-07`はlearner-facing helperで`令和8年度 免除試験`へ表示され、元データを変更していない。
-- PR CIの`npm run verify:fe`はsuccess。63 tests passed、TypeScript、ESLint、normal build、Pages build success。
-- Final review-management Pages run `418`もbuild・deploy・public revision verificationまでsuccess。
-- 未解決review thread / reviewなし。
-- 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため、追加タスク化不要。
+- `main`との差分、禁止範囲、Task目的・完了条件
+- live entry pointとタイマーの実DOM / CSS構造
+- 375px / 768px / 1,280pxでブランド、グローバルナビゲーション、存在する場合のヘッダー操作、問題見出し、問題本文、回答、セッション操作とタイマーが重ならないこと
+- スクロール後もタイマーが常時表示されること
+- 通常演習にタイマーが出ないこと
+- 問題文/解説の視覚階層
+- 2022年科目Aサンプルの通常演習除外とmock経路維持
+- `令和8年度 免除試験`のlearner-facing表示と元データ非改変
+- 既存セッション、模擬試験、結果レビュー、履歴の回帰
+- test / typecheck / lint / normal build / Pages build / `verify:fe`
+- 専用browser evidence artifactとCIログ
+- `docs/`、公開Pages、`build-info.json`、管理文書の整合
 
-## Change forbidden
+## Change forbidden for confirmation role
 
+- 原則としてアプリケーションコードを修正しない
 - 問題本文、選択肢、正答、解説内容そのものの改変
 - JLL-FE-003の絞り込み順・レイアウト・受験科目ブロックの再変更
 - `JLL-FE-LESSON-001`、`JLL-FE-QBANK-001`、Java Learning Labの先行実装
-- `main`へのmerge
-- Pull Requestを勝手にReady for reviewへ変更すること
-- Squash merge / rebase merge / force push
+- squash merge / rebase merge / force push
 - `work` Branchの削除
-
-## Completion criteria for repair
-
-- Blocking B1を解消する
-- 375px、768px、1,280pxの実ブラウザ監査でタイマーとヘッダー/主要操作の非重複を証拠化する
-- 問題文/解説階層、通常演習除外、免除試験表示の既存3要件を維持する
-- 既存セッション、模擬試験、結果レビュー、履歴に回帰がない
-- `npm ci`、tests、typecheck、lint、normal build、Pages build、`npm run verify:fe`が成功する
-- `docs/`を最新buildで生成する
-- Draft PR #5を更新し、CIとwork Pages公開Revisionを確認する
-- `task-list.md`と`NEXT_WORK.md`を`review_ready`へ戻し、修正後固定HEADとブラウザ証拠を記録する
 
 ## Required verification
 
@@ -123,9 +128,18 @@ npm run lint
 npm run build
 npm run build:pages
 npm run verify:fe
+npm run audit:fe-mock-timer
 ```
 
-加えてJLL-FE-004専用のブラウザ監査を追加または実行し、少なくとも375px / 768px / 1,280pxでタイマー非重複を機械的に検証する。既存`audit:fe-filter-layouts`だけをJLL-FE-004のタイマー証拠として扱わない。
+GitHub Actionsの固定HEAD evidenceを利用してもよいが、確認担当はPR差分・CI・artifact・Pagesを独立照合する。
+
+## Pass handling
+
+合格なら、確認担当が管理文書を`completed`と次タスク向けに更新し、`work`へcommit/push後に更新後HEADを再検証する。その後PR #5をmerge commit方式で`main`へmergeし、`work`を最新`main`へfast-forward同期し、Pages再公開と最終Revisionを確認する。
+
+## Failure handling
+
+Blockingが残る場合はmergeしない。`task-list.md`を`needs_fix`、この`NEXT_WORK.md`を修正担当向けに更新し、再現方法、原因、修正対象、具体的修正、再検証項目を記録する。
 
 ## Queued work after JLL-FE-004
 
@@ -135,15 +149,13 @@ npm run verify:fe
 
 ## Work completion update targets
 
-- `DESIGN.md` / `prototype/DESIGN.md`（配置方針変更時）
 - `task-list.md`
 - `NEXT_WORK.md`
 - `PROJECT_CONTEXT.md`
-- `docs/`
 - Draft Pull Request #5
+- merge後の`main` / `work`
 - CI / JLL-FE-004専用browser evidence / Pages公開結果
-- 修正後固定HEAD
 
 ## Next user command
 
-`修正`
+`確認`
