@@ -50,7 +50,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Dependencies
 
-- `JLL-FE-003`: completed / PR #4 merged
+- `JLL-FE-003`: completed / PR #4 merged / final Pages verification passed
 
 ### Branch
 
@@ -66,7 +66,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Current HEAD
 
-未着手。確認完了後の`work`同期・Pages証拠更新が終わった状態を開始点とする。
+未着手。JLL-FE-003完了証拠の管理commitを含む最新`work` HEADを開始点とする。
 
 ### Validation result
 
@@ -401,7 +401,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `afa550a41d2776543445a3cb727731f6fb902608`
 
-### Pages output synchronization HEAD
+### Pre-merge Pages output synchronization HEAD
 
 `4cd677854fda9f4a4f204df5519e86f5600fc595`
 
@@ -412,6 +412,14 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 ### Confirmation management HEAD
 
 `66ba0a45ba2cb963bb96fba144021073fb66e279`
+
+### Main/work synchronization base
+
+`f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+
+### Final Pages evidence synchronization HEAD
+
+`e547682bb6d05b2fd6c619185996148e3cad607f`
 
 ### Validation result
 
@@ -439,6 +447,11 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Japanese unit-label data verification: passed
 - Console error/warning and failed request: none
 - Main Branch CI after merge: no new run/status because current workflow triggers `push` only for `work` and `pull_request` for `main`
+- Final post-merge Pages workflow: `31157149416` / run `405` / success
+- Final post-merge build job: `92799024993` / success
+- Final post-merge deploy job: `92799145662` / success
+- Final `Verify FE implementation`: success
+- Final `Verify public Pages resources and revision`: success
 - Confirmation environment limitation: local cloneは実行環境の外向きDNS制約で不可。GitHub Actionsの固定PR merge refログ、artifact、GitHub差分を独立照合した
 - Non-blocking observation: CIスクリーンショット環境は日本語システムフォント不足により一部グリフが豆腐表示するが、DOM監査・単元ラベル検証では完全な日本語文字列を確認済み。公開利用環境の機能不良を示す証拠はない
 
@@ -448,14 +461,17 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### GitHub Pages result
 
-- Pre-merge verified workflow: `31155340547` / run `403` / success
-- Build job: `92793503577` / success
-- Deploy job: `92793641839` / success
+- Final workflow: `31157149416` / run `405` / success
+- Final build job: `92799024993` / success
+- Final deploy job: `92799145662` / success
 - Public smoke check: success
-- Pre-merge public source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `docs/build-info.json` sourceRevision before final sync: `afa550a41d2776543445a3cb727731f6fb902608`
+- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Public `build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
+- Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
 - Pages temporary skip policy: removed
-- Final post-merge `work` sync / deployment: confirmation flowで再実行し、最終実状態を確認する
+- `work`は`main`同期後、確認用管理commitとPages証拠commitのみが追加された状態。アプリケーション差分はない
 
 ### Next task
 
