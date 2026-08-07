@@ -13,6 +13,7 @@ const docsDirectory = join(repositoryDirectory, "docs");
 const outputDirectory = join(prototypeDirectory, "qa", "jll-fe-004-browser");
 const sitePrefix = "/Japan-Learning-Lab/";
 const viewports = [375, 768, 1280];
+const subjectAMockDurationSeconds = 90 * 60;
 
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -29,6 +30,12 @@ function assert(condition, message) {
 
 function delay(milliseconds) {
   return new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds));
+}
+
+function parseTimerSeconds(timerText) {
+  const match = /^残り (\d{2,3}):(\d{2})$/.exec(timerText);
+  assert(match, `Unexpected timer text: ${timerText}`);
+  return Number(match[1]) * 60 + Number(match[2]);
 }
 
 function findChrome() {
@@ -289,8 +296,15 @@ async function auditScenario(debugOrigin, siteOrigin, width) {
     const initial = await evaluate(client, metricsExpression());
     console.log(`mock-timer ${width}px initial ${geometrySummary(initial)}`);
     validateMockMetrics(initial, width, "initial");
+    const initialSeconds = parseTimerSeconds(initial.timerText);
+    assert(initialSeconds <= subjectAMockDurationSeconds, `Initial subject A timer exceeds 90:00 at ${width}px: ${initial.timerText}`);
     const mockScreenshot = `mock-timer-${width}.png`;
     await captureViewport(client, join(outputDirectory, mockScreenshot));
+
+    await delay(1200);
+    const advancedTimerText = await evaluate(client, `document.querySelector('.fe-mock-timer')?.textContent?.trim() || ''`);
+    const advancedSeconds = parseTimerSeconds(advancedTimerText);
+    assert(advancedSeconds < initialSeconds, `Mock timer did not decrease after time advanced at ${width}px: initial=${initial.timerText}, advanced=${advancedTimerText}`);
 
     await evaluate(client, `window.scrollTo({ top: Math.min(180, Math.max(1, document.documentElement.scrollHeight - innerHeight)), behavior: 'instant' }); true`);
     await waitFor(client, `window.scrollY > 0`, "scrolled mock session");
@@ -317,7 +331,7 @@ async function auditScenario(debugOrigin, siteOrigin, width) {
     assert(consoleMessages.length === 0, `Console warnings or errors occurred at ${width}px`);
     assert(failedRequests.length === 0, `Network request failed at ${width}px: ${failedRequests.join(", ")}`);
 
-    return { width, initial, scrolled, topicTimerState, screenshots: [mockScreenshot, topicScreenshot], consoleMessages, failedRequests };
+    return { width, initial, advancedTimerText, advancedSeconds, scrolled, topicTimerState, screenshots: [mockScreenshot, topicScreenshot], consoleMessages, failedRequests };
   } finally {
     client.close();
     await fetch(`${debugOrigin}/json/close/${target.id}`, { method: "PUT" }).catch(() => {});
@@ -378,6 +392,8 @@ async function main() {
       viewports,
       checks: [
         "initial geometry is measured at the settled scroll origin after route transition",
+        "initial subject A timer never exceeds the configured 90-minute duration",
+        "timer decreases after time advances",
         "timer is contained by a dedicated header status row",
         "timer does not overlap brand, global navigation, optional header actions, initial problem heading, problem body, answer controls, or session actions",
         "timer remains in the viewport at the same vertical position after scrolling",
@@ -388,7 +404,7 @@ async function main() {
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-004 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: dedicated header status row containment; no collision with live header or initial session content and controls; sticky visibility after scroll; no mock timer during normal topic exercise; no page horizontal overflow.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-004 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: initial subject A timer is at most 90:00 and decreases after time advances; dedicated header status row containment; no collision with live header or initial session content and controls; sticky visibility after scroll; no mock timer during normal topic exercise; no page horizontal overflow.\n`);
     console.log(`FE mock timer browser audit passed for ${scenarios.length} viewports`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
