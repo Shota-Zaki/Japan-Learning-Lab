@@ -57,7 +57,6 @@ jobs:
           if [[ ${status} -ne 0 ]]; then
             git reset --hard HEAD
             cp /tmp/work-edit.log .work-edit-failure.log
-            git rm -f .github/workflows/apply-work-edit.yml
             git add .work-edit-failure.log
             git commit -m "test: record JLL-FE-003 edit failure [skip ci]"
             git fetch origin work
@@ -66,9 +65,8 @@ jobs:
             exit ${status}
           fi
 
+          git checkout HEAD -- .github/workflows/fe-filter-layout-audit.yml .github/workflows/apply-work-edit.yml .github/workflows/source-snapshot.yml
           rm -f .github/work-edit.py
-          rm -f .github/workflows/apply-work-edit.yml
-          rm -f .github/workflows/source-snapshot.yml
           rm -f .source-snapshot-run.json
           rm -f .work-edit-run.json
           rm -f .work-edit-failure.log
