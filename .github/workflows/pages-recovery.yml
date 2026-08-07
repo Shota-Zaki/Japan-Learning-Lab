@@ -1,63 +1,10 @@
-name: One-shot docs synchronization
+name: Pages recovery retired
 
 on:
-  push:
-    branches: [pages-recovery]
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  sync:
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out permanent work branch
-        uses: actions/checkout@v4
-        with:
-          ref: work
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: prototype/package-lock.json
-
-      - name: Install dependencies
-        working-directory: prototype
-        run: npm ci
-
-      - name: Run required verification
-        working-directory: prototype
-        run: |
-          npm test
-          npm run typecheck
-          npm run lint
-          npm run build
-          npm run audit:fe-filter-layouts
-
-      - name: Build fixed Pages output twice and verify reproducibility
-        working-directory: prototype
-        env:
-          FIXED_APPLICATION_SHA: 66a03576b5b9ac2c86c35c63045f923137f08a0c
-        run: |
-          set -euo pipefail
-          GITHUB_SHA="$FIXED_APPLICATION_SHA" npm run build:pages
-          test "$(node -p "require('../docs/build-info.json').sourceRevision")" = "$FIXED_APPLICATION_SHA"
-          rm -rf /tmp/pages-first
-          cp -a ../docs /tmp/pages-first
-          GITHUB_SHA="$FIXED_APPLICATION_SHA" npm run build:pages
-          diff -qr /tmp/pages-first ../docs
-
-      - name: Commit generated docs to work
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A docs
-          git diff --cached --quiet && exit 0
-          git commit -m "docs: synchronize fixed FE Pages output"
-          git fetch origin work
-          git rebase origin/work
-          git push origin HEAD:work
+      - run: echo "Recovery is complete. See pages-recovery-result.json."
