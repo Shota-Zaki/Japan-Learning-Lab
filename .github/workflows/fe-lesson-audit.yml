@@ -1,0 +1,35 @@
+name: Audit FE lesson layout
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototype
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+      - run: npm ci
+      - name: Build Pages artifact
+        run: npm run build:pages
+      - name: Audit FE lesson at three viewports
+        run: npm run audit:fe-lesson
+      - name: Upload browser evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: fe-lesson-browser-evidence
+          path: prototype/qa/jll-fe-lesson-001-browser
+          include-hidden-files: true
+          retention-days: 7
