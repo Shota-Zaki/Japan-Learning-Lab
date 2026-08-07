@@ -13,11 +13,17 @@ document.documentElement.dataset.feFilterLayout = resolveFeFilterLayoutVariant(w
 function installFeFilterLayoutMeasurement() {
   const desktopMedia = window.matchMedia("(min-width: 721px)");
   let animationFrame = 0;
+  /** @type {HTMLElement | null} */
   let observedGrid = null;
+  /** @type {HTMLElement[]} */
   let observedCards = [];
 
   const resizeObserver = new ResizeObserver(() => scheduleMeasurement());
 
+  /**
+   * @param {HTMLElement | null} grid
+   * @param {HTMLElement[]} cards
+   */
   const observeCurrentLayout = (grid, cards) => {
     const unchanged = observedGrid === grid
       && observedCards.length === cards.length
@@ -34,8 +40,8 @@ function installFeFilterLayoutMeasurement() {
 
   const measure = () => {
     animationFrame = 0;
-    const grid = document.querySelector(".fe-filter-variant-grid");
-    const cards = grid ? [...grid.querySelectorAll(":scope > fieldset")] : [];
+    const grid = /** @type {HTMLElement | null} */ (document.querySelector(".fe-filter-variant-grid"));
+    const cards = /** @type {HTMLElement[]} */ (grid ? [...grid.querySelectorAll(":scope > fieldset")] : []);
     observeCurrentLayout(grid, cards);
     if (!grid) return;
 
