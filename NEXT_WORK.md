@@ -35,11 +35,14 @@ FE演習について、次の4点を完了させる。
 - Review input HEAD: `c2bde678c721ce3f889a9b8a380843e20068fdad`
 - Start HEAD: `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`
 - Fixed implementation HEAD before review: `5e6036980195108ed9f9429be53ebdba01e9ddcb`
-- CI-verified application/Pages source revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- PR CI Pages build: workflow `31159735333` / run `413` / build job `92807114332` / success
-- PR CI browser audit: workflow `31159735305` / run `64` / job `92807114034` / success
-- work Pages workflow: `31159729019` / run `412` / build・deploy success
-- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- CI-verified application source revision before review management updates: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- PR CI Pages build: workflow `31159735333` / run `413` / success / build job `92807114332`
+- PR CI browser audit: workflow `31159735305` / run `64` / success / job `92807114034`
+- Review-input work Pages: workflow `31159729019` / run `412` / build・deploy success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Review-management work Pages: workflow `31175896418` / run `414` / build job `92857703115` / deploy job `92857819536` / success
+- Current published/repository build-info sourceRevision after review-management Pages sync: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- Pages evidence synchronization commit for run 414: `04a075686789012af45ca4347287b0b714224d72`
+- Published assets remain `index-CCwVLhbI.js` / `index-eTi5h_EL.css`; review management commits do not change application code
 - PR review threads: none
 
 ## Blocking finding
@@ -84,7 +87,7 @@ FE演習について、次の4点を完了させる。
 - 2022年科目Aサンプルは通常`topic`候補から除外され、`mock`経路は維持されている。
 - `2026-exemption-07`はlearner-facing helperで`令和8年度 免除試験`へ表示され、元データを変更していない。
 - PR CIの`npm run verify:fe`はsuccess。63 tests passed、TypeScript、ESLint、normal build、Pages build success。
-- work Pages run `412`はbuild・deploy・public revision verificationまでsuccess。
+- review-management Pages run `414`もbuild・deploy・public revision verificationまでsuccess。
 - 未解決review thread / reviewなし。
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため、追加タスク化不要。
 
