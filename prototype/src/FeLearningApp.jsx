@@ -194,7 +194,7 @@ export function FeLearningApp({ tab, view, navigate, goEngineer, setHeaderStatus
 
   useEffect(() => {
     if (!activeMockSessionId) return undefined;
-    setHeaderClockMs(Date.now());
+    queueMicrotask(() => setHeaderClockMs(Date.now()));
     const timerId = window.setInterval(() => setHeaderClockMs(Date.now()), 1000);
     return () => window.clearInterval(timerId);
   }, [activeMockSessionId]);
