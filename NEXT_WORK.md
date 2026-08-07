@@ -12,7 +12,21 @@
 
 実装担当。
 
-最新のユーザー指定により、絞り込みブロックの順番を変更する必要がある。旧仕様の実装・検証は完了していたが、現在のDOM順「分野 → 単元 → 開催回・公開区分 → 回答・復習状態」は新しい完了条件を満たさないため、`review_ready`を取り消して`needs_fix`へ戻した。
+2026-08-07の確認で、Pull Request `#4` の固定HEAD `86883cf71b7a13c4ee741372f3101d6a452ff8a3`を独立確認した結果、最新ユーザー指定の絞り込み順が未実装であることを確認した。
+
+`prototype/src/FePracticeSetup.jsx` の `filterGroups` は現在も次の旧順序になっている。
+
+1. 分野
+2. 単元
+3. 開催回・公開区分
+4. 回答・復習状態
+
+最新完了条件は次の順序であるためBlocking不合格とする。
+
+1. 分野
+2. 回答・復習状態
+3. 開催回・公開区分
+4. 単元
 
 新しいチャットで`修正`と送られたら、Pull Request `#4`の最新`work` HEADから修正を開始し、コード、テスト、ブラウザ監査、`docs/`、管理文書を新しい順序へ合わせる。実装担当は`main`へマージしない。
 
@@ -35,11 +49,14 @@ Bento Gridの既存方針、不要な余白削減、受験科目の独立状態�
 - Task status: `needs_fix`
 - Pull Request: `#4`
 - Pull Request state: open / draft / unmerged
-- PR HEAD before this memo: `25c43fa10a3686cf4507d344a832d630669ea1d7`
-- Task-list memo commit: `52d37bec7c1a859b8a4150844c2c063785f8262c`
-- Current `work` HEAD: 実装開始時にGitHub実状態から再取得して固定する
+- Confirmation fixed HEAD: `86883cf71b7a13c4ee741372f3101d6a452ff8a3`
+- Blocking file: `prototype/src/FePracticeSetup.jsx`
+- Blocking location: `filterGroups`
+- Current implementation order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
+- Required order: `分野 → 回答・復習状態 → 開催回・公開区分 → 単元`
 - Prior fixed application / test / browser audit HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
 - Prior Pages output synchronization commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
+- Latest repository HEAD before this review memo: `86883cf71b7a13c4ee741372f3101d6a452ff8a3`
 
 ## Latest user request
 
@@ -56,19 +73,22 @@ Bento Gridの既存方針、不要な余白削減、受験科目の独立状態�
 
 1. `work`とPull Request `#4`の最新HEADを取得し、開始HEADとして固定する。
 2. `AGENTS.md`、`PROJECT_CONTEXT.md`、`DESIGN.md`、`task-list.md`を再確認する。
-3. 現在の絞り込みDOM・CSS Grid・テスト・監査コードを確認する。
+3. `prototype/src/FePracticeSetup.jsx` の `filterGroups` を確認し、旧順序が残っていることを前提に修正する。
 4. 表示順を「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」へ変更する。
 5. DOM順も同じ順序にし、キーボード移動順と読み上げ順を一致させる。
 6. 375pxの1列表示でも同じ順序を維持する。
 7. 768px・1,280pxでは既存Bento Gridの不規則配置方針を維持しつつ、順序と余白削減を両立する。
-8. 受験科目ブロックは独立した現在の状態を変更しない。
-9. 単元名の完全日本語表示、可能な限り1行、必要時のみ自然な折返しを維持する。
-10. 既存の絞り込み条件、OR/AND評価、件数、開始条件を変更しない。
-11. 自動テストとブラウザ監査を新しい順序へ更新する。
-12. 必須検証成功後、最新固定HEADのPages buildを生成し、Repository直下`docs/`を同期する。
-13. `task-list.md`を`review_ready`へ更新し、`NEXT_WORK.md`を確認担当向けに更新する。
-14. `work`へcommit / pushし、Draft Pull Request `#4`を更新する。
-15. CI結果を確認し、固定HEADと検証証拠を管理文書へ記録する。
+8. CSSの `:nth-child(...)` 依存が新しいDOM順で誤配置を起こさないよう、`prototype/src/fe-filter-variants.css` を再検証・必要なら修正する。
+9. `prototype/src/main.jsx` のカード位置計測ロジックが子要素インデックスへ依存しているため、新しいDOM順でも余白計算が正しいことを確認する。
+10. 受験科目ブロックは独立した現在の状態を変更しない。
+11. 単元名の完全日本語表示、可能な限り1行、必要時のみ自然な折返しを維持する。
+12. 既存の絞り込み条件、OR/AND評価、件数、開始条件を変更しない。
+13. `prototype/tests/fe-filter-layout.test.mjs` を新しい順序に対する明示的な回帰テストへ更新する。単にDOM存在を確認するだけでなく、4グループの順序を検証する。
+14. browser auditでも各viewport・各layoutで4グループの順序を証拠として取得・検証する。
+15. 必須検証成功後、最新固定HEADのPages buildを生成し、Repository直下`docs/`を同期する。
+16. `task-list.md`を`review_ready`へ更新し、`NEXT_WORK.md`を確認担当向けに更新する。
+17. `work`へcommit / pushし、Draft Pull Request `#4`を更新する。
+18. CI結果を確認し、固定HEADと検証証拠を管理文書へ記録する。
 
 ## Change allowed
 
@@ -100,6 +120,7 @@ Bento Gridの既存方針、不要な余白削減、受験科目の独立状態�
 
 - 375px、768px、1,280pxで表示順が「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」になっている
 - DOM順とキーボード移動順が表示順と一致する
+- 3つの `filterLayout` すべてで上記順序が維持される
 - Bento Gridの既存方針を維持し、不自然な大きな空白がない
 - カード高さ固定や条件群内部スクロールを追加していない
 - 受験科目ブロックの独立状態が維持されている
@@ -126,9 +147,16 @@ npm run audit:fe-filter-layouts
 
 ブラウザ監査では最低限、3レイアウト × 375px / 768px / 1,280pxを確認し、順序、横overflow、カード内scroll/clipping、単元名表示、キーボード操作、console error、network errorを記録する。
 
+## Reproduction of blocking issue
+
+1. `work` HEAD `86883cf71b7a13c4ee741372f3101d6a452ff8a3` の `prototype/src/FePracticeSetup.jsx` を開く。
+2. `const filterGroups = [` を確認する。
+3. 配列が `domains → unitIds → periodIds → reviewScopes` の順であることを確認する。
+4. 画面タイトルへ対応させると `分野 → 単元 → 開催回・公開区分 → 回答・復習状態` となり、最新完了条件と不一致である。
+
 ## Prior evidence retained for regression comparison
 
-旧仕様では次が成功済み。新しい順序へ変更した後も、順序以外の回帰がないことを比較する。
+旧仕様では次が成功済み。ただし、今回の確認では最新順序が未実装のため再利用して合格扱いにはしない。
 
 - Tests: 60 / 60 passed
 - TypeScript: success
