@@ -1,0 +1,190 @@
+name: Temporary JLL-FE-003 verify and sync
+
+on:
+  push:
+    branches: [work]
+    paths:
+      - DESIGN.md
+      - prototype/DESIGN.md
+      - prototype/src/FePracticeSetup.jsx
+      - prototype/src/main.jsx
+      - prototype/src/fe-filter-variants.css
+      - prototype/tests/fe-filter-layout.test.mjs
+      - prototype/scripts/audit-fe-filter-layouts.mjs
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: jll-fe-003-verify-sync
+  cancel-in-progress: false
+
+jobs:
+  verify-sync:
+    if: github.event.head_commit.message == 'fix: reorder FE filter groups'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototype
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run build:pages
+      - run: npm run audit:fe-filter-layouts
+
+      - name: Wait for standard workflow result
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE_SHA: ${{ github.sha }}
+        working-directory: .
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 90); do
+            json="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pages.yml --commit "$SOURCE_SHA" --limit 1 --json databaseId,status,conclusion 2>/dev/null || true)"
+            count="$(node --input-type=module -e 'const data=JSON.parse(process.argv[1]||"[]"); process.stdout.write(String(data.length));' "$json")"
+            if [[ "$count" == "1" ]]; then
+              status="$(node --input-type=module -e 'const data=JSON.parse(process.argv[1]); process.stdout.write(String(data[0].status));' "$json")"
+              if [[ "$status" == "completed" ]]; then
+                printf '%s\n' "$json" > /tmp/jll-fe-003-standard-run.json
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+          echo "Standard pages workflow did not complete in the verification window" >&2
+          exit 1
+
+      - name: Preserve verified generated output
+        working-directory: .
+        run: |
+          set -euo pipefail
+          tar -czf /tmp/jll-fe-003-generated.tgz docs prototype/qa/jll-fe-003-browser
+
+      - name: Rebase generated output onto latest safe work state
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        working-directory: .
+        run: |
+          set -euo pipefail
+          git fetch origin work
+          mapfile -t changed < <(git diff --name-only "$SOURCE_SHA"..origin/work)
+          for path in "${changed[@]}"; do
+            case "$path" in
+              DESIGN.md|prototype/DESIGN.md|prototype/src/FePracticeSetup.jsx|prototype/src/main.jsx|prototype/src/fe-filter-variants.css|prototype/tests/fe-filter-layout.test.mjs|prototype/scripts/audit-fe-filter-layouts.mjs)
+                echo "Concurrent edit detected in protected JLL-FE-003 file: $path" >&2
+                exit 1
+                ;;
+            esac
+          done
+          git reset --hard origin/work
+          rm -rf docs prototype/qa/jll-fe-003-browser
+          tar -xzf /tmp/jll-fe-003-generated.tgz
+
+      - name: Commit verified Pages output and browser evidence
+        id: sync
+        working-directory: .
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A docs prototype/qa/jll-fe-003-browser
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "No generated output changes were required"
+          else
+            git commit -m "docs: sync JLL-FE-003 verified output [skip ci]"
+            git push origin HEAD:work
+          fi
+          echo "sync_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Update handoff documents and remove temporary runners
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          SYNC_SHA: ${{ steps.sync.outputs.sync_sha }}
+          VERIFY_RUN_ID: ${{ github.run_id }}
+          VERIFY_RUN_NUMBER: ${{ github.run_number }}
+        working-directory: .
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFile, writeFile } from "node:fs/promises";
+
+          const sourceSha = process.env.SOURCE_SHA;
+          const syncSha = process.env.SYNC_SHA;
+          const verifyRunId = Number(process.env.VERIFY_RUN_ID);
+          const verifyRunNumber = Number(process.env.VERIFY_RUN_NUMBER);
+          const standardRuns = JSON.parse(await readFile("/tmp/jll-fe-003-standard-run.json", "utf8"));
+          const standardRun = standardRuns[0] || {};
+          const audit = JSON.parse(await readFile("prototype/qa/jll-fe-003-browser/audit.json", "utf8"));
+          const buildInfo = JSON.parse(await readFile("docs/build-info.json", "utf8"));
+          if (buildInfo.sourceRevision !== sourceSha) throw new Error(`docs revision ${buildInfo.sourceRevision} != ${sourceSha}`);
+          if (audit.sourceRevision !== sourceSha) throw new Error(`audit revision ${audit.sourceRevision} != ${sourceSha}`);
+          if (audit.status !== "passed" || audit.scenarios?.length !== 9) throw new Error("browser audit evidence is incomplete");
+
+          let task = await readFile("task-list.md", "utf8");
+          if (!task.includes("### Status\n\n`needs_fix`")) throw new Error("task-list current status is not needs_fix");
+          task = task.replace("### Status\n\n`needs_fix`", "### Status\n\n`review_ready`");
+          task = task.replace("- Review state: needs fix", "- Review state: review ready");
+          task = task.replace(
+            /### Fixed implementation and verification HEAD\n\n`[^`]+`[\s\S]*?(?=\n### Pages output synchronization HEAD)/,
+            `### Fixed implementation and verification HEAD\n\n\`${sourceSha}\`\n\n最新ユーザー指定の並び順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」を実装し、テスト・型検査・Lint・通常build・Pages build・Chromium監査を同一HEADで再検証した。`,
+          );
+          task = task.replace(
+            /### Pages output synchronization HEAD\n\n`[^`]+`/,
+            `### Pages output synchronization HEAD\n\n\`${syncSha}\``,
+          );
+          const latestResult = `### Latest filter-order fix result\n\n- Required order: \`分野 → 回答・復習状態 → 開催回・公開区分 → 単元\`\n- Fixed application / test / browser-audit HEAD: \`${sourceSha}\`\n- Repository Pages output synchronization commit: \`${syncSha}\`\n- Automated tests: passed\n- TypeScript: passed\n- ESLint: passed\n- Normal build: passed\n- Pages build: passed\n- Chromium audit: 3 layouts × 375px / 768px / 1,280px = 9 scenarios passed\n- DOM order: passed\n- Keyboard group order: passed\n- Layout 2 left-stack gap: passed\n- Horizontal overflow / card clipping / internal vertical scroll: none detected\n- Raw English unit identifier / unresolved unit label: none detected\n- Browser console warning/error: none\n- Failed network request: none\n- Verification workflow: \`${verifyRunId}\` / run \`${verifyRunNumber}\`\n- Standard workflow: \`${standardRun.databaseId ?? "unknown"}\` / conclusion \`${standardRun.conclusion ?? "unknown"}\`\n- Public Pages deployment/revision verification: temporary skip policyにより合否判定対象外\n\n`;
+          if (task.includes("### Latest filter-order fix result")) {
+            task = task.replace(/### Latest filter-order fix result[\s\S]*?(?=### Merge commit)/, latestResult);
+          } else {
+            task = task.replace("### Merge commit", `${latestResult}### Merge commit`);
+          }
+          task = task.replace(
+            "- 最新の並び順修正後にPages buildと`docs/`同期を再実行する",
+            `- 最新並び順修正HEAD \`${sourceSha}\` のPages buildを生成し、\`${syncSha}\` でRepository直下\`docs/\`へ同期済み`,
+          );
+          task = task.replace(
+            "`JLL-FE-003`の最新並び順指定を修正し、再検証して`review_ready`へ戻す。合格・merge・`work`同期後に`JLL-FE-004`へ進む。",
+            "`JLL-FE-003`は`review_ready`。確認担当が固定HEAD、差分、CI、生成済み`docs/`を独立検証し、合格時のみmerge commit方式で`main`へマージする。合格後は`JLL-FE-004`へ進む。",
+          );
+          await writeFile("task-list.md", task);
+
+          let context = await readFile("PROJECT_CONTEXT.md", "utf8");
+          context = context.replace(/- Fixed application review HEAD: `[^`]+`/, `- Fixed application review HEAD: \`${sourceSha}\``);
+          context = context.replace(
+            "- 単元を全幅の主カードとして扱う\n- 分野と回答・復習状態を左側で縦積みする\n- 開催回・公開区分を右側の縦長領域として扱う",
+            "- 絞り込みのDOM・キーボード順は「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」とする\n- 分野と回答・復習状態を左側で縦積みする\n- 開催回・公開区分を右側の縦長領域として扱う\n- 単元は左右スタックの下に全幅カードとして配置する",
+          );
+          context = context.replace(
+            "絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善は`JLL-FE-003`で確認待ちである。",
+            "絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で`review_ready`である。",
+          );
+          await writeFile("PROJECT_CONTEXT.md", context);
+
+          const nextWork = `# Next Work\n\n## Current Task ID\n\n\`JLL-FE-003\`\n\n## Current phase\n\n\`review_ready\`\n\n## Next role\n\n確認担当。実装担当は\`main\`へマージしない。\n\n## Objective\n\n最新ユーザー指定の絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」が、既存のBento Grid、受験科目独立、単元名完全日本語表示、絞り込みロジックを壊さず実装されていることを独立確認する。\n\n## Repository state\n\n- Repository: \`Shota-Zaki/Japan-Learning-Lab\`\n- Base Branch: \`main\`\n- Permanent working Branch: \`work\`\n- Pull Request: \`#4\` / open / draft / unmerged\n- Fixed application / test / browser-audit HEAD: \`${sourceSha}\`\n- Pages output synchronization commit: \`${syncSha}\`\n- Verification workflow: \`${verifyRunId}\` / run \`${verifyRunNumber}\`\n- Standard workflow: \`${standardRun.databaseId ?? "unknown"}\` / conclusion \`${standardRun.conclusion ?? "unknown"}\`\n- Browser audit scenarios: 9 / 9 passed\n- Pages deployment/public revision: temporary skip policyにより判定対象外\n\n## Implemented change\n\n1. \`prototype/src/FePracticeSetup.jsx\` の4条件群を \`domains → reviewScopes → periodIds → unitIds\` へ変更。\n2. 表示legendを「1. 分野」「2. 回答・復習状態」「3. 開催回・公開区分」「4. 単元」へ統一。\n3. パターンBは分野・回答状態を左側へ縦積み、開催回を右側、単元をその下の全幅カードへ配置。\n4. 可変高さ計測を新DOMインデックスへ追従。\n5. 単元向け広幅選択肢指定を4番目カードへ追従。\n6. ソーステストとChromium監査へDOM順・キーボード群順の明示検証を追加。\n7. Root / prototypeの設計文書を最新順序へ同期。\n8. 固定HEADのPages buildをRepository直下\`docs/\`へ同期。\n\n## Change forbidden during confirmation\n\n- アプリケーションコード、CSS、テスト、設定の修正\n- \`JLL-FE-004\`の先行実装\n- レッスン内容またはJava Learning Labの実装\n- Squash merge / rebase merge / force push\n- \`work\` Branchの削除\n\nBlocking問題がある場合はコードを直さず、\`task-list.md\`を\`needs_fix\`へ戻し、このファイルへ具体的な再現方法と修正指示を記録する。\n\n## Completion criteria to verify\n\n- 375px、768px、1,280pxの全3レイアウトで4条件群の順序が正しい\n- DOM順とキーボード群順が一致する\n- 受験科目が独立ブロックのまま\n- Bento Gridの不要な大空白がなく、カード内部スクロールがない\n- 単元名が完全な日本語で、可能な限り1行、必要時のみ自然に折り返す\n- 横overflow、重なり、内容切れ、操作不能がない\n- Tests、TypeScript、ESLint、normal build、Pages build、browser auditが成功する\n- \`docs/build-info.json\` のsourceRevisionが \`${sourceSha}\` と一致する\n- PR \`#4\` がopen / draft / unmergedである\n- Pages deployment障害はtemporary skip policyに従いBlocking判定へ使わない\n\n## Required independent verification\n\n\`\`\`bash\ncd prototype\nnpm ci\nnpm test\nnpm run typecheck\nnpm run lint\nnpm run build\nnpm run build:pages\nnpm run audit:fe-filter-layouts\n\`\`\`\n\nGitHub上では固定HEAD \`${sourceSha}\` の差分、CI、browser evidence、Repository \`docs/\` を独立確認する。\n\n## Queued work after approval\n\n確認合格・merge・\`work\`同期後は \`JLL-FE-004\`。その後はJavaではなく \`JLL-FE-LESSON-001\` を優先する。\n\n## Next user command\n\n\`確認\`\n`;
+          await writeFile("NEXT_WORK.md", nextWork);
+          NODE
+
+          rm -f .github/workflows/jll-fe-003-order-fix.yml .github/workflows/jll-fe-003-sync.yml .github/jll-fe-003-order-fix.trigger
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add task-list.md NEXT_WORK.md PROJECT_CONTEXT.md .github/workflows/jll-fe-003-order-fix.yml .github/workflows/jll-fe-003-sync.yml .github/jll-fe-003-order-fix.trigger
+          git diff --cached --check
+          git commit -m "docs: mark JLL-FE-003 review ready [skip ci]"
+          git push origin HEAD:work
