@@ -1,0 +1,5 @@
+{
+  "taskId": "JLL-FE-004",
+  "purpose": "Trigger final work-branch Pages deployment and pull-request CI after the verified implementation commit.",
+  "implementationRevision": "5e6036980195108ed9f9429be53ebdba01e9ddcb"
+}
