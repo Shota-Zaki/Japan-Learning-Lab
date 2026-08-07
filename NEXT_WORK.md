@@ -2,23 +2,19 @@
 
 ## Current Task ID
 
-`JLL-JAVA-001`
+`JLL-FE-003`
 
 ## Current phase
 
-`planned`
+`in_progress`
 
 ## Role
 
-次の担当は実装担当。
-
-新しいチャットでRepository実状態を再取得し、Java Learning Labの設計、既存実装、テスト、未完了範囲を確認してから、単一の実装タスクとして具体化して着手する。
+現在の担当は実装担当。
 
 ## Objective
 
-Java Learning Labの現在状態をRepositoryから再構成し、目的、対象範囲、対象外、完了条件、検証方法を確定したうえで実装を再開する。
-
-`JLL-FE-001`と`JLL-FE-002`は確認合格・マージ済みである。FEの追加変更はこのタスクへ混在させない。
+採用済みのパターンBを既定表示にし、単元を全幅、分野と回答状態を左側の縦積み、開催回を右側の縦長領域として配置する。カード内容量の差による大きな空白を減らし、収録中の全単元名を完全な日本語で、可能な限り1行、必要時は意味のまとまりで自然に折り返して表示する。
 
 ## Repository state
 
@@ -26,102 +22,63 @@ Java Learning Labの現在状態をRepositoryから再構成し、目的、対�
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
-- Previous Pull Request: `#3` / merged
-- Previous task: `JLL-FE-002` / completed
-- Previous fixed implementation HEAD: `ca5212d91b3b9792a53d0fac4bc7f69648682798`
-- Previous fixed review handoff HEAD: `0c40a622e4c42b2a61eb2410bd2a3aaf136c32de`
-- Previous final Pull Request HEAD: `aaac236ab887c7a55f0491cf40a9c88824e3507b`
-- Previous merge commit: `c01be523eb78d0a4ce9d7e6c8cf13eeb7868b3a8`
-- Current `main` management HEAD predecessor: `f96a54a9deb580491dbb7cad1ee3e06dc44f742c`
-- Current `work` HEAD: 確認担当が最新`main`へfast-forward同期する。実装開始時にGitHub実状態から再取得する
+- Current Task: `JLL-FE-003`
+- Start HEAD: `1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
+- Branch: `work`
+- Pull Request: 未作成
 
-## Previous task result
+## Change targets
 
-`JLL-FE-002`はPages公開依存項目を除く全完了条件に合格した。
-
-- 受験科目: 独立領域を維持
-- 対象: 既存4条件群だけ
-- Layouts: `filterLayout=1|2|3`
-- Standard CI: `31138309148` / run `298` / success
-- Tests: 56 / 56 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Pages artifact upload: success
-- Browser audit: `31138309139` / run `9` / success
-- Coverage: 3 patterns × 375px / 768px / 1280px
-- Blocking findings: none
-- Main push CI: `.github/workflows/pages.yml`とlayout audit workflowは`main` pushをtriggerに含まないため、merge後の新規runはなし
-
-## Required startup work
-
-1. Repository、`main`、`work`、Open Pull Request、最新CIを再取得する
-2. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、`task-list.md`、この`NEXT_WORK.md`を確認する
-3. Rootおよび`prototype/`の`DESIGN.md`を確認する
-4. Java Learning Labに関係するsrc、tests、scripts、routing、build設定を特定する
-5. 現在実装済みの機能、未完了機能、壊れている経路、テスト不足を整理する
-6. 1件の実装タスクとして目的、範囲、対象外、完了条件、依存関係を`task-list.md`へ具体化する
-7. UIまたは画面構成を変更する場合は、実装前に`DESIGN.md`を更新する
-8. `work`で実装し、テスト、型検査、Lint、通常build、Pages buildを実行する
-9. `docs/`を最新生成物へ更新する
-10. Draft Pull Requestを作成または更新し、CI成功または失敗原因特定まで進める
-11. `task-list.md`を`review_ready`へ更新し、この文書を確認担当向けに更新する
-
-## Change allowed
-
-- Java Learning Labに必要なReact、CSS、データ、テスト、scripts、build設定
-- Java Learning Labに関係するRootおよび`prototype/`の設計・管理文書
-- Java公開成果物を含む`docs/`
+- Root `DESIGN.md`
+- `prototype/DESIGN.md`
+- `prototype/src/feFilterLayout.js`
+- `prototype/src/feUnitLabels.js`
+- `prototype/src/FePracticeSetup.jsx`
+- `prototype/src/fe-filter-variants.css`
+- `prototype/tests/fe-filter-layout.test.mjs`
+- `prototype/tests/fe-unit-labels.test.mjs`
+- `prototype/scripts/audit-fe-filter-layouts.mjs`
+- `.github/workflows/fe-filter-layout-audit.yml`
+- `prototype/package.json`
+- `docs/`
+- 管理文書と検証証拠
 
 ## Change forbidden
 
-- 完了済みFE機能の追加仕様変更
-- FE問題データ、問題本文、選択肢、正答、解説、図表の変更
-- `work` Branchの削除
+- 受験科目ブロックの変更
+- 絞り込みロジック、選択状態、件数、開始条件の変更
+- 問題データ、問題本文、選択肢、正答、解説、図表の変更
+- Java Learning Lab
 - force push、squash merge、rebase merge
-- Pages障害の復旧をJava実装へ混在させること
+- Pages障害の復旧作業
 
-## Completion criteria for implementation role
+## Required implementation
 
-- Java Learning Labの現状と未完了範囲がRepository根拠で具体化されている
-- 目的、範囲、対象外、完了条件、検証方法が管理文書へ記録されている
-- 必要な設計更新が実装前に行われている
-- 実装と自動テストが完了している
-- `npm test`、`npm run typecheck`、`npm run lint`、`npm run build`、`npm run build:pages`が成功している、または失敗原因が特定されている
-- `docs/`が最新生成物である
-- Draft Pull Requestが存在する
-- CIが成功している、または失敗理由が管理文書へ記録されている
-- `task-list.md`と`NEXT_WORK.md`が確認担当向けに更新されている
+1. `filterLayout`の指定なし・無効値をパターン2へフォールバックする
+2. パターン2で単元を全幅先頭、分野と回答状態を左列の上下、開催回を右列の2段相当へ配置する
+3. カード高さを固定せず、カード内部スクロールを追加しない
+4. 実データに存在する全41種の`unitId`へ完全な日本語名を定義する
+5. 未登録IDは英語IDを露出せず「単元名未登録」とする
+6. 単元名用の列最小幅を広げ、1行表示を優先する
+7. 長い名称は`wbr`相当の意味上自然な改行候補だけを持たせる
+8. 375pxではDOM順の1列へ戻す
+9. 自動テストとブラウザ監査で日本語名、折返し、横はみ出し、カード内スクロール、キーボード操作を確認する
+10. `docs/`を生成し、Draft Pull RequestとCIまで進める
+
+## Completion criteria
+
+`task-list.md`の`JLL-FE-003`完了条件をすべて満たし、`review_ready`へ更新する。
 
 ## Temporary GitHub Pages policy
 
-GitHub Pagesが正常完了可能と確認され、ユーザーまたはRepository管理文書で解除されるまで次をスキップする。
-
-- Pages deploymentの手動実行・再実行
-- 公開Revision一致確認
-- 公開画面、Console、Network確認
-- Pages障害だけを理由にした`blocked`または`needs_fix`
-
-通常build、テスト、型検査、Lint、Pages build、Pages artifact uploadは継続する。
+Pages deploymentと公開URL確認は一時スキップする。通常build、Pages build、artifact uploadは継続する。
 
 ## User latest instructions
 
-- 次の作業はRepositoryの現在状態を正本として再開する
-- 進行中タスクは同時に1件だけとする
-- UI変更時は設計方針を先に確定し、管理文書へ反映する
-
-## Work completion updates
-
-実装完了時に最低限、次を更新する。
-
-- `task-list.md`
-- `NEXT_WORK.md`
-- 必要な`DESIGN.md`
-- `docs/`
-- Draft Pull Request本文
-- 固定HEAD、CI、検証証拠
+- 無理のない範囲で不要な余白をなくす
+- 単元名は日本語で省略せず、可能な限り1行で表示する
+- 1行が無理な場合は自然な位置で改行する
 
 ## Next user command
 
-`実装`
+実装完了後は`確認`。

@@ -8,11 +8,11 @@ const mainPath = new URL("../src/main.jsx", import.meta.url);
 const setupPath = new URL("../src/FePracticeSetup.jsx", import.meta.url);
 
 test("filter layout query accepts only the three validation variants", () => {
-  assert.equal(resolveFeFilterLayoutVariant(""), "1");
+  assert.equal(resolveFeFilterLayoutVariant(""), "2");
   assert.equal(resolveFeFilterLayoutVariant("?filterLayout=1"), "1");
   assert.equal(resolveFeFilterLayoutVariant("?filterLayout=2"), "2");
   assert.equal(resolveFeFilterLayoutVariant("?filterLayout=3"), "3");
-  assert.equal(resolveFeFilterLayoutVariant("?filterLayout=4"), "1");
+  assert.equal(resolveFeFilterLayoutVariant("?filterLayout=4"), "2");
   assert.equal(resolveFeFilterLayoutVariant("?filterLayout=2&filterLayout=3"), "2");
 });
 
@@ -32,6 +32,9 @@ test("all filter layouts use the same existing grid and preserve the independent
   assert.match(css, /\.fe-filter-variant-grid > \* \{[\s\S]*grid-column:\s*1 \/ -1 !important;[\s\S]*grid-row:\s*auto !important;/);
   assert.doesNotMatch(css, /overflow-y\s*:/);
   assert.doesNotMatch(css, /text-overflow:\s*ellipsis/);
+  assert.doesNotMatch(css, /overflow-wrap:\s*anywhere/);
+  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(3\)[\s\S]*grid-row:\s*2 \/ span 2/);
+  assert.match(css, /:nth-child\(2\) \.fe-check-grid-compact[\s\S]*minmax\(min\(100%, 240px\), 1fr\)/);
 
   assert.match(main, /document\.documentElement\.dataset\.feFilterLayout/);
   assert.ok(setup.indexOf("<SubjectSelector") < setup.indexOf("fe-filter-variant-grid"));

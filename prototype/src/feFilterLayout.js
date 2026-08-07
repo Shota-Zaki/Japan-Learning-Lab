@@ -1,4 +1,4 @@
-const DEFAULT_FE_FILTER_LAYOUT = "1";
+const DEFAULT_FE_FILTER_LAYOUT = "2";
 const FE_FILTER_LAYOUTS = new Set(["1", "2", "3"]);
 
 export function resolveFeFilterLayoutVariant(search = "") {

@@ -6,6 +6,98 @@
 
 ### Task ID
 
+`JLL-FE-003`
+
+### Title
+
+FE絞り込みの不要な余白を減らし、単元名を完全な日本語で自然に表示する
+
+### Status
+
+`in_progress`
+
+### Purpose
+
+採用済みのパターンBを通常表示の既定にし、内容量の異なるカードを無理に同じ高さへ揃えず、短いカードを縦方向に組み合わせて不要な空白を減らす。単元名は収録データに存在する全単元を完全な日本語名で表示し、表示幅が許す限り1行に収め、折り返す場合は意味のまとまりで自然に改行する。
+
+### Scope
+
+- `filterLayout=2`のパターンBを指定なし・無効値時の既定表示へ変更する
+- 単元カードを全幅の主カードとして維持する
+- PC・タブレットで「分野」と「回答・復習状態」を左側へ縦積みし、「開催回・公開区分」を右側で2段分使用して不要な空白を減らす
+- 375pxでは既存DOM順の1列を維持する
+- 収録データで使用中の全`unitId`を完全な日本語名へ対応付ける
+- 単元名の表示幅を優先し、可能な限り1行で表示する
+- 1行に収まらない単元名には意味上自然な位置だけに任意改行位置を設定する
+- 自動テスト、型検査、Lint、通常build、Pages build、Chromium監査を更新・実行する
+- `docs/`を最新生成物へ更新する
+
+### Out of scope
+
+- 受験科目ブロックの位置、構造、文言、選択肢、操作変更
+- 絞り込み条件、OR/AND評価、件数、開始条件の変更
+- 問題データ、問題本文、選択肢、正答、解説、図表の変更
+- Java Learning Labの実装
+- GitHub Pages障害の復旧またはdeployment再試行
+- 実装担当による`main`へのマージ
+
+### Completion criteria
+
+- 指定なし・無効な`filterLayout`ではパターンBが表示される
+- PC・タブレットで短いカード下の大きな未使用空間が解消され、カード同士が無理なく詰められている
+- カード高さを固定せず、内部縦スクロールを追加していない
+- 現在収録中の全単元が英語IDではなく完全な日本語名で表示される
+- 単元カードは表示幅を有効利用し、可能な限り1行表示となる
+- 改行が必要な名称は単語・意味のまとまりで折り返され、文字途中の不自然な分割がない
+- 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
+- キーボード操作とラベル関連付けが維持される
+- テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
+- Draft Pull Requestと確認用証拠が存在する
+
+### Dependencies
+
+- `JLL-FE-001`: completed
+- `JLL-FE-002`: completed
+- ユーザー指定: パターンB採用、不要な余白削減、単元名の完全日本語表示と自然な折返し
+
+### Branch
+
+`work`
+
+### Pull Request
+
+未作成。
+
+### Start HEAD
+
+`1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
+
+### Current HEAD
+
+実装・検証commit後にGitHub実状態から固定する。
+
+### Validation result
+
+実装中。
+
+### Merge commit
+
+未着手。実装担当はマージしない。
+
+### GitHub Pages result
+
+一時スキップ方針を継続する。Pages buildとartifact uploadは検証対象とする。
+
+### Next task
+
+`JLL-JAVA-001`
+
+---
+
+## Planned task
+
+### Task ID
+
 `JLL-JAVA-001`
 
 ### Title
@@ -24,24 +116,21 @@ Repository内のJava Learning Labの設計、既存実装、テスト、未完�
 
 - Rootおよび`prototype/`配下の管理文書、設計文書、既存Java実装、テストの確認
 - 現状、変更対象、対象外、完了条件、検証方法の確定
-- UI方針の変更が必要な場合は`DESIGN.md`を実装前に更新
-- `work` Branchでの実装
-- 自動テスト、型検査、Lint、通常build、Pages build、artifact upload
+- 必要な設計更新、実装、検証、`docs/`更新、Draft Pull Request作成
 
 ### Out of scope
 
-- 完了済み`JLL-FE-001`、`JLL-FE-002`の追加仕様変更
-- GitHub Pages障害の復旧作業または復旧前の連続retry
+- 完了済みFE機能の追加変更
+- GitHub Pages障害の復旧
 - 実装担当による`main`へのマージ
 
 ### Completion criteria
 
-実装担当がRepository実状態からJava Learning Labの現状を再構成し、目的、範囲、対象外、完了条件、検証方法をこのファイルと`NEXT_WORK.md`へ記録したうえで、実装、検証、`docs/`更新、Draft Pull Request、CI確認まで完了して`review_ready`にする。
+`JLL-FE-003`完了後、Repository実状態からJava Learning Labの現状と未完了範囲を具体化して実装を進める。
 
 ### Dependencies
 
-- `JLL-FE-001`: completed
-- `JLL-FE-002`: completed
+- `JLL-FE-003`: completed後に開始
 
 ### Branch
 
@@ -53,11 +142,11 @@ Repository内のJava Learning Labの設計、既存実装、テスト、未完�
 
 ### Start HEAD
 
-実装開始時にGitHub実状態から固定する。
+実装開始時に記録する。
 
 ### Current HEAD
 
-`work`を最新`main`へ同期した状態を、実装開始時に再取得して記録する。
+実装開始時に記録する。
 
 ### Validation result
 
@@ -69,7 +158,7 @@ Repository内のJava Learning Labの設計、既存実装、テスト、未完�
 
 ### GitHub Pages result
 
-一時スキップ方針を継続する。通常build、Pages build、artifact uploadは継続する。
+一時スキップ方針を継続する。
 
 ### Next task
 

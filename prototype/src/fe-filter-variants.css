@@ -116,7 +116,8 @@
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-auto-flow: row;
-  gap: 0.7rem;
+  grid-auto-rows: min-content;
+  gap: 0.55rem;
   align-items: start;
 }
 
@@ -148,11 +149,11 @@ html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(2) {
 
 html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(3) {
   grid-column: 6 / -1;
-  grid-row: 2;
+  grid-row: 2 / span 2;
 }
 
 html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(4) {
-  grid-column: 1 / -1;
+  grid-column: 1 / span 5;
   grid-row: 3;
 }
 
@@ -193,8 +194,14 @@ html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(4) {
 
 .fe-check-grid-compact {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
   gap: 0.32rem;
+}
+
+@media (min-width: 721px) {
+  .fe-filter-variant-grid > :nth-child(2) .fe-check-grid-compact {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  }
 }
 
 .fe-check-grid-compact label {
@@ -220,7 +227,9 @@ html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(4) {
 .fe-check-grid-compact label strong {
   min-width: 0;
   overflow: visible;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
+  line-break: strict;
   text-overflow: clip;
   white-space: normal;
   font-size: 0.78rem;
@@ -295,6 +304,10 @@ html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(4) {
 
   html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(3) {
     grid-column: 4 / -1;
+  }
+
+  html[data-fe-filter-layout="2"] .fe-filter-variant-grid > :nth-child(4) {
+    grid-column: 1 / span 3;
   }
 
   html[data-fe-filter-layout="3"] .fe-filter-variant-grid > :nth-child(1) {

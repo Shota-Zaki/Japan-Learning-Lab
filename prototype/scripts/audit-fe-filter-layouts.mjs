@@ -10,7 +10,7 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const prototypeDirectory = resolve(scriptDirectory, "..");
 const repositoryDirectory = resolve(prototypeDirectory, "..");
 const docsDirectory = join(repositoryDirectory, "docs");
-const outputDirectory = join(prototypeDirectory, "qa", "jll-fe-002-browser");
+const outputDirectory = join(prototypeDirectory, "qa", "jll-fe-003-browser");
 const sitePrefix = "/Japan-Learning-Lab/";
 const viewports = [375, 768, 1280];
 const variants = ["1", "2", "3"];
@@ -217,7 +217,8 @@ function metricExpression() {
           return style.textOverflow === 'ellipsis' || style.whiteSpace === 'nowrap' || label.scrollWidth > label.clientWidth + 1;
         }).map((label) => label.textContent?.trim() || '')
       },
-      domOrder: cards.map((card) => card.querySelector('legend')?.textContent?.trim() || '')
+      domOrder: cards.map((card) => card.querySelector('legend')?.textContent?.trim() || ''),
+      unitLabels: [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '')
     };
   })()`;
 }
@@ -296,6 +297,7 @@ async function auditScenario(debugOrigin, siteOrigin, variant, width) {
     assert(metrics.cards.every((card) => !["auto", "scroll"].includes(card.overflowY)), `A filter card enables vertical scrolling for variant ${variant} at ${width}px`);
     assert(metrics.cards.every((card) => !card.internalVerticalOverflow), `A filter card clips content for variant ${variant} at ${width}px`);
     assert(metrics.labels.count > 0 && metrics.labels.clipped.length === 0, `Filter labels are clipped for variant ${variant} at ${width}px`);
+    assert(metrics.unitLabels.length > 0 && metrics.unitLabels.every((label) => label && !/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(label)), `A raw unit identifier is visible for variant ${variant} at ${width}px`);
     assert(JSON.stringify(metrics.domOrder) === JSON.stringify(["1. 分野", "2. 単元", "3. 開催回・公開区分", "4. 回答・復習状態"]), `DOM order changed for variant ${variant}`);
     assert(keyboard.toggled, `Keyboard checkbox operation failed for variant ${variant} at ${width}px`);
     assert(consoleMessages.length === 0, `Console warnings or errors occurred for variant ${variant} at ${width}px`);
@@ -349,7 +351,7 @@ async function main() {
     const buildInfo = JSON.parse(await readFile(join(docsDirectory, "build-info.json"), "utf8"));
     const evidence = {
       status: "passed",
-      taskId: "JLL-FE-002",
+      taskId: "JLL-FE-003",
       sourceRevision: process.env.GITHUB_SHA || buildInfo.sourceRevision || null,
       workflowRunId: process.env.GITHUB_RUN_ID ? Number(process.env.GITHUB_RUN_ID) : null,
       workflowRunNumber: process.env.GITHUB_RUN_NUMBER ? Number(process.env.GITHUB_RUN_NUMBER) : null,
@@ -360,7 +362,7 @@ async function main() {
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-002 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: independent subject selector, four unchanged filter groups, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: independent subject selector, four unchanged filter groups, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
     console.log(`FE filter browser audit passed for ${scenarios.length} scenarios`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
