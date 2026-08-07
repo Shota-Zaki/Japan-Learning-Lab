@@ -1,6 +1,6 @@
 import { ArrowRight, ArrowUpRight, BookOpen, ChartBar, Code, Coffee, Compass, Exam, House, Monitor, SquaresFour } from "@phosphor-icons/react";
 
-export function PlatformHeader({ screen, tab, navigate }) {
+export function PlatformHeader({ screen, tab, navigate, statusText = null }) {
   const brand = screen === "fe" ? "FE Learning Lab" : screen === "engineer" ? "Engineer Learning Lab" : "Japan Learning Lab";
   const items = screen === "fe"
     ? [
@@ -30,6 +30,13 @@ export function PlatformHeader({ screen, tab, navigate }) {
           })}
         </nav>
       </div>
+      {statusText && (
+        <div className="header-session-status" data-fe-session-status="mock">
+          <div className="header-session-status-inner">
+            <strong className="fe-mock-timer" aria-label={`模擬試験 ${statusText}`}>{statusText}</strong>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
