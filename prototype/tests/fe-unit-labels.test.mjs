@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { FE_UNIT_LABELS, getFeUnitLabel, getFeUnitLabelParts } from "../src/feUnitLabels.js";
+import {
+  FE_UNIT_LABELS,
+  getFeUnitLabel,
+  getFeUnitLabelParts,
+  resolveFeUnitLabelId,
+} from "../src/feUnitLabels.js";
 
 const dataPath = new URL("../public/data/fe-official-past-questions.json", import.meta.url);
 
@@ -19,6 +24,14 @@ test("every distributed FE unit has a complete Japanese label", async () => {
     assert.ok(entry.label.length > 0);
     assert.ok(entry.parts.every((part) => part.length > 0));
   }
+});
+
+test("runtime-prefixed unit identifiers resolve to the longest canonical unit ID", () => {
+  assert.equal(resolveFeUnitLabelId("technology/basic-theory"), "basic-theory");
+  assert.equal(getFeUnitLabel("A:technology/basic-theory"), "基礎理論");
+  assert.equal(getFeUnitLabel("A/information-security"), "情報セキュリティ");
+  assert.equal(getFeUnitLabel("A/two-dimensional-arrays"), "二次元配列");
+  assert.deepEqual(getFeUnitLabelParts("A/software-development-management"), ["ソフトウェア", "開発管理"]);
 });
 
 test("unknown unit identifiers never leak into learner-facing text", () => {
