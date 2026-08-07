@@ -90,25 +90,62 @@ export function normalizedFingerprint(question) {
   ].map(normalizeIdentityValue).join("|");
 }
 
+function sourceOccurrenceFromQuestion(question) {
+  const occurrence = {
+    sourceCategory: question.sourceCategory,
+    sourceType: question.sourceType,
+    periodId: question.periodId,
+    periodLabel: question.periodLabel,
+    sourceQuestionNumber: question.sourceQuestionNumber,
+    sourceRef: question.sourceRef,
+    year: question.year,
+    season: question.season,
+  };
+  const hasIdentity = [occurrence.sourceCategory, occurrence.periodId, occurrence.sourceQuestionNumber]
+    .some((value) => value !== null && value !== undefined && value !== "");
+  return hasIdentity ? occurrence : null;
+}
+
+function mergeSourceOccurrences(canonical, duplicate) {
+  const occurrences = [
+    ...(Array.isArray(canonical.sourceOccurrences) ? canonical.sourceOccurrences : []),
+    sourceOccurrenceFromQuestion(canonical),
+    ...(Array.isArray(duplicate.sourceOccurrences) ? duplicate.sourceOccurrences : []),
+    sourceOccurrenceFromQuestion(duplicate),
+  ].filter(Boolean);
+  const seen = new Set();
+  const unique = occurrences.filter((occurrence) => {
+    const fingerprint = normalizedSourceFingerprint(occurrence);
+    if (fingerprint === "||" || seen.has(fingerprint)) return false;
+    seen.add(fingerprint);
+    return true;
+  });
+  return unique.length > 0 ? { ...canonical, sourceOccurrences: unique } : canonical;
+}
+
 export function mergeQuestionBanks(primaryQuestions, supplementalQuestions) {
-  const seenIds = new Set();
-  const seenSourceFingerprints = new Set();
-  const seenContentFingerprints = new Set();
+  const canonicalIndexById = new Map();
+  const canonicalIndexBySource = new Map();
+  const canonicalIndexByContent = new Map();
   const merged = [];
   for (const source of [...primaryQuestions, ...supplementalQuestions]) {
     const question = normalizeQuestion(source);
     if (!validQuestion(question)) continue;
     const sourceFingerprint = normalizedSourceFingerprint(question);
     const contentFingerprint = normalizedFingerprint(question);
-    if (
-      seenIds.has(question.id)
-      || (sourceFingerprint !== "||" && seenSourceFingerprints.has(sourceFingerprint))
-      || seenContentFingerprints.has(contentFingerprint)
-    ) continue;
-    seenIds.add(question.id);
-    if (sourceFingerprint !== "||") seenSourceFingerprints.add(sourceFingerprint);
-    seenContentFingerprints.add(contentFingerprint);
-    merged.push(question);
+    const duplicateIndex = canonicalIndexById.get(question.id)
+      ?? (sourceFingerprint !== "||" ? canonicalIndexBySource.get(sourceFingerprint) : undefined)
+      ?? canonicalIndexByContent.get(contentFingerprint);
+    if (duplicateIndex !== undefined) {
+      merged[duplicateIndex] = mergeSourceOccurrences(merged[duplicateIndex], question);
+      continue;
+    }
+    const index = merged.length;
+    const canonical = mergeSourceOccurrences(question, question);
+    merged.push(canonical);
+    canonicalIndexById.set(question.id, index);
+    if (sourceFingerprint !== "||") canonicalIndexBySource.set(sourceFingerprint, index);
+    canonicalIndexByContent.set(contentFingerprint, index);
   }
   return merged;
 }
