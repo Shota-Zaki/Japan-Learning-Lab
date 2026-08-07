@@ -23,6 +23,27 @@ async function readQuestionPayload(url, signal, optional = false) {
   return response.json();
 }
 
+function mockDurationMinutes(session) {
+  if (Number(session?.config?.durationMinutes) > 0) return Number(session.config.durationMinutes);
+  const subject = session?.config?.subjects?.[0] || session?.config?.subject;
+  return subject === "B" ? 100 : 90;
+}
+
+function calculateMockRemainingSeconds(session, nowMs) {
+  if (!session || session.config?.type !== "mock" || session.status !== "in_progress") return null;
+  const durationMs = mockDurationMinutes(session) * 60 * 1000;
+  const startedAtMs = Date.parse(session.startedAt);
+  const deadlineMs = Number.isFinite(startedAtMs) ? startedAtMs + durationMs : nowMs + durationMs;
+  return Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000));
+}
+
+function formatMockRemaining(totalSeconds) {
+  const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 function FeLessonHome() {
   const lessonBlocks = [
     { type: "paragraph", text: "科目Bでは、問題文の条件を先に整理し、擬似言語を処理のまとまりごとに追跡します。通常本文とコードを分けて読むことで、変数の更新や分岐条件を見落としにくくなります。" },
@@ -38,7 +59,7 @@ function FeLessonHome() {
   );
 }
 
-export function FeLearningApp({ tab, view, navigate, goEngineer }) {
+export function FeLearningApp({ tab, view, navigate, goEngineer, setHeaderStatus }) {
   const fallbackQuestions = useMemo(() => feQuestions.map(normalizeQuestion), []);
   const [questionBank, setQuestionBank] = useState(fallbackQuestions);
   const [bankStatus, setBankStatus] = useState("loading");
@@ -47,10 +68,15 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [storageStatus, setStorageStatus] = useState({ source: "device", recovered: false, ready: false });
   const [notice, setNotice] = useState("");
+  const [headerClockMs, setHeaderClockMs] = useState(() => Date.now());
   const [sessionStore] = useState(createFeSessionStore);
   const loadedStoreFor = useRef("");
   const noticeTimer = useRef(null);
   const activeSession = sessions.find((session) => session.id === activeSessionId) || null;
+  const activeMockSessionId = view === "session" && activeSession?.config?.type === "mock" && activeSession.status === "in_progress"
+    ? activeSession.id
+    : null;
+  const remainingMockSeconds = activeMockSessionId ? calculateMockRemainingSeconds(activeSession, headerClockMs) : null;
 
   const notify = (message) => {
     setNotice(message);
@@ -165,6 +191,19 @@ export function FeLearningApp({ tab, view, navigate, goEngineer }) {
     });
   }, [bankStatus, questionBank, sessionStore, view]);
 
+  useEffect(() => {
+    if (!activeMockSessionId) return undefined;
+    setHeaderClockMs(Date.now());
+    const timerId = window.setInterval(() => setHeaderClockMs(Date.now()), 1000);
+    return () => window.clearInterval(timerId);
+  }, [activeMockSessionId]);
+
+  useEffect(() => {
+    if (!setHeaderStatus) return;
+    setHeaderStatus(remainingMockSeconds === null ? null : `残り ${formatMockRemaining(remainingMockSeconds)}`);
+  }, [remainingMockSeconds, setHeaderStatus]);
+
+  useEffect(() => () => setHeaderStatus?.(null), [setHeaderStatus]);
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
 
   return (
