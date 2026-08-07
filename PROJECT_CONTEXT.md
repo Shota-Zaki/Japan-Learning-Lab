@@ -85,6 +85,35 @@ GitHub Pages側の新規deployment timeoutは未解決である。ただし2026-
 
 最新状態、検証証拠、確認手順は`task-list.md`と`NEXT_WORK.md`を正本とする。FEタスクが確認合格、`main`へのmerge commit、`work`同期を経て`completed`になるまで、Java Learning Labの実装を同時進行させない。GitHub Pages公開成功はJavaタスク開始の前提条件に含めない。
 
+## 5.1 Temporary GitHub Pages skip policy
+
+2026-08-07のユーザー指示により、GitHub Pagesが正常に完了できる状態へ回復したと確認されるまで、すべてのタスクでPages依存工程をスキップする。
+
+スキップ対象:
+
+- GitHub Pages deploymentの実行または再実行を完了条件にすること
+- 公開URLの最新Revision一致確認
+- 公開画面を使用した表示確認
+- 公開リソースのNetwork、Console、スモーク確認
+- deployment成功後にだけ行える`docs/`および公開証拠の同期
+- Pages障害だけを理由にタスクを`blocked`または`needs_fix`へ変更すること
+- Pages復旧確認前の連続retry
+
+継続対象:
+
+- 通常build
+- 自動テスト
+- 型検査
+- Lint
+- `npm run build:pages`によるローカルまたはCI上のPages成果物生成
+- Pages artifact uploadまでの検証
+- ソースコード、生成物、固定HEAD、Pull Request差分の確認
+- Pages以外の完了条件に基づく確認、マージ、次タスク開始
+
+自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用せず、build・テスト・型検査・Lint・Pages build・artifact uploadの結果だけを使用する。Pages deployの手動再実行は行わない。
+
+解除条件は、GitHub Pagesのdeploymentが正常完了可能であることを実際に確認し、ユーザーまたはRepository管理文書で本ルールを解除した場合とする。解除後に延期した公開確認を別工程として実施する。
+
 ## 6. Technical stack
 
 アプリケーション本体は`prototype/`配下にある。
@@ -226,5 +255,7 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 8. 必要に応じてRootおよび`prototype/`の`DESIGN.md`
 9. 最新CI
 10. `docs/`とGitHub Pagesの公開状態
+
+GitHub Pagesの一時スキップ方針が有効な間は、手順10を状態記録だけに限定し、公開確認やretryをBlocking条件にしない。
 
 新しいチャットでユーザーが送る起動コマンドは、原則として`実装`、`修正`、`確認`のいずれかとする。
