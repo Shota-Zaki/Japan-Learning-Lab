@@ -94,12 +94,18 @@ JLL-FE-003の確認証拠:
 - Browser audit workflow: `31155342511` / run `63` / success
 - Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
 - Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
-- Pages deployment before merge: workflow `31155340547` / run `403` / success
-- Pre-merge public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
 - Tests: 60 / 60 success
 - TypeScript、ESLint、normal build、Pages build: success
 - 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
-- merge後の`main` pushでは新規CI runなし。`.github/workflows/pages.yml`の`push`対象は`work`のみで、最終`work`同期時に再検証する
+- Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Final post-merge Pages workflow: `31157149416` / run `405` / success
+- Final post-merge build job: `92799024993` / success
+- Final post-merge deploy job: `92799145662` / success
+- Final public smoke check: success
+- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Final Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- `work`は`main`同期後、確認用管理文書とPages証拠だけが追加された状態で、アプリケーション差分はない
 
 `JLL-FE-004`完了後の優先順は次のとおり。
 
@@ -119,14 +125,19 @@ FE問題数は次の区分を正確に使う。
 
 2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-解除根拠:
+最新の正常状態:
 
-- workflow `31155340547` / run `403` のbuildがsuccess
-- GitHub Pages deployがsuccess
-- 公開URLの`build-info.json` Revision一致確認がsuccess
-- index、生成アセット、問題データ、サンプル図表のpublic smoke checkがsuccess
-- Repository `docs/`と公開証拠の同期commit `4cd677854fda9f4a4f204df5519e86f5600fc595`が作成済み
-- `prototype/qa/pages-deployment.json`は`status: success`、`publicSmokeCheck: success`を記録済み
+- Final workflow: `31157149416` / run `405` / success
+- Build job: `92799024993` / success
+- Deploy job: `92799145662` / success
+- `Verify FE implementation`: success
+- `Verify public Pages resources and revision`: success
+- Public smoke check: success
+- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Public `build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
+- Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
 
 Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
