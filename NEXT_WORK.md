@@ -40,6 +40,8 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
 - Previous Pages deployment: `31155340547` / run `403` / success
 - Main push CI after merge: no new run by design; `.github/workflows/pages.yml` triggers `push` only on `work`
+- Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Final Pages verification: この管理文書commitの`work` pushで`pages.yml`を再実行し、公開Revision一致を確認する
 - JLL-FE-004 Start HEAD: 実装開始時に、確認完了後の最新`work` HEADをGitHub実状態から固定する
 
 ## Required startup checks
