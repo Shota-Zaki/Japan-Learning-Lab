@@ -6,33 +6,17 @@
 
 ## Current phase
 
-`needs_fix`
+`review_ready`
 
 ## Next role
 
-実装担当。
+確認担当。
 
-2026-08-07の確認で、Pull Request `#4` の固定HEAD `86883cf71b7a13c4ee741372f3101d6a452ff8a3`を独立確認した結果、最新ユーザー指定の絞り込み順が未実装であることを確認した。
-
-`prototype/src/FePracticeSetup.jsx` の `filterGroups` は現在も次の旧順序になっている。
-
-1. 分野
-2. 単元
-3. 開催回・公開区分
-4. 回答・復習状態
-
-最新完了条件は次の順序であるためBlocking不合格とする。
-
-1. 分野
-2. 回答・復習状態
-3. 開催回・公開区分
-4. 単元
-
-新しいチャットで`修正`と送られたら、Pull Request `#4`の最新`work` HEADから修正を開始し、コード、テスト、ブラウザ監査、`docs/`、管理文書を新しい順序へ合わせる。実装担当は`main`へマージしない。
+実装担当は`main`へマージしない。次の新しいチャットでは`確認`として、固定されたアプリケーション差分、最新監査、Pages公開証拠、管理文書を独立確認する。
 
 ## Objective
 
-Bento Gridの既存方針、不要な余白削減、受験科目の独立状態、完全な日本語単元名表示を維持しつつ、絞り込みブロックの表示・DOM・キーボード移動順を次へ変更する。
+Bento Grid、不要な余白削減、受験科目の独立状態、完全な日本語単元名表示を維持しつつ、絞り込みブロックの表示・DOM・キーボード順が次になっていることを独立確認する。
 
 1. 分野
 2. 回答・復習状態
@@ -46,93 +30,62 @@ Bento Gridの既存方針、不要な余白削減、受験科目の独立状態�
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-003`
-- Task status: `needs_fix`
+- Task status: `review_ready`
 - Pull Request: `#4`
 - Pull Request state: open / draft / unmerged
-- Confirmation fixed HEAD: `86883cf71b7a13c4ee741372f3101d6a452ff8a3`
-- Blocking file: `prototype/src/FePracticeSetup.jsx`
-- Blocking location: `filterGroups`
-- Current implementation order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
-- Required order: `分野 → 回答・復習状態 → 開催回・公開区分 → 単元`
-- Prior fixed application / test / browser audit HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Prior Pages output synchronization commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-- Latest repository HEAD before this review memo: `86883cf71b7a13c4ee741372f3101d6a452ff8a3`
+- Fixed application / order-test HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
+- Audited workflow / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
+- Pages output synchronization commit: `4cd677854fda9f4a4f204df5519e86f5600fc595`
+- Latest management state before this handoff update: `733fb5de21128bb11289f9943d9fda5c32527e11`
+- Browser audit workflow: `31155342511` / run `63` / success
+- Browser audit artifact: `8984932272`
+- Browser artifact digest: `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
+- Pages workflow: `31155340547` / run `403` / success
+- Public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Repository `docs/build-info.json` sourceRevision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Pages temporary skip policy: recovered / removed
 
-## Latest user request
+## Implemented change
 
-絞り込みブロックを次の順番にする。
+1. `prototype/src/FePracticeSetup.jsx` の4条件群を `domains → reviewScopes → periodIds → unitIds` へ変更した。
+2. legendを「1. 分野」「2. 回答・復習状態」「3. 開催回・公開区分」「4. 単元」へ統一した。
+3. パターンBは分野・回答状態を左側へ縦積み、開催回を右側、単元をその下の全幅カードへ配置した。
+4. `prototype/src/main.jsx` の可変高さ計測を新DOMインデックスへ追従させた。
+5. 単元向け広幅選択肢指定を4番目カードへ追従させた。
+6. ソーステストへ4条件群の順序と旧番号残存防止を追加した。
+7. Chromium監査へDOM順とキーボード群順の明示検証を追加した。
+8. Root / prototypeの`DESIGN.md`を最新順序へ同期した。
+9. Pages成功後の証拠同期で任意QAファイルが存在しない場合に失敗するworkflow不具合を修正した。
+10. 固定Pages source HEADの成果物をRepository `docs/`へ同期し、公開Revision一致を確認した。
+11. 作業中に使用した一時補助workflow / triggerはすべて削除した。
+12. `prototype/qa/jll-fe-003-browser/`のテキスト証拠を最新browser auditへ更新した。
 
-1. 分野
-2. **回答・復習状態**
-3. 開催回・公開区分
-4. 単元
+## Change forbidden during confirmation
 
-この指定は`JLL-FE-003`の既存範囲内の修正として扱う。別Task IDは作成しない。
-
-## Required implementation
-
-1. `work`とPull Request `#4`の最新HEADを取得し、開始HEADとして固定する。
-2. `AGENTS.md`、`PROJECT_CONTEXT.md`、`DESIGN.md`、`task-list.md`を再確認する。
-3. `prototype/src/FePracticeSetup.jsx` の `filterGroups` を確認し、旧順序が残っていることを前提に修正する。
-4. 表示順を「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」へ変更する。
-5. DOM順も同じ順序にし、キーボード移動順と読み上げ順を一致させる。
-6. 375pxの1列表示でも同じ順序を維持する。
-7. 768px・1,280pxでは既存Bento Gridの不規則配置方針を維持しつつ、順序と余白削減を両立する。
-8. CSSの `:nth-child(...)` 依存が新しいDOM順で誤配置を起こさないよう、`prototype/src/fe-filter-variants.css` を再検証・必要なら修正する。
-9. `prototype/src/main.jsx` のカード位置計測ロジックが子要素インデックスへ依存しているため、新しいDOM順でも余白計算が正しいことを確認する。
-10. 受験科目ブロックは独立した現在の状態を変更しない。
-11. 単元名の完全日本語表示、可能な限り1行、必要時のみ自然な折返しを維持する。
-12. 既存の絞り込み条件、OR/AND評価、件数、開始条件を変更しない。
-13. `prototype/tests/fe-filter-layout.test.mjs` を新しい順序に対する明示的な回帰テストへ更新する。単にDOM存在を確認するだけでなく、4グループの順序を検証する。
-14. browser auditでも各viewport・各layoutで4グループの順序を証拠として取得・検証する。
-15. 必須検証成功後、最新固定HEADのPages buildを生成し、Repository直下`docs/`を同期する。
-16. `task-list.md`を`review_ready`へ更新し、`NEXT_WORK.md`を確認担当向けに更新する。
-17. `work`へcommit / pushし、Draft Pull Request `#4`を更新する。
-18. CI結果を確認し、固定HEADと検証証拠を管理文書へ記録する。
-
-## Change allowed
-
-- `prototype/src/`内のJLL-FE-003絞り込みUIに必要なコード
-- JLL-FE-003のレイアウトCSS
-- JLL-FE-003に対応するテスト
-- JLL-FE-003のbrowser audit
-- 必要に応じた`DESIGN.md`
-- `docs/`の生成済みPages成果物
-- `task-list.md`
-- `NEXT_WORK.md`
-- Pull Request `#4`の説明
-
-## Change forbidden
-
-- 受験科目ブロックの位置、構造、文言、選択肢、操作変更
-- 問題本文、選択肢、正答、解説、図表の改変
-- 絞り込み条件、OR/AND評価、件数、開始条件の仕様変更
-- `JLL-FE-004`の問題文・解説階層、固定タイマー、出題対象、開催回表記の先行実装
-- レッスン内容作成の先行実装
-- Java Learning Labの実装
-- GitHub Pages deployment障害の復旧や不要なretry
-- `main`へのマージ
-- Pull Requestを勝手にReady for reviewへ変更すること
-- Squash merge、rebase merge、force push
+- アプリケーションコード、CSS、テスト、設定の修正
+- `JLL-FE-004`の先行実装
+- レッスン内容またはJava Learning Labの実装
+- Squash merge / rebase merge / force push
 - `work` Branchの削除
 
-## Completion criteria
+Blocking問題がある場合はコードを直さず、`task-list.md`を`needs_fix`へ戻し、このファイルへ具体的な再現方法と修正指示を記録する。
 
-- 375px、768px、1,280pxで表示順が「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」になっている
-- DOM順とキーボード移動順が表示順と一致する
-- 3つの `filterLayout` すべてで上記順序が維持される
-- Bento Gridの既存方針を維持し、不自然な大きな空白がない
-- カード高さ固定や条件群内部スクロールを追加していない
-- 受験科目ブロックの独立状態が維持されている
-- 単元名が完全な日本語で、可能な限り1行、必要時のみ自然に折り返される
-- 横はみ出し、重なり、内容切れ、操作不能がない
-- fieldset/legend、label/input関連付けが維持される
+## Completion criteria to verify
+
+- 指定なし・無効な`filterLayout`でパターンBが既定になる
+- 375px、768px、1,280pxの全3レイアウトで4条件群の順序が正しい
+- DOM順とキーボード群順が一致する
+- 受験科目が独立ブロックのまま
+- Bento Gridの不要な大空白がなく、カード内部スクロールがない
+- 単元名が完全な日本語で、可能な限り1行、必要時のみ自然に折り返す
+- 横overflow、重なり、内容切れ、操作不能がない
 - Tests、TypeScript、ESLint、normal build、Pages build、browser auditが成功する
-- Repository直下`docs/`が最新固定アプリケーションHEADのPages buildと一致する
-- Pull Request `#4`がopen / draft / unmergedのまま更新される
-- `task-list.md`と`NEXT_WORK.md`が実状態と一致し、確認担当が独立レビュー可能な`review_ready`になる
+- `docs/build-info.json` のsourceRevisionが `afa550a41d2776543445a3cb727731f6fb902608` と一致する
+- `prototype/qa/pages-deployment.json`がPages成功と同一Revisionを記録する
+- PR `#4` がopen / draft / unmergedである
+- 一時補助workflow / triggerがRepositoryに残っていない
 
-## Required verification
+## Required independent verification
 
 ```bash
 cd prototype
@@ -145,63 +98,53 @@ npm run build:pages
 npm run audit:fe-filter-layouts
 ```
 
-ブラウザ監査では最低限、3レイアウト × 375px / 768px / 1,280pxを確認し、順序、横overflow、カード内scroll/clipping、単元名表示、キーボード操作、console error、network errorを記録する。
+GitHub上では次も独立確認する。
 
-## Reproduction of blocking issue
+- `main`との差分
+- fixed application / order-test HEAD `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
+- audited workflow / Pages source HEAD `afa550a41d2776543445a3cb727731f6fb902608`
+- browser audit run `31155342511` とartifact `8984932272`
+- Pages run `31155340547`
+- Repository `docs/`と`prototype/qa/pages-deployment.json`
+- `task-list.md`、`PROJECT_CONTEXT.md`、`DESIGN.md`との整合性
 
-1. `work` HEAD `86883cf71b7a13c4ee741372f3101d6a452ff8a3` の `prototype/src/FePracticeSetup.jsx` を開く。
-2. `const filterGroups = [` を確認する。
-3. 配列が `domains → unitIds → periodIds → reviewScopes` の順であることを確認する。
-4. 画面タイトルへ対応させると `分野 → 単元 → 開催回・公開区分 → 回答・復習状態` となり、最新完了条件と不一致である。
+## Approval path
 
-## Prior evidence retained for regression comparison
+Blocking問題がなければ、確認担当はプロジェクト規則に従い次を一括実行する。
 
-旧仕様では次が成功済み。ただし、今回の確認では最新順序が未実装のため再利用して合格扱いにはしない。
+1. レビュー対象HEADを固定
+2. 必須検証を独立実行
+3. Pages公開状態を確認
+4. `JLL-FE-003`を`completed`へ更新
+5. `JLL-FE-004`を次の進行対象として登録
+6. 管理文書を`work`へcommit / push
+7. 管理文書更新後のHEADを再確認
+8. PR `#4`をmerge commit方式で`main`へマージ
+9. `main` CIを確認
+10. `work`を最新`main`へ同期し、削除しない
+11. Pages再公開を確認
 
-- Tests: 60 / 60 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Browser audit: 3 layouts × 375px / 768px / 1,280px、9 scenarios success
-- Horizontal overflow: 0
-- Internal scrollbar / clipping: 0
-- Raw English unit identifier / unresolved unit label: 0
-- Console warning/error: 0
-- Failed network request: 0
-- Keyboard checkbox operation: success
-- Previous DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
+## Queued work after approval
 
-## Pages policy
-
-- Pages build: 必須
-- Repository `docs/` synchronization: 必須
-- Pages artifact upload: 必須
-- Pages deployment: temporary skip
-- Public URL revision verification: temporary skip
-- Pages障害だけを理由に追加retryしない
-
-## Queued work after this task
-
-`JLL-FE-003`確認合格・merge後、`JLL-FE-004`として次を実装する。
+`JLL-FE-004`:
 
 - 問題文と解説の文字サイズ・太さ・構造に差を付ける
 - 模擬試験の残り時間を右上へ固定する
 - 2022年科目Aサンプルを通常演習へ入れない
 - `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-その後はJavaへ進まず、`JLL-FE-LESSON-001`としてレッスン内容作成を優先する。
+その後はJavaへ進まず、`JLL-FE-LESSON-001`としてFEレッスン内容作成を優先する。
 
 ## Work completion update targets
 
 - `task-list.md`
 - `NEXT_WORK.md`
-- `DESIGN.md`（必要な場合）
+- `PROJECT_CONTEXT.md`
 - Pull Request `#4`
 - 最新固定HEAD
 - CI結果
-- `docs/`同期結果
+- Pages公開結果
 
 ## Next user command
 
-`修正`
+`確認`
