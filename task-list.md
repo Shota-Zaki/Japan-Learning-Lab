@@ -50,7 +50,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Dependencies
 
-- `JLL-FE-003`: confirmation passed。PR #4のmergeと`work`同期完了後に実装開始する
+- `JLL-FE-003`: completed / PR #4 merged
 
 ### Branch
 
@@ -58,15 +58,15 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Pull Request
 
-JLL-FE-003のPR #4をmerge・同期した後、実装開始時のGitHub実状態から作成または更新する。
+未作成。実装開始時のGitHub実状態から作成または更新する。
 
 ### Start HEAD
 
-実装開始時にGitHub実状態から固定する。
+実装開始時に、JLL-FE-003完了後の最新`work` HEADをGitHub実状態から固定する。
 
 ### Current HEAD
 
-未着手。JLL-FE-003 merge後に`work`を最新`main`へ同期したHEADを開始点とする。
+未着手。確認完了後の`work`同期・Pages証拠更新が終わった状態を開始点とする。
 
 ### Validation result
 
@@ -384,7 +384,8 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Number: `#4`
 - Base: `main`
 - Head: `work`
-- Pre-merge state: open / draft / unmerged
+- State: merged
+- Final Pull Request HEAD: `66ba0a45ba2cb963bb96fba144021073fb66e279`
 - Review result: pass
 - Merge method: merge commit
 
@@ -408,11 +409,15 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `31332628e5ad412c685c1e19f0c31eda99c51d43`
 
+### Confirmation management HEAD
+
+`66ba0a45ba2cb963bb96fba144021073fb66e279`
+
 ### Validation result
 
-`passed / confirmation approved`
+`passed / completed`
 
-- PR mergeable: true
+- PR mergeable before merge: true
 - Review threads: none
 - PR build workflow: `31155342510` / run `404` / success
 - CI `npm ci`: success
@@ -433,24 +438,24 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Card internal scrollbar / clipping: none
 - Japanese unit-label data verification: passed
 - Console error/warning and failed request: none
+- Main Branch CI after merge: no new run/status because current workflow triggers `push` only for `work` and `pull_request` for `main`
 - Confirmation environment limitation: local cloneは実行環境の外向きDNS制約で不可。GitHub Actionsの固定PR merge refログ、artifact、GitHub差分を独立照合した
 - Non-blocking observation: CIスクリーンショット環境は日本語システムフォント不足により一部グリフが豆腐表示するが、DOM監査・単元ラベル検証では完全な日本語文字列を確認済み。公開利用環境の機能不良を示す証拠はない
 
 ### Merge commit
 
-確認合格。PR #4のmerge commit作成後にGitHub実状態から追記する。
+`90f33bbcb01792e22426123f90f454bf3a7e4134`
 
 ### GitHub Pages result
 
-- Workflow: `31155340547` / run `403` / success
+- Pre-merge verified workflow: `31155340547` / run `403` / success
 - Build job: `92793503577` / success
 - Deploy job: `92793641839` / success
 - Public smoke check: success
-- Public source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `docs/build-info.json` sourceRevision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `prototype/qa/pages-deployment.json`: success
+- Pre-merge public source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Repository `docs/build-info.json` sourceRevision before final sync: `afa550a41d2776543445a3cb727731f6fb902608`
 - Pages temporary skip policy: removed
-- merge後の再公開結果は最終同期後に追記する
+- Final post-merge `work` sync / deployment: confirmation flowで再実行し、最終実状態を確認する
 
 ### Next task
 
