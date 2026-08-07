@@ -37,6 +37,7 @@ jobs:
             sleep 5
           done
       - name: Upload browser evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: fe-mock-timer-evidence
