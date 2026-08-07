@@ -43,7 +43,7 @@ test("mock timer never exceeds configured duration even when the first clock val
   assert.equal(calculateMockRemainingSeconds(subjectA, startedAtMs + 1_500), 90 * 60 - 1);
   assert.equal(calculateMockRemainingSeconds(subjectB, startedAtMs - 15_000), 100 * 60);
   assert.equal(calculateMockRemainingSeconds({ ...subjectA, status: "completed" }, startedAtMs), null);
-  assert.match(learningApp, /if \(!activeMockSessionId\) return undefined;\s*setHeaderClockMs\(Date\.now\(\)\);\s*const timerId = window\.setInterval/s);
+  assert.match(learningApp, /if \(!activeMockSessionId\) return undefined;\s*queueMicrotask\(\(\) => setHeaderClockMs\(Date\.now\(\)\)\);\s*const timerId = window\.setInterval/s);
 });
 
 test("session stylesheet keeps question hierarchy and moves the mock timer into a reserved header row", () => {
