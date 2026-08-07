@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import { isFeQuestionAvailableForSetup } from "../src/feQuestionAvailability.js";
 import { fePeriodLabel, feQuestionTitle, feSourceDisplayLabel } from "../src/feLearnerLabels.js";
 
@@ -25,6 +26,24 @@ test("exemption exam learner-facing labels are normalized without mutating sourc
   assert.equal(feSourceDisplayLabel(question), "令和8年度 免除試験 問1");
   assert.equal(question.periodLabel, "2026年7月 科目A免除制度 修了試験");
   assert.equal(question.sourceRef, "2026年7月 科目A免除制度 修了試験 問1");
+});
+
+test("mock timer never exceeds configured duration even when the first clock value is stale", () => {
+  const learningApp = fs.readFileSync(new URL("../src/FeLearningApp.jsx", import.meta.url), "utf8");
+  const helperSource = learningApp.match(/function mockDurationMinutes\(session\) \{[\s\S]*?\n\}\n\nfunction calculateMockRemainingSeconds\(session, nowMs\) \{[\s\S]*?\n\}/)?.[0];
+  assert.ok(helperSource, "mock timer calculation helpers must remain available for regression testing");
+  const calculateMockRemainingSeconds = runInNewContext(`(() => { ${helperSource}; return calculateMockRemainingSeconds; })()`);
+  const startedAt = "2026-08-07T12:00:00.000Z";
+  const startedAtMs = Date.parse(startedAt);
+  const subjectA = { config: { type: "mock", subject: "A" }, status: "in_progress", startedAt };
+  const subjectB = { config: { type: "mock", subject: "B" }, status: "in_progress", startedAt };
+
+  assert.equal(calculateMockRemainingSeconds(subjectA, startedAtMs - 15_000), 90 * 60);
+  assert.equal(calculateMockRemainingSeconds(subjectA, startedAtMs), 90 * 60);
+  assert.equal(calculateMockRemainingSeconds(subjectA, startedAtMs + 1_500), 90 * 60 - 1);
+  assert.equal(calculateMockRemainingSeconds(subjectB, startedAtMs - 15_000), 100 * 60);
+  assert.equal(calculateMockRemainingSeconds({ ...subjectA, status: "completed" }, startedAtMs), null);
+  assert.match(learningApp, /if \(!activeMockSessionId\) return undefined;\s*setHeaderClockMs\(Date\.now\(\)\);\s*const timerId = window\.setInterval/s);
 });
 
 test("session stylesheet keeps question hierarchy and moves the mock timer into a reserved header row", () => {
