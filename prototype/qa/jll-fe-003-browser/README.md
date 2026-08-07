@@ -1,19 +1,17 @@
 # JLL-FE-003 Browser Evidence
 
 - Status: passed
-- Fixed implementation HEAD: `4e71a6b77a5903de5fa2eac7187f76619c631b4a`
-- Audited Pull Request merge ref: `2fefffaac90d757a91538c004b2a964d8965e3e6`
-- Workflow: `31142671147` / run `20`
-- Artifact: `8980340883`
-- Artifact digest: `sha256:d6c813f0eec4d9226a03b81840709a41ad1e4b2e0295b1d1a38a132eb2fb9f86`
+- Fixed implementation HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
+- Audited `work` HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
+- Workflow: `31155342511` / run `63`
+- Artifact: `8984932272`
+- Artifact digest: `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
 - Variants: 1, 2, 3
 - Viewports: 375, 768, 1280px
 - Scenarios: 9
-- Unit labels captured: 144
-- Distinct unit labels: 24
-- Unresolved unit labels: 0
-- Raw English unit identifiers: 0
-- Screenshots: layout-1-1280.png, layout-2-1280.png, layout-3-1280.png
-- Checks: independent subject selector, four unchanged filter groups, no page overflow, no card scrollbars, no clipping, complete labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px, no console or network errors.
+- Required order: `分野 → 回答・復習状態 → 開催回・公開区分 → 単元`
+- Japanese unit-label verification: passed
+- Screenshots: 9 files, one for each layout and viewport combination
+- Checks: independent subject selector, four filter groups, stable DOM order, stable keyboard group order, layout 2 left-stack gap, no page overflow, no card scrollbars, no clipping, complete Japanese labels, keyboard checkbox operation, distinct layouts at 768px and 1280px, no console or network errors.
 
-The full generated evidence is retained in GitHub Actions artifact `8980340883`. `audit.json` contains the fixed evidence summary used for review handoff.
+The full generated evidence is retained in GitHub Actions artifact `8984932272`. `audit.json` contains the fixed evidence summary used for review handoff.
