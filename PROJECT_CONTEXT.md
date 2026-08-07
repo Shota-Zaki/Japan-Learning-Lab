@@ -47,9 +47,20 @@
 
 ## 4. Current priority
 
-次の実装タスクは`JLL-FE-LESSON-001`で、状態は`planned`。
+現在の優先タスクは`JLL-FE-LESSON-001`で、状態は`planned`。次の新規チャットでは`実装`で開始する。
 
-`JLL-FE-004`は確認担当の独立確認でBlocking findingなしと判定済み。確認固定HEADは`07e50fa81197899c8b5f740ceceef72aa8d85fb5`、最新CI / browser evidence sourceは`518cd1e8a75ed4acad89c080e81673de6ef7279e`。固定HEADとの差はPages成功証拠同期のみだった。PR #5はmerge commit方式でのmerge、`work`同期、最終Pages再確認を確認担当がこの確認工程内で完了させる。
+`JLL-FE-004`は確認担当の独立確認に合格し、PR #5をmerge commit方式で`main`へマージ済み。
+
+JLL-FE-004 final state:
+
+- Independent confirmation fixed HEAD: `07e50fa81197899c8b5f740ceceef72aa8d85fb5`
+- Latest audited CI / browser source: `518cd1e8a75ed4acad89c080e81673de6ef7279e`
+- Confirmation management PR HEAD: `30107a653f773df9bee00911fb657d55418129d6`
+- Merge commit: `36641bb1c183ecd489d15280f3070aa98fd1868d`
+- `work`はmerge commitへfast-forward同期済み
+- Post-merge handoff / final Pages source: `a958c782e0a0604f71028c81dcf8796bf8f30b2a`
+- Final Pages evidence synchronization HEAD: `77c5f2c0d84f72b32a4387e77e150047e6f97df3`
+- Final completion record commit以後の最新`work` HEADはGitHub実状態を正本とする
 
 JLL-FE-004で確定した方針:
 
@@ -61,7 +72,7 @@ JLL-FE-004で確定した方針:
 6. `2026-exemption-07`のlearner-facing表示は`令和8年度 免除試験`とし、元問題データは変更しない
 7. `JLL-FE-003`で確定した絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」、受験科目ブロック独立、完全日本語単元名を維持する
 
-JLL-FE-004独立確認証拠:
+JLL-FE-004 independent validation:
 
 - PR build workflow: `31184205320` / run `475` / success
 - Tests: 64 / 64 passed
@@ -71,8 +82,10 @@ JLL-FE-004独立確認証拠:
 - Browser evidence artifact: `8996046151`
 - Artifact digest: `sha256:3c357958f2e7042b2ca75948b80845c78873a33f9cf695824882baffe76ae184`
 - 375px / 768px / 1,280pxで開始直後`残り 90:00`、約1.2秒後`残り 89:59`
-- timer overlap / horizontal overflow / console error / failed requestなし
+- overlap / horizontal overflow / console error / failed requestなし
 - topic演習ではmock timer / status row / legacy inline timer 0件
+- Review threads: 0
+- Blocking finding: なし
 
 ## 4.1 Work queue
 
@@ -80,7 +93,7 @@ JLL-FE-004独立確認証拠:
 2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。lesson完了後か、最新ユーザー指示で優先順位が変更された場合に着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済み。詳細な完了証拠は`task-list.md`を正本とする。
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
 
 ## 5. FE question-bank counts
 
@@ -94,23 +107,23 @@ JLL-FE-004独立確認証拠:
 
 ## 6. GitHub Pages status
 
-JLL-FE-004 pre-merge確認時の最新正常公開:
+JLL-FE-004 final post-merge publication:
 
-- Workflow: `31184200357` / run `474` / success
-- Build job: success
-- Deploy job: success
+- Workflow: `31185585362` / run `483` / success
+- Build job: `92889182863` / success
+- Deploy job: `92889369591` / success
+- `Verify FE implementation`: success
+- `Verify public Pages resources and revision`: success
 - Public smoke check: success
-- Published sourceRevision: `518cd1e8a75ed4acad89c080e81673de6ef7279e`
+- Published sourceRevision: `a958c782e0a0604f71028c81dcf8796bf8f30b2a`
 - Public / repository `build-info.json` sourceRevision一致
 - Published script: `/Japan-Learning-Lab/assets/index-CYNhSz4W.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization HEAD: `07e50fa81197899c8b5f740ceceef72aa8d85fb5`
+- Final Pages evidence synchronization HEAD: `77c5f2c0d84f72b32a4387e77e150047e6f97df3`
 
-PR #5 merge後は`work`を最新`main`へfast-forward同期し、Pages再公開と公開Revision一致を再確認して最終記録を更新する。
+Pages証拠同期や完了記録の`[skip ci]`管理commitが`work`へ追加される場合、最終`work` HEADが公開sourceRevisionより先行することは許容する。アプリケーション成果物の公開Revisionと管理文書の最終HEADを混同しない。
 
 ## 7. Technical stack
-
-アプリケーション本体は`prototype/`配下にある。
 
 - Runtime used by CI: Node.js 22
 - Package manager: npm
@@ -139,15 +152,6 @@ npm run lint
 npm run build:pages
 npm run verify:fe
 ```
-
-主な用途:
-
-- `npm run build`: FE問題同期、通常build、配布準備
-- `npm test`: 全自動テスト
-- `npm run typecheck`: 型検査
-- `npm run lint`: 静的解析
-- `npm run build:pages`: Pages成果物をRepository root `docs/`へ生成
-- `npm run verify:fe`: FE同期、通常build、test、typecheck、lint、Pages buildを一括実行
 
 ## 9. Repository structure
 
