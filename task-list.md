@@ -14,34 +14,37 @@ FEレッスン内容を作成する
 
 ### Status
 
-`planned`
+`review_ready`
 
 ### Purpose
 
-FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの構成と本文作成を開始する。
+FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最初の実用単位として科目Bの擬似言語における代入・繰返し・変数追跡を学べる画面を実装する。
 
-### Scope
+### Scope completed
 
-- 既存レッスン画面、データ構造、設計方針、対象ユーザーの再確認
-- レッスン単元、学習順序、到達目標、本文、例、確認項目の具体化
-- UI変更が必要な場合はRoot / prototypeの`DESIGN.md`を実装前に更新
-- 実装、テスト、typecheck、lint、build、`docs/`、Draft PR、管理文書の更新
+- Root / `prototype/`の設計方針、既存FEレッスン・演習・履歴・ルーティングを確認
+- 既存設計方針内で実装可能と判断し、`DESIGN.md`は方針変更なし
+- 最初のレッスンを「代入と繰返しを追跡する」として定義し、到達目標3件、学習順序4段階、本文、擬似言語例、変数追跡表、読み違い防止ポイントを追加
+- レッスン概要と本文リーダーを演習・模試から独立したコンポーネントとして実装
+- 4択の確認問題、解説、再確認導線を追加。永続的な完了状態は未実装のため完了済み表示は保存しない
+- レッスン定義の構造・確認問題・演習ルート分離を回帰テスト化
+- 375px / 768px / 1,280pxのレッスン専用browser auditとスクリーンショット証拠を追加
+- Pages buildではwebfontを除去する既存仕様のため、CIスクリーンショット時のみ日本語fallback fontを導入して実表示を確認
+- `docs/`生成、Draft PR、CI、Pages公開、管理文書を同期
 
-### Out of scope
+### Out of scope respected
 
-- Java Learning Labの再開
-- 公式問題本文、選択肢、正答、解説の改変
-- `JLL-FE-QBANK-001`の同時進行
-- 実装担当による`main` merge
-- squash / rebase / force push / `work`削除
+- Java Learning Labの再開なし
+- 公式問題本文、選択肢、正答、解説の改変なし
+- `JLL-FE-QBANK-001`の同時進行なし
+- `JLL-FE-004`で確定した演習・模試UIの目的外変更なし
+- `JLL-FE-003`で確定した絞り込み順序・配置・単元名表示の変更なし
+- 学習進捗・レッスン完了状態の永続保存なし
+- 実装担当による`main` merge、Ready for review化、squash / rebase / force push / `work`削除なし
 
-### Completion criteria
+### Completion criteria result
 
-- Repository実状態から最初のレッスン作成範囲を単一タスクとして具体化する
-- 必要な設計更新とレッスン成果物を実装する
-- `npm ci`、test、typecheck、lint、normal build、Pages buildを成功させる
-- `docs/`をbuildで更新し、PC / スマートフォン表示を確認する
-- Draft PR、CI、Pages、管理文書を最新GitHub実状態と一致させて`review_ready`へ渡す
+実装担当の受入条件は達成し、確認担当へ独立確認可能な状態。Blocking findingなし。
 
 ### Dependencies
 
@@ -53,31 +56,74 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの構
 
 ### Pull Request
 
-未作成。
+- Number: `#6`
+- Base: `main`
+- Head: `work`
+- State: open / Draft
+- Mergeable: true（実装中最終確認時点）
+- 実装担当ではReady for review化・mergeを行わない
 
 ### Start HEAD
 
-実装開始時に最新`work` HEADを固定する。
+`82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
 
-### Current HEAD
+### Current HEAD / fixed evidence
 
-未着手。最新GitHub実状態を正本とする。
+- First complete lesson routing source: `db8323921ee08e8fbe6df26c771ea9eed0d8480c`
+- Final audited implementation / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Final successful Pages evidence synchronization HEAD before management handoff: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- この`review_ready`管理文書更新は`[skip ci]`の管理commitとして上記以後に追加される。確認担当は最新`work` HEADをGitHub実状態から再取得し、アプリ実装の固定確認基準は`614827ca62be5b72885b7774dc4f621975a6482f`とする
 
 ### Validation result
 
-未着手。
+`passed / review_ready`
+
+- Node.js: 22.23.1
+- `npm ci`: success
+- `npm run verify:fe`: success
+- Tests: 67 / 67 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- PR Pages build workflow on final audited source: `31188040484` / run `491` / success
+- Existing filter browser workflow: `31188040386` / run `102` / success
+- Existing mock timer browser workflow: `31188040635` / run `26` / success
+- FE lesson browser workflow: `31188040404` / run `3` / success
+- FE lesson browser artifact: `8997593877`
+- Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
+- Browser audit PR merge-ref sourceRevision: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
+- 375px / 768px / 1,280pxで概要と本文リーダーを検査
+- 3サイズともhorizontal overflowなし、確認問題の最小選択肢高さ54px、開始ボタン48px
+- 375px / 768pxは本文ナビゲーションが下段へstack、1,280pxは本文右側へ配置
+- code / table / 4 sections / 5 lesson navigation links / 4 choicesの存在を確認
+- browser console error / runtime exception / failed requestなし
+- 6枚の最終スクリーンショットを実画像確認し、日本語表示、文字切れ、横はみ出し、カード重なりにBlocking issueなし
+- 初回lesson audit失敗は読込途中の`document.body` null参照という監査コード側の問題で、`31b20188b0d7111976d3c8d9590e16031bfa21a2`で修正済み
+- Pagesの既存webfont除去仕様によりUbuntu screenshotが日本語glyphを持たなかったため、CI audit専用fallback fontを`614827ca62be5b72885b7774dc4f621975a6482f`で追加。アプリ配信仕様は変更していない
+- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22の検証失敗ではなくNon-blocking
 
 ### Merge commit
 
-未着手。
+未merge。確認担当のみが合格後にmerge commit方式で`main`へmergeする。
 
 ### GitHub Pages result
 
-未着手。
+- Final pre-review Pages workflow: `31188038465` / run `490` / success
+- Build job: `92897489459` / success
+- Deploy job: `92897691974` / success
+- `Verify FE implementation`: success
+- `Verify public Pages resources and revision`: success
+- Public smoke check: success
+- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Public / repository `build-info.json` sourceRevision一致
+- Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
+- Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
 
 ### Next task
 
-`JLL-FE-QBANK-001`
+`JLL-FE-QBANK-001`。ただし`JLL-FE-LESSON-001`が確認担当に合格しmerge完了するまで開始しない。
 
 ---
 
