@@ -14,7 +14,7 @@ FE演習の絞り込みを、独立した受験科目ブロックを維持した
 
 ### Status
 
-`planned`
+`in_progress`
 
 ### Purpose
 
@@ -71,19 +71,21 @@ GitHub Pages公開成功は開始条件またはBlocking条件に含めない。
 
 ### Pull Request
 
-未作成。実装開始後に`work`から`main`へのDraft Pull Requestを作成する。
+未作成。実装完了後に`work`から`main`へのDraft Pull Requestを作成する。
 
 ### Start HEAD
 
-`54352c47d2c904fcba3fe822e09a3ae95f6807ad`
+`c58aa9455b1941055310c0dd82b65352530a6482`
 
 ### Current HEAD
 
-管理文書更新後の最新`work` HEADをGitHub実状態から取得し、実装開始時に固定する。
+`a36009424a8b4af2f5935e0d13ea9ebe337f27cb`（設計文書先行更新後。以後はGitHub実状態で更新する）
 
 ### Validation result
 
-未着手。
+- Root `DESIGN.md`: 受験科目独立維持、3パターン、検証用query parameter、レスポンシブ方針を実装前に更新済み
+- `prototype/DESIGN.md`: 4条件群だけを対象にした3パターンの詳細配置方針を実装前に更新済み
+- アプリケーション実装・検証: 進行中
 
 ### Merge commit
 
