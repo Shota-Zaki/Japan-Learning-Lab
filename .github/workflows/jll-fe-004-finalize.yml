@@ -1,0 +1,107 @@
+name: Finalize JLL-FE-004 handoff
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.event.issue.pull_request && github.event.comment.body == '/finalize-jll-fe-004'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work
+      - name: Sync latest work
+        run: git pull --ff-only origin work
+      - name: Update handoff documents
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"expected text not found in {path}: {old[:180]!r}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once("task-list.md", "### Status\n\n`planned`", "### Status\n\n`review_ready`")
+          replace_once(
+              "task-list.md",
+              "### Pull Request\n\n未作成。実装開始時のGitHub実状態から作成または更新する。",
+              "### Pull Request\n\n`#5` / Draft / `work` → `main`\n\nhttps://github.com/Shota-Zaki/Japan-Learning-Lab/pull/5",
+          )
+          replace_once(
+              "task-list.md",
+              "### Start HEAD\n\n実装開始時に、JLL-FE-003完了後の最新`work` HEADをGitHub実状態から固定する。",
+              "### Start HEAD\n\n`10ba7d3a1d8a08c7294fb1d361221533314ca9d5`",
+          )
+          replace_once(
+              "task-list.md",
+              "### Current HEAD\n\n未着手。JLL-FE-003完了証拠の管理commitを含む最新`work` HEADを開始点とする。",
+              "### Current HEAD\n\n- Fixed implementation HEAD: `5e6036980195108ed9f9429be53ebdba01e9ddcb`\n- Implementation verification evidence HEAD: `bc15bda46b2923200ec3042ecae6e380bff67177`\n- Final verified Pages evidence HEAD before handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`\n- この`review_ready`管理更新commitはアプリケーションコードを変更しない。確認担当はGitHub実状態から最新`work` HEADを再固定する。",
+          )
+          replace_once(
+              "task-list.md",
+              "### Validation result\n\n未着手。",
+              "### Validation result\n\n- `npm run verify:fe`: success\n- 実装workflow内レスポンシブブラウザ監査: success / 375px・768px・1280px\n- Task-specific regression tests: success\n- PR CI `Build and deploy GitHub Pages`: workflow `31159735333` / run `413` / success\n- PR CI build job: `92807114332` / success\n- PR CI deploy job: `92807249153` / skipped by design on pull_request\n- PR CI `Audit FE filter layout variants`: workflow `31159735305` / run `64` / success\n- Browser audit job: `92807114034` / success\n- 2022年科目Aサンプルは通常演習セットアップから除外し、模擬試験経路は維持\n- 免除試験の表記変更はlearner-facing helperで行い、元の`periodLabel`・`sourceRef`等の問題データは変更していない\n- JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックには変更なし",
+          )
+          replace_once(
+              "task-list.md",
+              "### Merge commit\n\n未着手。",
+              "### Merge commit\n\n未マージ。実装担当は`main`へマージしない。確認担当が合格時にmerge commit方式で処理する。",
+          )
+          replace_once(
+              "task-list.md",
+              "### GitHub Pages result\n\n未着手。通常のPages build、deployment、公開Revision確認を必須とする。",
+              "### GitHub Pages result\n\n- work push Pages workflow: `31159729019` / run `412` / success\n- Published source Revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`\n- Public `build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`\n- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`\n- Public smoke check: success\n- Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`\n- Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`\n- Pages evidence synchronization HEAD: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`",
+          )
+
+          replace_once("NEXT_WORK.md", "## Current phase\n\n`planned`", "## Current phase\n\n`review_ready`")
+          replace_once("NEXT_WORK.md", "## Next role\n\n実装担当。", "## Next role\n\n確認担当。")
+          replace_once(
+              "NEXT_WORK.md",
+              "`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。`work`同期後の最終Pages再検証も成功しており、JLL-FE-003は`completed`として確定している。",
+              "`JLL-FE-004`の実装、自己検証、Draft PR #5、PR CI、`work` Pages再公開、public smoke checkまで完了した。実装担当による`main`マージは行っていない。確認担当は固定HEADと実差分を独立検証し、Blockingなしの場合のみ管理文書更新とmerge commit方式のマージへ進む。",
+          )
+          replace_once("NEXT_WORK.md", "- Task status: `planned`", "- Task status: `review_ready`")
+          replace_once(
+              "NEXT_WORK.md",
+              "- JLL-FE-004 Start HEAD: 実装開始時に、この確認完了後の最新`work` HEADをGitHub実状態から固定する",
+              "- JLL-FE-004 Start HEAD: `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`\n- Fixed implementation HEAD: `5e6036980195108ed9f9429be53ebdba01e9ddcb`\n- Implementation verification evidence HEAD: `bc15bda46b2923200ec3042ecae6e380bff67177`\n- Draft Pull Request: `#5` / `work` → `main`\n- PR CI Pages build: workflow `31159735333` / run `413` / success / build job `92807114332`\n- PR CI browser audit: workflow `31159735305` / run `64` / success / job `92807114034`\n- Final work Pages source revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`\n- Final work Pages workflow: `31159729019` / run `412` / success\n- Final Pages evidence synchronization HEAD before handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`\n- Public smoke check: success",
+          )
+          replace_once(
+              "NEXT_WORK.md",
+              "## Required startup checks\n\n実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。\n\n1. `main`と`work`の最新HEAD、および`work`がJLL-FE-003完了後の管理・Pages証拠commitだけ`main`より進んでいること\n2. PR #4がmergedであること\n3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること\n4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`\n5. 最新CIとPages公開状態\n6. JLL-FE-004の実装開始HEAD",
+              "## Required startup checks\n\n確認担当は会話履歴ではなくGitHub実状態から次を独立確認する。\n\n1. `main`、`work`、Draft PR #5の最新HEADとmergeability\n2. JLL-FE-004 Start HEAD `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`からの実差分\n3. Fixed implementation HEAD `5e6036980195108ed9f9429be53ebdba01e9ddcb`の変更内容\n4. `task-list.md`でJLL-FE-004がCurrent task / review_readyであること\n5. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`との整合\n6. PR CI run `413`とbrowser audit run `64`の実結果\n7. Pages source revision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`とpublic smoke check\n8. PC・スマートフォン相当幅で問題本文/解説の階層、固定タイマー、通常演習除外、learner-facing表記を独立確認",
+          )
+          replace_once(
+              "NEXT_WORK.md",
+              "## Implementation scope",
+              "## Implementation result\n\n- 問題本文を解説本文より大きく・太くし、問題見出しと解説見出しも別階層へ調整済み\n- 模擬試験の残り時間をサイトヘッダー右上の空き領域へfixed表示し、520px以下向け縮小規則を追加済み\n- 2022年科目Aサンプルは通常演習`topic`セットアップ候補から除外し、`mock`経路は維持\n- `2026-exemption-07`のlearner-facing表示を`令和8年度 免除試験`へ正規化し、元データは変更していない\n- 新規回帰テスト`prototype/tests/fe-004-regression.test.mjs`を追加\n- Root / prototype `DESIGN.md`へ今回のUI方針を先行反映済み\n- `npm run verify:fe`、レスポンシブ監査、PR CI、Pages公開確認はすべてsuccess\n\n## Implementation scope",
+          )
+          replace_once("NEXT_WORK.md", "## Next user command\n\n`実装`", "## Next user command\n\n`確認`")
+
+          replace_once(
+              "PROJECT_CONTEXT.md",
+              "現在の優先タスクは`JLL-FE-004`であり、状態は`planned`である。",
+              "現在の優先タスクは`JLL-FE-004`であり、状態は`review_ready`である。Draft PR #5で確認待ち。Fixed implementation HEADは`5e6036980195108ed9f9429be53ebdba01e9ddcb`、Pages公開sourceRevisionは`a1851e21ab0192c3577a03b67f4f79e0b99ce08f`である。",
+          )
+          PY
+      - name: Commit review-ready handoff
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/jll-fe-004-finalize.yml
+          git add task-list.md NEXT_WORK.md PROJECT_CONTEXT.md
+          git diff --cached --check
+          git commit -m "docs: mark JLL-FE-004 review ready [skip ci]"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:work; then exit 0; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git pull --rebase origin work
+          done
