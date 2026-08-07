@@ -12,7 +12,7 @@
 
 実装担当。
 
-`JLL-FE-003`は独立確認でBlockingなしと判定済み。PR #4をmerge commit方式で`main`へマージし、`work`を最新`main`へ同期した後、このタスクの実装を開始する。
+`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。確認フローでは、この管理文書を含む最新`main`を`work`へfast-forwardし、通常CIとPages再公開を確認してから引き渡す。
 
 ## Objective
 
@@ -31,20 +31,22 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-004`
 - Task status: `planned`
-- Previous Task: `JLL-FE-003` / confirmation passed
-- Previous Pull Request: `#4`
+- Previous Task: `JLL-FE-003` / completed
+- Previous Pull Request: `#4` / merged
+- Previous Final Pull Request HEAD: `66ba0a45ba2cb963bb96fba144021073fb66e279`
+- Previous merge commit: `90f33bbcb01792e22426123f90f454bf3a7e4134`
 - Previous confirmation input HEAD: `31332628e5ad412c685c1e19f0c31eda99c51d43`
 - Previous audited application / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
 - Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
 - Previous Pages deployment: `31155340547` / run `403` / success
-- JLL-FE-003 merge commit: confirmation flow completion時にGitHub実状態から確定して`task-list.md`へ記録する
-- JLL-FE-004 Start HEAD: merge後の`work`同期完了時に固定する
+- Main push CI after merge: no new run by design; `.github/workflows/pages.yml` triggers `push` only on `work`
+- JLL-FE-004 Start HEAD: 実装開始時に、確認完了後の最新`work` HEADをGitHub実状態から固定する
 
 ## Required startup checks
 
 実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。
 
-1. `main`と`work`がJLL-FE-003 merge後の同一HEADへ同期していること
+1. `main`と`work`の最新HEADおよび、確認完了後にPages証拠同期commitが`work`へ追加されている場合はその関係
 2. PR #4がmergedであること
 3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること
 4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`
