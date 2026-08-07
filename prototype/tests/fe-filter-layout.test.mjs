@@ -32,26 +32,40 @@ test("all filter layouts preserve the subject selector, DOM order, and variable-
   assert.match(css, /grid-template-columns:\s*repeat\(12,/);
   assert.match(css, /grid-template-columns:\s*repeat\(8,/);
   assert.match(css, /\.fe-filter-variant-grid\s*\{[\s\S]*position:\s*relative/);
-  assert.match(css, /data-fe-filter-layout=\"2\"[^}]*\.fe-filter-variant-grid\s*\{[\s\S]*padding-bottom:\s*var\(--fe-filter-layout-2-extra-space/);
-  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(3\)\s*\{[\s\S]*position:\s*absolute;[\s\S]*grid-row:\s*2;/);
+  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(4\)\s*\{[\s\S]*margin-top:\s*var\(--fe-filter-layout-2-extra-space/);
+  assert.match(css, /data-fe-filter-layout=\"2\"[\s\S]*:nth-child\(3\)\s*\{[\s\S]*position:\s*absolute;[\s\S]*grid-row:\s*1 \/ span 2;/);
   assert.match(css, /\.fe-filter-variant-grid > \* \{[\s\S]*position:\s*static !important;[\s\S]*grid-column:\s*1 \/ -1 !important;[\s\S]*grid-row:\s*auto !important;/);
   assert.doesNotMatch(css, /overflow-y\s*:/);
   assert.doesNotMatch(css, /text-overflow:\s*ellipsis/);
   assert.doesNotMatch(css, /overflow-wrap:\s*anywhere/);
-  assert.match(css, /:nth-child\(2\) \.fe-check-grid-compact[\s\S]*minmax\(min\(100%, 240px\), 1fr\)/);
+  assert.match(css, /:nth-child\(4\) \.fe-check-grid-compact[\s\S]*minmax\(min\(100%, 240px\), 1fr\)/);
 
   assert.match(main, /document\.documentElement\.dataset\.feFilterLayout/);
   assert.match(main, /ResizeObserver/);
   assert.match(main, /--fe-filter-layout-2-extra-space/);
-  assert.match(main, /cards\[0\][\s\S]*cards\[3\][\s\S]*cards\[2\]/);
+  assert.match(main, /cards\[0\][\s\S]*cards\[1\][\s\S]*cards\[2\]/);
   assert.ok(setup.indexOf("<SubjectSelector") < setup.indexOf("fe-filter-variant-grid"));
   assert.equal((setup.match(/fe-filter-variant-grid/g) || []).length, 1);
+
+  const expectedGroupMarkers = [
+    'key: "domains", title: "1. 分野"',
+    'key: "reviewScopes", title: "2. 回答・復習状態"',
+    'key: "periodIds", title: "3. 開催回・公開区分"',
+    'key: "unitIds", title: "4. 単元"',
+  ];
+  let previousIndex = -1;
+  for (const marker of expectedGroupMarkers) {
+    const currentIndex = setup.indexOf(marker);
+    assert.ok(currentIndex > previousIndex, `Filter group order is incorrect at ${marker}`);
+    previousIndex = currentIndex;
+  }
 
   assert.match(audit, /document\.fonts/);
   assert.match(audit, /stableSamples\s*>=\s*requiredSamples/);
   assert.match(audit, /sourceCount\s*>=\s*expectedMinimums\.sourceCount/);
   assert.match(audit, /optionCounts/);
   assert.match(audit, /layout2LeftGap/);
+  assert.match(audit, /keyboardGroupOrder/);
   assert.match(audit, /validateMetrics\(postScreenshotMetrics/);
   assert.match(audit, /Final data changed between metrics and screenshot/);
   assert.match(audit, /maxRetries:\s*10/);
