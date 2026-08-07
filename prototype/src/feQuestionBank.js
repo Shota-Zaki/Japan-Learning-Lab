@@ -123,29 +123,64 @@ function mergeSourceOccurrences(canonical, duplicate) {
   return unique.length > 0 ? { ...canonical, sourceOccurrences: unique } : canonical;
 }
 
+function registerUniqueLookup(lookup, fingerprint, index, emptyFingerprint = null) {
+  if (!fingerprint || fingerprint === emptyFingerprint) return;
+  if (!lookup.has(fingerprint)) {
+    lookup.set(fingerprint, index);
+    return;
+  }
+  if (lookup.get(fingerprint) !== index) lookup.set(fingerprint, null);
+}
+
+function uniqueLookupIndex(lookup, fingerprint, emptyFingerprint = null) {
+  if (!fingerprint || fingerprint === emptyFingerprint) return undefined;
+  const index = lookup.get(fingerprint);
+  return Number.isInteger(index) ? index : undefined;
+}
+
+function registerCanonicalLookups(indexes, question, index) {
+  indexes.byId.set(question.id, index);
+  registerUniqueLookup(indexes.bySource, normalizedSourceFingerprint(question), index, "||");
+  registerUniqueLookup(indexes.byContent, normalizedFingerprint(question), index);
+}
+
 export function mergeQuestionBanks(primaryQuestions, supplementalQuestions) {
-  const canonicalIndexById = new Map();
-  const canonicalIndexBySource = new Map();
-  const canonicalIndexByContent = new Map();
   const merged = [];
-  for (const source of [...primaryQuestions, ...supplementalQuestions]) {
+  const indexes = {
+    byId: new Map(),
+    bySource: new Map(),
+    byContent: new Map(),
+  };
+
+  // The generated primary bank is the authoritative compatibility baseline.
+  // Preserve every valid primary record even when historical exam occurrences
+  // contain repeated content. Deduplication is applied only to supplemental data.
+  for (const source of primaryQuestions) {
+    const question = normalizeQuestion(source);
+    if (!validQuestion(question)) continue;
+    const index = merged.length;
+    merged.push(mergeSourceOccurrences(question, question));
+    registerCanonicalLookups(indexes, question, index);
+  }
+
+  for (const source of supplementalQuestions) {
     const question = normalizeQuestion(source);
     if (!validQuestion(question)) continue;
     const sourceFingerprint = normalizedSourceFingerprint(question);
     const contentFingerprint = normalizedFingerprint(question);
-    const duplicateIndex = canonicalIndexById.get(question.id)
-      ?? (sourceFingerprint !== "||" ? canonicalIndexBySource.get(sourceFingerprint) : undefined)
-      ?? canonicalIndexByContent.get(contentFingerprint);
-    if (duplicateIndex !== undefined) {
+    const duplicateIndex = indexes.byId.get(question.id)
+      ?? uniqueLookupIndex(indexes.bySource, sourceFingerprint, "||")
+      ?? uniqueLookupIndex(indexes.byContent, contentFingerprint);
+
+    if (Number.isInteger(duplicateIndex)) {
       merged[duplicateIndex] = mergeSourceOccurrences(merged[duplicateIndex], question);
       continue;
     }
+
     const index = merged.length;
-    const canonical = mergeSourceOccurrences(question, question);
-    merged.push(canonical);
-    canonicalIndexById.set(question.id, index);
-    if (sourceFingerprint !== "||") canonicalIndexBySource.set(sourceFingerprint, index);
-    canonicalIndexByContent.set(contentFingerprint, index);
+    merged.push(mergeSourceOccurrences(question, question));
+    registerCanonicalLookups(indexes, question, index);
   }
+
   return merged;
 }
