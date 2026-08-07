@@ -14,7 +14,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
@@ -70,41 +70,66 @@ https://github.com/Shota-Zaki/Japan-Learning-Lab/pull/5
 
 - Fixed implementation HEAD: `5e6036980195108ed9f9429be53ebdba01e9ddcb`
 - Implementation verification evidence HEAD: `bc15bda46b2923200ec3042ecae6e380bff67177`
-- Final verified Pages evidence HEAD before handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
-- この`review_ready`管理更新commitはアプリケーションコードを変更しない。確認担当はGitHub実状態から最新`work` HEADを再固定する。
+- Final verified Pages evidence HEAD before review handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
+- Confirmation review input HEAD: `c2bde678c721ce3f889a9b8a380843e20068fdad`
+- First confirmation management update HEAD: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- 確認管理更新は管理文書のみ。修正担当は作業開始時にGitHub実状態から最新`work` HEADを再固定する。
 
 ### Validation result
 
-- `npm run verify:fe`: success
-- 実装workflow内レスポンシブブラウザ監査: success / 375px・768px・1280px
-- Task-specific regression tests: success
-- PR CI `Build and deploy GitHub Pages`: workflow `31159735333` / run `413` / success
-- PR CI build job: `92807114332` / success
-- PR CI deploy job: `92807249153` / skipped by design on pull_request
-- PR CI `Audit FE filter layout variants`: workflow `31159735305` / run `64` / success
-- Browser audit job: `92807114034` / success
-- 2022年科目Aサンプルは通常演習セットアップから除外し、模擬試験経路は維持
-- 免除試験の表記変更はlearner-facing helperで行い、元の`periodLabel`・`sourceRef`等の問題データは変更していない
+`failed / needs_fix`
+
+Passed checks:
+
+- PR #5: mergeable / Draft維持 / unresolved review threadsなし
+- `main`とreview input `work`は分岐なし。review input時点で`work`は`main`より26 commits ahead
+- PR CI `Build and deploy GitHub Pages`: workflow `31159735333` / run `413` / build job `92807114332` / success
+- PR CI deploy job `92807249153`: pull_requestではskipped by design
+- PR CI `Audit FE filter layout variants`: workflow `31159735305` / run `64` / job `92807114034` / success
+- PR CI `npm run verify:fe`: success / tests 63 passed / TypeScript success / ESLint success / normal build success / Pages build success
+- work Pages workflow: `31159729019` / run `412` / build job `92807093951` / deploy job `92807204151` / success
+- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- 問題本文と解説の視覚階層はCSS上で明確に分離
+- 2022年科目Aサンプルは通常`topic`セットアップ候補から除外し、`mock`経路は維持
+- `2026-exemption-07`はlearner-facing helperで`令和8年度 免除試験`へ正規化し、元の`periodLabel`・`sourceRef`等の問題データは変更していない
 - JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックには変更なし
+- 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため、追加タスク化不要
+
+Blocking finding:
+
+- `B1`: 模擬試験の固定残り時間がグローバルヘッダー右側の「検索」「アカウント」操作領域と重なる
+- `App.jsx`の`.header-actions`は右端に2つの`.icon-action`を持ち、各`min-width: 42px`、gap `8px`
+- `fe-session-enhancements.css`の`.session-topbar > span > strong`は`position: fixed`、`z-index: 30`で同じ右端へ配置される
+- 520px以下では`right: 12px`、768pxでは実質`right: 16px`となり、ヘッダー右端の操作領域と座標が競合する。1,280pxでも右端配置が重なる
+- したがってCompletion criteria「375pxを含む対象画面幅で本文や操作を妨げない」およびDESIGNの「ブランド、ナビゲーション、主要操作を覆わない」を満たさない
+- 実装時の`responsiveBrowserAudit`はJLL-FE-003用`npm run audit:fe-filter-layouts`を再利用しており、固定タイマーの矩形重なりを検査していなかった。`prototype/qa/jll-fe-004-implementation-verification.json`の375/768/1280 success記録だけではこの受入条件の証拠にならない
+
+Required repair:
+
+- 固定タイマー用の専用領域をDOM / レイアウト上で確保し、検索・アカウント・グローバルナビゲーションと重ならない構造へ変更する
+- 単純な`z-index`変更で回避せず、必要ならHeaderへ模擬試験タイマー用slot/propを追加するか、ヘッダー直下の固定領域へ移す
+- 375px / 768px / 1,280pxでタイマーとブランド、検索、アカウント、グローバルナビ、問題本文、回答操作の矩形が重ならないことを実ブラウザ監査で検証する
+- スクロール後もタイマーが常時見えること、通常演習には表示されないことを再確認する
+- JLL-FE-004専用browser evidenceを残し、既存`audit:fe-filter-layouts`だけをタイマー証拠として扱わない
+- UI配置方針を変更する場合はRoot / prototype `DESIGN.md`を先に更新する
 
 ### Merge commit
 
-未マージ。実装担当は`main`へマージしない。確認担当が合格時にmerge commit方式で処理する。
+未マージ。Blocking finding `B1`のためPR #5はmergeせずDraft維持。修正後の別チャット`確認`で再判定する。
 
 ### GitHub Pages result
 
 - work push Pages workflow: `31159729019` / run `412` / success
-- Published source Revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Public `build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Published source Revision recorded by workflow: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
 - Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Public smoke check: success
 - Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`
 - Pages evidence synchronization HEAD: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
+- 確認担当はPR artifactを取得して実装成果物を再調査した。今回のBlockingはPages配信失敗ではなく、配信済みUIの固定タイマー配置に関する受入条件不適合である
 
 ### Next task
 
-`JLL-FE-LESSON-001`
+`JLL-FE-004`のBlocking `B1`修正。修正・再確認・merge完了後に`JLL-FE-LESSON-001`へ進む。
 
 ---
 
