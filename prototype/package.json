@@ -15,6 +15,7 @@
     "test:sites": "npm test",
     "audit:fe-filter-layouts": "node scripts/run-fe-filter-layout-audit.mjs",
     "audit:fe-mock-timer": "node scripts/audit-fe-mock-timer.mjs",
+    "audit:fe-lesson": "node scripts/audit-fe-lesson.mjs",
     "verify:fe": "npm run build && npm test && npm run typecheck && npm run lint && npm run build:pages"
   },
   "dependencies": {
