@@ -2,26 +2,26 @@
 
 ## Current Task ID
 
-`JLL-FE-003`
+`JLL-FE-004`
 
 ## Current phase
 
-`review_ready`
+`planned`
 
 ## Next role
 
-確認担当。
+実装担当。
 
-実装担当は`main`へマージしない。次の新しいチャットでは`確認`として、固定されたアプリケーション差分、最新監査、Pages公開証拠、管理文書を独立確認する。
+`JLL-FE-003`は独立確認でBlockingなしと判定済み。PR #4をmerge commit方式で`main`へマージし、`work`を最新`main`へ同期した後、このタスクの実装を開始する。
 
 ## Objective
 
-Bento Grid、不要な余白削減、受験科目の独立状態、完全な日本語単元名表示を維持しつつ、絞り込みブロックの表示・DOM・キーボード順が次になっていることを独立確認する。
+FE演習について、次の4点をユーザー指定どおり修正する。
 
-1. 分野
-2. 回答・復習状態
-3. 開催回・公開区分
-4. 単元
+1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付け、読み分けやすくする
+2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時確認できるようにする
+3. 2022年科目Aサンプルを通常演習の出題対象から除外する
+4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
 ## Repository state
 
@@ -29,63 +29,96 @@ Bento Grid、不要な余白削減、受験科目の独立状態、完全な日�
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
-- Current Task: `JLL-FE-003`
-- Task status: `review_ready`
-- Pull Request: `#4`
-- Pull Request state: open / draft / unmerged
-- Fixed application / order-test HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
-- Audited workflow / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
-- Pages output synchronization commit: `4cd677854fda9f4a4f204df5519e86f5600fc595`
-- Latest management state before this handoff update: `733fb5de21128bb11289f9943d9fda5c32527e11`
-- Browser audit workflow: `31155342511` / run `63` / success
-- Browser audit artifact: `8984932272`
-- Browser artifact digest: `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
-- Pages workflow: `31155340547` / run `403` / success
-- Public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `docs/build-info.json` sourceRevision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Pages temporary skip policy: recovered / removed
+- Current Task: `JLL-FE-004`
+- Task status: `planned`
+- Previous Task: `JLL-FE-003` / confirmation passed
+- Previous Pull Request: `#4`
+- Previous confirmation input HEAD: `31332628e5ad412c685c1e19f0c31eda99c51d43`
+- Previous audited application / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
+- Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
+- Previous Pages deployment: `31155340547` / run `403` / success
+- JLL-FE-003 merge commit: confirmation flow completion時にGitHub実状態から確定して`task-list.md`へ記録する
+- JLL-FE-004 Start HEAD: merge後の`work`同期完了時に固定する
 
-## Implemented change
+## Required startup checks
 
-1. `prototype/src/FePracticeSetup.jsx` の4条件群を `domains → reviewScopes → periodIds → unitIds` へ変更した。
-2. legendを「1. 分野」「2. 回答・復習状態」「3. 開催回・公開区分」「4. 単元」へ統一した。
-3. パターンBは分野・回答状態を左側へ縦積み、開催回を右側、単元をその下の全幅カードへ配置した。
-4. `prototype/src/main.jsx` の可変高さ計測を新DOMインデックスへ追従させた。
-5. 単元向け広幅選択肢指定を4番目カードへ追従させた。
-6. ソーステストへ4条件群の順序と旧番号残存防止を追加した。
-7. Chromium監査へDOM順とキーボード群順の明示検証を追加した。
-8. Root / prototypeの`DESIGN.md`を最新順序へ同期した。
-9. Pages成功後の証拠同期で任意QAファイルが存在しない場合に失敗するworkflow不具合を修正した。
-10. 固定Pages source HEADの成果物をRepository `docs/`へ同期し、公開Revision一致を確認した。
-11. 作業中に使用した一時補助workflow / triggerはすべて削除した。
-12. `prototype/qa/jll-fe-003-browser/`のテキスト証拠を最新browser auditへ更新した。
+実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。
 
-## Change forbidden during confirmation
+1. `main`と`work`がJLL-FE-003 merge後の同一HEADへ同期していること
+2. PR #4がmergedであること
+3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること
+4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`
+5. 最新CIとPages公開状態
+6. JLL-FE-004の実装開始HEAD
 
-- アプリケーションコード、CSS、テスト、設定の修正
-- `JLL-FE-004`の先行実装
-- レッスン内容またはJava Learning Labの実装
+## Implementation scope
+
+### 1. 問題文と解説の視覚階層
+
+- 現在の問題画面・結果レビュー画面で問題文と解説が同じ視覚ウェイトになっている箇所を特定する
+- 文字サイズ、font-weight、見出し、余白の差で情報階層を明確にする
+- 問題本文・選択肢・正答・解説の内容そのものは変更しない
+- 通常演習と結果レビューの両方で一貫させる
+
+### 2. 模擬試験の残り時間
+
+- 模擬試験中だけ残り時間を右上へ固定する
+- スクロールしても常時見えること
+- 375pxを含むスマートフォン幅で問題本文、ナビゲーション、操作要素を隠さないこと
+- 通常演習へ不要なタイマー表示を追加しないこと
+
+### 3. 2022年科目Aサンプルの通常演習除外
+
+- 通常演習の候補生成経路を確認し、2022年科目Aサンプルを除外する
+- 固定模擬試験など、サンプルを明示的に使用する既存経路を壊さない
+- 問題データ自体を削除・改変しない
+
+### 4. 開催回表示
+
+- learner-facing表示だけを`令和8年度 免除試験`へ変更する
+- 内部ID、出典識別情報、正答・問題データは変更しない
+- 絞り込み、履歴、結果レビュー等の関連表示で表記が不整合にならないよう確認する
+
+## Design requirement
+
+UI変更を含むため、実装前にRoot / prototypeの`DESIGN.md`を確認する。既存方針だけで決定できないUI判断がある場合は複数候補を提示してユーザー確認を取る。それ以外は既存デザイン方針へ沿って自走する。
+
+JLL-FE-003で確定した次の仕様は変更しない。
+
+- 受験科目ブロックは独立
+- 絞り込み順: 分野 → 回答・復習状態 → 開催回・公開区分 → 単元
+- pattern Bが既定
+- 条件群内部へ縦スクロールを追加しない
+- 単元名は完全な日本語表示
+
+## Change forbidden
+
+- JLL-FE-003の絞り込みレイアウト・順序を再変更すること
+- 問題本文、選択肢、正答、解説内容そのものの改変
+- 公式問題の出典情報を失う変更
+- `JLL-FE-LESSON-001`、`JLL-FE-QBANK-001`、Java Learning Labの先行実装
+- 実装担当による`main`へのマージ
+- Pull Requestを勝手にReady for reviewへ変更すること
 - Squash merge / rebase merge / force push
 - `work` Branchの削除
 
-Blocking問題がある場合はコードを直さず、`task-list.md`を`needs_fix`へ戻し、このファイルへ具体的な再現方法と修正指示を記録する。
+## Completion criteria
 
-## Completion criteria to verify
+- 問題文と解説が文字サイズ・太さ・構造で明確に区別できる
+- 模擬試験の残り時間が右上へ固定され、対象viewportで本文や操作を妨げない
+- 2022年科目Aサンプルが通常演習の候補へ入らない
+- 対象開催回が`令和8年度 免除試験`と表示される
+- 既存セッション、模擬試験、結果レビュー、履歴に回帰がない
+- PC・スマートフォン表示を検証する
+- Tests、TypeScript、ESLint、normal build、Pages buildが成功する
+- Repository `docs/`が最新build成果物へ更新される
+- Draft Pull Requestが存在する
+- CIとPages公開Revision確認が完了する
+- `task-list.md`と`NEXT_WORK.md`を確認担当向け`review_ready`へ更新する
 
-- 指定なし・無効な`filterLayout`でパターンBが既定になる
-- 375px、768px、1,280pxの全3レイアウトで4条件群の順序が正しい
-- DOM順とキーボード群順が一致する
-- 受験科目が独立ブロックのまま
-- Bento Gridの不要な大空白がなく、カード内部スクロールがない
-- 単元名が完全な日本語で、可能な限り1行、必要時のみ自然に折り返す
-- 横overflow、重なり、内容切れ、操作不能がない
-- Tests、TypeScript、ESLint、normal build、Pages build、browser auditが成功する
-- `docs/build-info.json` のsourceRevisionが `afa550a41d2776543445a3cb727731f6fb902608` と一致する
-- `prototype/qa/pages-deployment.json`がPages成功と同一Revisionを記録する
-- PR `#4` がopen / draft / unmergedである
-- 一時補助workflow / triggerがRepositoryに残っていない
+## Required verification
 
-## Required independent verification
+Repository実状態から利用可能なscriptを確認したうえで、最低限次を実行する。
 
 ```bash
 cd prototype
@@ -95,56 +128,27 @@ npm run typecheck
 npm run lint
 npm run build
 npm run build:pages
-npm run audit:fe-filter-layouts
 ```
 
-GitHub上では次も独立確認する。
+既存の`npm run verify:fe`が上記を包含する場合は併用する。UI変更はブラウザ監査または同等の固定証拠を残す。
 
-- `main`との差分
-- fixed application / order-test HEAD `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
-- audited workflow / Pages source HEAD `afa550a41d2776543445a3cb727731f6fb902608`
-- browser audit run `31155342511` とartifact `8984932272`
-- Pages run `31155340547`
-- Repository `docs/`と`prototype/qa/pages-deployment.json`
-- `task-list.md`、`PROJECT_CONTEXT.md`、`DESIGN.md`との整合性
+## Queued work after JLL-FE-004
 
-## Approval path
-
-Blocking問題がなければ、確認担当はプロジェクト規則に従い次を一括実行する。
-
-1. レビュー対象HEADを固定
-2. 必須検証を独立実行
-3. Pages公開状態を確認
-4. `JLL-FE-003`を`completed`へ更新
-5. `JLL-FE-004`を次の進行対象として登録
-6. 管理文書を`work`へcommit / push
-7. 管理文書更新後のHEADを再確認
-8. PR `#4`をmerge commit方式で`main`へマージ
-9. `main` CIを確認
-10. `work`を最新`main`へ同期し、削除しない
-11. Pages再公開を確認
-
-## Queued work after approval
-
-`JLL-FE-004`:
-
-- 問題文と解説の文字サイズ・太さ・構造に差を付ける
-- 模擬試験の残り時間を右上へ固定する
-- 2022年科目Aサンプルを通常演習へ入れない
-- `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
-
-その後はJavaへ進まず、`JLL-FE-LESSON-001`としてFEレッスン内容作成を優先する。
+1. `JLL-FE-LESSON-001`: FEレッスン内容作成
+2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充（既存作業と競合しない時点で着手）
+3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
 ## Work completion update targets
 
+- `DESIGN.md` / `prototype/DESIGN.md`（必要なUI方針変更がある場合）
 - `task-list.md`
 - `NEXT_WORK.md`
 - `PROJECT_CONTEXT.md`
-- Pull Request `#4`
-- 最新固定HEAD
-- CI結果
-- Pages公開結果
+- `docs/`
+- Draft Pull Request
+- CI / browser evidence / Pages公開結果
+- 固定HEAD
 
 ## Next user command
 
-`確認`
+`実装`
