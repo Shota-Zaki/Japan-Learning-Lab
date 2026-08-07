@@ -48,8 +48,11 @@ test("all filter layouts preserve the subject selector, DOM order, and variable-
   assert.equal((setup.match(/fe-filter-variant-grid/g) || []).length, 1);
 
   assert.match(audit, /document\.fonts/);
-  assert.match(audit, /stableSamples\s*>=\s*5/);
+  assert.match(audit, /stableSamples\s*>=\s*requiredSamples/);
+  assert.match(audit, /sourceCount\s*>=\s*expectedMinimums\.sourceCount/);
   assert.match(audit, /optionCounts/);
   assert.match(audit, /layout2LeftGap/);
-  assert.match(audit, /Render changed between metrics and screenshot/);
+  assert.match(audit, /validateMetrics\(postScreenshotMetrics/);
+  assert.match(audit, /Final data changed between metrics and screenshot/);
+  assert.match(audit, /maxRetries:\s*10/);
 });
