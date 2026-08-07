@@ -12,7 +12,7 @@
 
 実装担当。
 
-`JLL-FE-004`は確認担当の独立確認でBlocking findingなしと判定済み。PR #5のmerge commit方式での`main` merge、`work`同期、最終Pages確認はこの確認チャット内で完了させる。次の新規チャットではRepositoryの最終実状態を再確認してから`JLL-FE-LESSON-001`を開始する。
+`JLL-FE-004`は独立確認に合格し、PR #5をmerge commit方式で`main`へmerge済み。merge commitは`36641bb1c183ecd489d15280f3070aa98fd1868d`。`work`も同commitへfast-forward同期済みで、Pages成功証拠commitを含む管理状態からこの次タスク引継ぎを更新している。次の新規チャットではGitHub実状態を再確認してから`JLL-FE-LESSON-001`を開始する。
 
 ## Objective
 
@@ -27,19 +27,18 @@ FE Learning Labの既存レッスン画面を学習用途として具体化し�
 - Current Task: `JLL-FE-LESSON-001`
 - Task status: `planned`
 - Pull Request: 未作成
+- Predecessor PR: `#5` / merged
+- Predecessor merge commit: `36641bb1c183ecd489d15280f3070aa98fd1868d`
 - Start HEAD: 実装開始時の最新`work` HEADをGitHub実状態から固定する
 - Current HEAD: この管理文書更新以後の最新`work` HEADをGitHub実状態の正本とする
-- Predecessor: `JLL-FE-004` / confirmation passed / PR #5 finalization in progress in the confirmation chat
 
-## Purpose and first implementation step
-
-実装開始時は次を順に行う。
+## First implementation steps
 
 1. `main` / `work` HEAD、差分、未マージPR、CI、Pages、`task-list.md`、`NEXT_WORK.md`を再確認する
-2. Root `DESIGN.md`と`prototype/DESIGN.md`、既存`FeLessonHome`および関連コンポーネント・CSS・テストを確認する
+2. Root `DESIGN.md`と`prototype/DESIGN.md`、既存レッスン画面・関連コンポーネント・CSS・テストを確認する
 3. 既存設計方針だけで最初のレッスン範囲を決定できる場合はそのまま具体化する。UI構成に重大な複数案がある場合のみ候補を提示して確認する
 4. 必要なら実装前にRoot / prototype `DESIGN.md`を更新する
-5. `work`上で単一タスク範囲として実装し、必須検証、`docs/`生成、PC / スマートフォン表示確認、Draft PR、CI、Pagesまで進める
+5. `work`上で実装し、必須検証、`docs/`生成、PC / スマートフォン表示確認、Draft PR、CI、Pagesまで進める
 
 ## Change scope
 
@@ -85,7 +84,7 @@ npm run build:pages
 npm run verify:fe
 ```
 
-UI変更がある場合は既存browser auditと、対象レッスンのPC / スマートフォン表示を確認する。追加の自動browser auditが費用対効果に見合う場合はタスク内で追加する。
+UI変更がある場合は既存browser auditと対象レッスンのPC / スマートフォン表示を確認する。追加の自動browser auditが費用対効果に見合う場合はタスク内で追加する。
 
 ## Dependencies and queued work
 
@@ -95,7 +94,7 @@ UI変更がある場合は既存browser auditと、対象レッスンのPC / ス
 
 ## Unresolved findings
 
-なし。`JLL-FE-004`の確認Blockingは解消済み。
+なし。`JLL-FE-004`のBlocking findingはすべてresolved。
 
 ## Latest user correction / memo
 
