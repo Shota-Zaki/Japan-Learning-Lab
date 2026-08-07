@@ -6,6 +6,19 @@
   "officialAnswerVerifiedCount": 160,
   "repositoryReadyCount": 0,
   "reviewManifest": "data/source/fe/question-extraction-review.json",
+  "visualReviewManifest": "data/source/fe/question-extraction-visual-review.json",
+  "visualRiskHintCount": 30,
+  "visualRiskTriagedCount": 30,
+  "visualReconstructionRequiredCount": 26,
+  "officialReusePolicy": {
+    "verified": true,
+    "termsUrl": "https://www.ipa.go.jp/shiken/faq.html",
+    "permissionOrFeeRequiredForEducationalReuse": false,
+    "copyrightRetained": true,
+    "attributionRequired": true,
+    "modifiedQuestionDisclosureRequired": true,
+    "thirdPartyMaterialStillRequiresPerQuestionReview": true
+  },
   "extractionPolicy": {
     "ocrAllowed": false,
     "requiredBeforeImport": [
@@ -35,6 +48,9 @@
       "extractionAudit": "sequential_question_numbers_1_to_80_verified",
       "contentStatus": "structured_pending_content_review",
       "repositoryReadyCount": 0,
+      "visualRiskHintCount": 13,
+      "visualRiskTriagedCount": 13,
+      "visualReconstructionRequiredCount": 11,
       "thirdPartyMaterialReview": "required_before_import"
     },
     {
@@ -53,6 +69,9 @@
       "extractionAudit": "sequential_question_numbers_1_to_80_verified",
       "contentStatus": "structured_pending_content_review",
       "repositoryReadyCount": 0,
+      "visualRiskHintCount": 17,
+      "visualRiskTriagedCount": 17,
+      "visualReconstructionRequiredCount": 15,
       "thirdPartyMaterialReview": "required_before_import"
     }
   ]
