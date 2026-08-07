@@ -57,7 +57,7 @@ function installFeFilterLayoutMeasurement() {
     const rowGap = Number.parseFloat(getComputedStyle(grid).rowGap) || 0;
     const leftStackHeight = cards[0].getBoundingClientRect().height
       + rowGap
-      + cards[3].getBoundingClientRect().height;
+      + cards[1].getBoundingClientRect().height;
     const periodHeight = cards[2].getBoundingClientRect().height;
     const extraSpace = Math.max(0, Math.ceil(periodHeight - leftStackHeight));
     const nextValue = `${extraSpace}px`;
