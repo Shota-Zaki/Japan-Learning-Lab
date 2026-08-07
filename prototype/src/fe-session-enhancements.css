@@ -218,3 +218,111 @@
     padding: .8rem;
   }
 }
+
+
+/* JLL-FE-004 readability and fixed mock timer */
+.fe-question-card > h1 {
+  margin: 0 0 .9rem;
+  color: #173844;
+  font-size: clamp(1.28rem, 2.2vw, 1.6rem);
+  font-weight: 850;
+  letter-spacing: -.02em;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.fe-question-content {
+  color: #1c3038;
+  font-size: 1.075rem;
+  font-weight: 620;
+  line-height: 1.95;
+}
+
+.fe-question-content.fe-rich-content > p {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.fe-detailed-explanation {
+  color: #34484f;
+  font-size: .95rem;
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+.fe-explanation-heading h2,
+.fe-explanation-heading h3 {
+  color: #20383f;
+  font-size: 1.16rem;
+  font-weight: 820;
+  letter-spacing: -.01em;
+}
+
+.fe-explanation-section h3,
+.fe-explanation-section h4 {
+  color: #29434a;
+  font-size: 1rem;
+  font-weight: 790;
+}
+
+.fe-explanation-content {
+  font-size: .95rem;
+  font-weight: 400;
+  line-height: 1.85;
+}
+
+.fe-explanation-content.fe-rich-content > p {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.result-question-detail > h3:first-of-type {
+  color: #173844;
+  font-size: 1.2rem;
+  font-weight: 820;
+}
+
+.session-topbar > span > strong {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(16px, calc((100vw - 1400px) / 2 + 24px));
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--accent-700) 45%, #cfdde3);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 4px 14px rgb(23 61 77 / 12%);
+  color: var(--accent-950);
+  font-size: .86rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  letter-spacing: .01em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (max-width: 520px) {
+  .fe-question-content {
+    font-size: 1rem;
+    font-weight: 610;
+  }
+
+  .fe-detailed-explanation,
+  .fe-explanation-content {
+    font-size: .9rem;
+  }
+
+  .session-topbar > span > strong {
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+    min-height: 40px;
+    padding-inline: 10px;
+    font-size: .78rem;
+  }
+}

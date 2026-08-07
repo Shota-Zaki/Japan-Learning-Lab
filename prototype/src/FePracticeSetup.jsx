@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { ArrowRight, CheckCircle, Exam, ListChecks, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { filterPracticeQuestions, scopeLabel } from "./feSession.js";
 import { getFeUnitLabel, getFeUnitLabelParts } from "./feUnitLabels.js";
+import { isFeQuestionAvailableForSetup } from "./feQuestionAvailability.js";
+import { fePeriodLabel } from "./feLearnerLabels.js";
 
 const subjectLabels = { A: "科目A", B: "科目B" };
 const domainLabels = {
@@ -127,8 +129,8 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
   })), [questionBank]);
 
   const relevantBySubject = useMemo(
-    () => questionBank.filter((question) => (question.subject || "A") === subject),
-    [questionBank, subject],
+    () => questionBank.filter((question) => (question.subject || "A") === subject && isFeQuestionAvailableForSetup(question, sessionType)),
+    [questionBank, sessionType, subject],
   );
   const domainOptions = useMemo(() => [...new Set(relevantBySubject.map((question) => question.domain).filter(Boolean))].map((value) => ({
     value,
@@ -155,7 +157,7 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     () => relevantByDomain.filter((question) => selectedUnitIds.includes(question.unitId)),
     [relevantByDomain, selectedUnitIds],
   );
-  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, question.periodLabel])).entries()]
+  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, fePeriodLabel(question.periodId, question.periodLabel)])).entries()]
     .filter(([value]) => Boolean(value))
     .map(([value, label]) => ({
       value,
