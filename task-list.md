@@ -6,178 +6,6 @@
 
 ### Task ID
 
-`JLL-FE-003`
-
-### Title
-
-FE絞り込みの不要な余白を減らし、単元名を完全な日本語で自然に表示する
-
-### Status
-
-`review_ready`
-
-### Purpose
-
-採用済みのパターンBを通常表示の既定にし、内容量の異なるカードを無理に同じ高さへ揃えず不要な空白を減らす。単元名は実行時に正規化された旧形式を含めて完全な日本語名で表示し、表示幅が許す限り1行に収め、折り返す場合は意味のまとまりで自然に改行する。最新ユーザー指定に従い、絞り込みブロックの表示・DOM・キーボード順を「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」にする。
-
-### Scope
-
-- `filterLayout=2`を指定なし・無効値時の既定表示として維持
-- 絞り込みブロックを「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」の順に表示
-- DOM順・キーボード順も同じ順序へ揃え、375pxの1列表示でも維持
-- 既存のBento Grid方針と不要な余白削減方針を維持
-- 受験科目ブロックの独立状態を維持
-- canonical `unitId`と旧形式の実行時単元値を完全な日本語表示名へ解決
-- 単元名を可能な限り1行表示し、必要時のみ自然な位置で折り返す
-- 3レイアウト × 375px・768px・1,280pxを自動監査
-- Pages build、Repository `docs/`、公開Revisionを固定検証対象へ含める
-
-### Out of scope
-
-- 受験科目ブロックの位置、構造、文言、選択肢、操作変更
-- 絞り込み条件、OR/AND評価、件数、開始条件の変更
-- 問題本文、選択肢、正答、解説、図表の変更
-- `JLL-FE-004`の先行実装
-- レッスン内容作成
-- Java Learning Labの実装
-- 実装担当による`main`へのマージ
-- Pull RequestをReady for reviewへ変更すること
-- Squash merge、rebase merge、force push
-- `work` Branchの削除
-
-### Completion criteria
-
-- 指定なし・無効な`filterLayout`でパターンBが表示される
-- 375px、768px、1,280pxのすべてで順序が「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」になっている
-- DOM順・キーボード順が表示順と一致する
-- 3つの`filterLayout`すべてで同じ論理順序を維持する
-- 不要な大きな未使用空間が発生しない
-- カード高さを固定せず、条件群内部へ縦スクロールを追加しない
-- 単元名が英語IDや「単元名未登録」ではなく完全な日本語名で表示される
-- 単元カードは表示幅を有効利用し、必要時のみ自然に折り返す
-- 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
-- fieldset/legend、label/input関連付けが維持される
-- テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
-- Repository直下`docs/`と公開Pagesが検証済みRevisionと一致する
-- Draft Pull Requestと固定検証証拠が存在する
-
-### Dependencies
-
-- `JLL-FE-001`: completed
-- `JLL-FE-002`: completed
-- ユーザー指定: パターンB採用、不要な余白削減、単元名の完全日本語表示と自然な折返し
-- 最新ユーザー指定: 絞り込み順を「1. 分野 2. 回答・復習状態 3. 開催回・公開区分 4. 単元」に変更
-
-### Branch
-
-`work`
-
-### Pull Request
-
-- Number: `#4`
-- Base: `main`
-- Head: `work`
-- State: open / draft / unmerged
-- Review state: review ready
-
-### Start HEAD
-
-`1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
-
-### Prior confirmation review HEAD
-
-`86883cf71b7a13c4ee741372f3101d6a452ff8a3`
-
-### Fixed implementation and order-test HEAD
-
-`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
-
-このHEADで最新の絞り込み順、CSS配置、可変高さ計測、ソース回帰テストを確定した。
-
-### Audited workflow / Pages source HEAD
-
-`afa550a41d2776543445a3cb727731f6fb902608`
-
-アプリケーション差分を保持したまま、Pages成功証拠同期の`git add`処理を修正した。Browser auditとPages公開確認はこのHEADで成功している。
-
-### Pages output synchronization HEAD
-
-`4cd677854fda9f4a4f204df5519e86f5600fc595`
-
-### Latest handoff preparation HEAD
-
-`1588fd2b84f48ae5ba3ee1887dbf6a3cd968ca09`
-
-このHEADまでに一時補助workflowを削除し、最新監査証拠とPages復旧状態を管理文書へ反映した。最終Repository HEADは`NEXT_WORK.md`更新後にGitHub実状態で確認する。
-
-### Validation result
-
-`passed / review_ready`
-
-#### Automated verification
-
-- Standard PR workflow on `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`: success
-- Browser audit workflow on `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`: success
-- Latest PR build workflow on `afa550a41d2776543445a3cb727731f6fb902608`: `31155342510` / run `404` / success
-- Latest browser audit workflow: `31155342511` / run `63` / success
-- Browser audit job: `92793509597` / success
-- Browser evidence artifact: `8984932272`
-- Browser artifact digest: `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
-- Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 passed
-- Required DOM order: passed
-- Required keyboard group order: passed
-- Layout 2 left-stack gap: passed
-- Subject selector independence: passed
-- Horizontal overflow: none
-- Card internal scrollbar / clipping: none
-- Japanese unit-label verification: passed
-- Console warning/error: none
-- Failed network request: none
-- `npm ci`: success in CI
-- Tests: success through `npm run verify:fe`
-- TypeScript: success through `npm run verify:fe`
-- ESLint: success through `npm run verify:fe`
-- Normal build: success through `npm run verify:fe`
-- Pages build: success through `npm run verify:fe`
-
-### GitHub Pages result
-
-- Pages workflow: `31155340547` / run `403` / success
-- Build job: `92793503577` / success
-- Deploy job: `92793641839` / success
-- Deploy to GitHub Pages: success
-- Public Pages resources and Revision verification: success
-- Public source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `docs/build-info.json` sourceRevision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
-- Repository `docs/` synchronization commit: `4cd677854fda9f4a4f204df5519e86f5600fc595`
-- 旧Pages一時スキップ方針: 解除済み
-
-### Implementation notes
-
-- `prototype/src/FePracticeSetup.jsx`: `domains → reviewScopes → periodIds → unitIds`へDOM順を変更
-- `prototype/src/main.jsx`: pattern Bの左スタック高さ計測を新DOMインデックスへ追従
-- `prototype/src/fe-filter-variants.css`: 3レイアウトを新DOM順へ再マッピングし、単元カードの広幅指定を4番目カードへ移動
-- `prototype/tests/fe-filter-layout.test.mjs`: 4条件群の順序と旧番号が残らないことを明示検証
-- `prototype/scripts/audit-fe-filter-layouts.mjs`: DOM順、キーボード群順、新option順、単元カード位置を検証
-- Root / prototype `DESIGN.md`: 最新順序とpattern B配置へ同期
-- `.github/workflows/pages.yml`: optional QAファイル削除時でも成功証拠を安全にstageできるよう修正
-- 作業中に使用した一時補助workflow / triggerは削除済み
-
-### Merge commit
-
-未着手。確認担当が合格した場合のみmerge commit方式で`main`へマージする。
-
-### Next task
-
-確認合格・merge・`work`同期後に`JLL-FE-004`へ進む。その後はJavaではなく`JLL-FE-LESSON-001`を優先する。
-
----
-
-## Planned task
-
-### Task ID
-
 `JLL-FE-004`
 
 ### Title
@@ -198,16 +26,18 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 - 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
 - 2022年科目Aサンプルを通常の演習出題対象から除外する
 - `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
-- 必要に応じて`DESIGN.md`を実装前に更新する
+- UI変更前にRoot / prototypeの`DESIGN.md`を必要に応じて更新する
 - 自動テスト、型検査、Lint、通常build、Pages build、PC・スマートフォン表示を検証する
 
 ### Out of scope
 
 - 問題本文、選択肢、正答、解説内容そのものの改変
-- `JLL-FE-003`の絞り込み配置変更
+- 完了済み`JLL-FE-003`の絞り込み配置・順序・単元名表示の再変更
 - レッスン本文の作成
 - Java Learning Labの実装
 - 実装担当による`main`へのマージ
+- Squash merge、rebase merge、force push
+- `work` Branchの削除
 
 ### Completion criteria
 
@@ -220,7 +50,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Dependencies
 
-- `JLL-FE-003`: completed後に開始
+- `JLL-FE-003`: confirmation passed。PR #4のmergeと`work`同期完了後に実装開始する
 
 ### Branch
 
@@ -228,7 +58,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Pull Request
 
-`JLL-FE-003`確認合格・マージ後に作成または更新する。
+JLL-FE-003のPR #4をmerge・同期した後、実装開始時のGitHub実状態から作成または更新する。
 
 ### Start HEAD
 
@@ -236,7 +66,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Current HEAD
 
-未着手。
+未着手。JLL-FE-003 merge後に`work`を最新`main`へ同期したHEADを開始点とする。
 
 ### Validation result
 
@@ -345,7 +175,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### Purpose
 
-現在の科目A 1,830問と、外部の過去問学習サイトで確認できる2,960問相当の収録規模との差を監査し、第三者サイトから問題文・解説を転載せず、公式一次資料で出典と正答を確認できる問題だけを追加して科目A問題バンクの網羅性を高める。2,960問は収録規模の比較ベンチマークとして扱い、根拠なく件数だけを合わせない。
+現在の科目A 1,830問と外部の過去問学習サイトで確認できる2,960問相当の収録規模との差を監査し、第三者サイトから問題文・解説を転載せず、公式一次資料で出典と正答を確認できる問題だけを追加して科目A問題バンクの網羅性を高める。2,960問は収録規模の比較ベンチマークとして扱い、根拠なく件数だけを合わせない。
 
 ### Scope
 
@@ -366,7 +196,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - FEレッスン本文の作成・変更
 - Java Learning Labの実装
 - 件数を2,960問へ合わせるための出典未確認問題や不完全問題の追加
-- 現在並行して進行中の作業へ割り込んで着手すること
+- 既存の進行中作業へ割り込んで着手すること
 
 ### Completion criteria
 
@@ -381,20 +211,18 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### Dependencies
 
-- 最新ユーザー指示: 現在並行している2つの作業と競合させない
-- 着手時点で既存の進行中作業が完了または明示的に停止しており、`task-list.md`とGitHub実状態が整合していること
-- 既定優先順位では`JLL-FE-LESSON-001`の後に着手する。ユーザーが明示的に優先順位を変更した場合はその指示を優先する
+- 最新ユーザー指示: 他の進行中作業と競合させない
+- 着手時点で既存の進行中作業が完了または明示的に停止していること
+- 既定優先順位では`JLL-FE-LESSON-001`の後。ユーザーが明示的に優先順位を変更した場合はその指示を優先する
 
 ### Research reference
 
 - Google Drive: [JLL-FE-QBANK-001 科目A問題バンク拡充 調査メモ](https://docs.google.com/document/d/1A1CvxwXzK5LvfxReNuSXrk5DZRdh4ZF-iWe35fhbNM4/edit)
-- Intent: 実装着手前に、外部サイトの「2,960問」という延べ収録規模とユニーク問題数を混同しないようにし、公式一次資料の所在、重複問題の扱い、著作権・出典要件、追加候補の優先順位を固定するための調査ナビとして使用する。
-- Key finding: 比較対象サイトの分野別件数は合計2,175問で、別開催期の同題を重複除外した履歴も確認できるため、2,960はユニーク問題数の目標値として扱わない。現行1,830問との差345問も厳密な不足数とはみなさず、着手時に年度・開催回・正規化指紋で実測する。
-- Primary-source priority: まず公式の科目A免除制度修了試験とCBT移行後の公開問題を全件監査し、旧年度で現行公式ページから一次資料を取得しにくい範囲は後段で公的保存資料を探索する。
-- Data-model intent: `canonicalQuestion`（ユニーク問題）と`sourceOccurrence`（開催回ごとの出現）を分離し、同一問題の重複登録を避けつつ開催回フィルタと出典履歴を維持できる構造を優先検討する。
-- Source authority: Driveメモは調査結果と実装着手順をまとめた参照資料であり、問題本文・選択肢・正答の正本ではない。実際の採用判断では必ず公式一次資料を再確認し、公式情報とDriveメモが競合する場合は公式一次資料を優先する。
-- Freshness: 実装開始時にDriveメモのリンク先と公開状況を再確認し、公式ページの追加・移動・利用条件変更があれば最新状態へ更新する。
-- Concurrency guard: この調査資料の作成・参照登録だけでは`JLL-FE-QBANK-001`を開始扱いにしない。`planned`を維持し、既存の進行中作業が解消されるまで`NEXT_WORK.md`、アプリケーションコード、問題データ、現在のPull Requestの実装範囲へ変更を加えない。
+- Intent: 外部サイトの「2,960問」という延べ収録規模とユニーク問題数を混同せず、公式一次資料の所在、重複問題の扱い、著作権・出典要件、追加候補の優先順位を固定するための調査ナビとして使用する
+- Key finding: 比較対象サイトの分野別件数は合計2,175問で、別開催期の同題を重複除外した履歴も確認できるため、2,960はユニーク問題数の目標値として扱わない。現行1,830問との差345問も厳密な不足数とはみなさず、着手時に年度・開催回・正規化指紋で実測する
+- Data-model intent: `canonicalQuestion`と`sourceOccurrence`を分離し、同一問題の重複登録を避けつつ開催回フィルタと出典履歴を維持できる構造を優先検討する
+- Source authority: Driveメモは調査結果と実装着手順をまとめた参照資料であり、問題本文・選択肢・正答の正本ではない。採用判断では必ず公式一次資料を再確認する
+- Concurrency guard: 調査資料の作成・参照登録だけでは本タスクを開始扱いにしない。既存の進行中作業が解消されるまで`planned`を維持する
 
 ### Branch
 
@@ -422,7 +250,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### GitHub Pages result
 
-未着手。着手時のRepositoryルールに従う。
+未着手。
 
 ### Next task
 
@@ -493,11 +321,140 @@ FEレッスン内容作成の優先タスク完了後、最新のユーザー指
 
 ### GitHub Pages result
 
-未着手。Repositoryルールに従う。
+未着手。
 
 ### Next task
 
 着手時に決定する。
+
+---
+
+## Completed task
+
+### Task ID
+
+`JLL-FE-003`
+
+### Title
+
+FE絞り込みの不要な余白を減らし、単元名を完全な日本語で自然に表示する
+
+### Status
+
+`completed`
+
+### Purpose
+
+採用済みのパターンBを通常表示の既定にし、内容量の異なるカードを固定高へ揃えず不要な空白を減らす。単元名は旧形式を含めて完全な日本語名へ解決し、最新ユーザー指定の順序「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」を表示・DOM・キーボード順で一致させる。
+
+### Scope completed
+
+- `filterLayout=2`を既定表示へ変更
+- 4条件群を`domains → reviewScopes → periodIds → unitIds`へ変更
+- 受験科目ブロックの独立状態を維持
+- pattern Bを左2段・右縦長・下全幅の構成へ調整し、カード固定高と内部縦スクロールを使用しない
+- canonical `unitId`、旧形式、日本語正規化値を完全な日本語単元名へ解決
+- 自然な改行候補を持つ単元ラベルを実装
+- 3レイアウト × 375px / 768px / 1,280pxのChromium監査を実施
+- Root / prototype `DESIGN.md`、テスト、Pages workflow、公開証拠を同期
+
+### Out of scope respected
+
+- 受験科目ブロックの構造・文言・操作変更なし
+- 絞り込みロジック、OR/AND評価、件数、開始条件の変更なし
+- 問題本文、選択肢、正答、解説、図表の変更なし
+- `JLL-FE-004`、レッスン、Javaの先行実装なし
+
+### Completion criteria result
+
+全項目合格。Blocking findingなし。
+
+### Dependencies
+
+- `JLL-FE-001`: completed
+- `JLL-FE-002`: completed
+- ユーザー指定: pattern B、不要な余白削減、完全日本語単元名、最新4条件群順序
+
+### Branch
+
+`work`
+
+### Pull Request
+
+- Number: `#4`
+- Base: `main`
+- Head: `work`
+- Pre-merge state: open / draft / unmerged
+- Review result: pass
+- Merge method: merge commit
+
+### Start HEAD
+
+`1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
+
+### Fixed implementation and order-test HEAD
+
+`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
+
+### Audited workflow / Pages source HEAD
+
+`afa550a41d2776543445a3cb727731f6fb902608`
+
+### Pages output synchronization HEAD
+
+`4cd677854fda9f4a4f204df5519e86f5600fc595`
+
+### Confirmation review input HEAD
+
+`31332628e5ad412c685c1e19f0c31eda99c51d43`
+
+### Validation result
+
+`passed / confirmation approved`
+
+- PR mergeable: true
+- Review threads: none
+- PR build workflow: `31155342510` / run `404` / success
+- CI `npm ci`: success
+- `npm run verify:fe`: success
+- Tests: 60 / 60 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- Browser audit workflow: `31155342511` / run `63` / success
+- Browser evidence artifact: `8984932272`
+- Artifact digest: `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
+- Browser scenarios: 9 / 9 passed
+- DOM order: passed
+- Keyboard group order: passed
+- Subject selector independence: passed
+- Horizontal overflow: none
+- Card internal scrollbar / clipping: none
+- Japanese unit-label data verification: passed
+- Console error/warning and failed request: none
+- Confirmation environment limitation: local cloneは実行環境の外向きDNS制約で不可。GitHub Actionsの固定PR merge refログ、artifact、GitHub差分を独立照合した
+- Non-blocking observation: CIスクリーンショット環境は日本語システムフォント不足により一部グリフが豆腐表示するが、DOM監査・単元ラベル検証では完全な日本語文字列を確認済み。公開利用環境の機能不良を示す証拠はない
+
+### Merge commit
+
+確認合格。PR #4のmerge commit作成後にGitHub実状態から追記する。
+
+### GitHub Pages result
+
+- Workflow: `31155340547` / run `403` / success
+- Build job: `92793503577` / success
+- Deploy job: `92793641839` / success
+- Public smoke check: success
+- Public source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Repository `docs/build-info.json` sourceRevision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Repository `prototype/qa/pages-deployment.json`: success
+- Pages temporary skip policy: removed
+- merge後の再公開結果は最終同期後に追記する
+
+### Next task
+
+`JLL-FE-004`
 
 ---
 
