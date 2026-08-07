@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { FeLearningApp } from "./FeLearningApp.jsx";
+import { FeLessonApp } from "./FeLessonApp.jsx";
 import { PlatformHeader, JapanHome, EngineerHome } from "./PlatformShell.jsx";
 
 const appBase = import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
@@ -75,12 +76,16 @@ export function AppV5() {
 
   const brand = route.screen === "fe" ? "FE Learning Lab" : route.screen === "engineer" ? "Engineer Learning Lab" : "Japan Learning Lab";
   const headerStatus = route.screen === "fe" && route.view === "session" ? feHeaderStatus : null;
+  const showFeLesson = route.screen === "fe" && route.tab === "lesson" && route.view === "home";
+  const showFePractice = route.screen === "fe" && (route.tab !== "lesson" || route.view !== "home");
+
   return (
     <div className={`app-shell theme-${route.screen === "fe" ? "exam" : route.screen}`}>
       <PlatformHeader screen={route.screen} tab={route.tab} navigate={navigate} statusText={headerStatus} />
       {route.screen === "japan" && <JapanHome navigate={navigate} />}
       {route.screen === "engineer" && <EngineerHome navigate={navigate} />}
-      {route.screen === "fe" && <FeLearningApp tab={route.tab} view={route.view} navigate={(tab, view) => navigate("fe", tab, view)} goEngineer={() => navigate("engineer")} setHeaderStatus={setFeHeaderStatus} />}
+      {showFeLesson && <FeLessonApp navigate={(tab, view) => navigate("fe", tab, view)} goEngineer={() => navigate("engineer")} />}
+      {showFePractice && <FeLearningApp tab={route.tab} view={route.view} navigate={(tab, view) => navigate("fe", tab, view)} goEngineer={() => navigate("engineer")} setHeaderStatus={setFeHeaderStatus} />}
       <footer className="site-footer"><span>{brand}</span><button onClick={() => navigate("japan")}><span>Japan Learning Lab Network</span><ArrowUpRight size={17} /></button></footer>
     </div>
   );
