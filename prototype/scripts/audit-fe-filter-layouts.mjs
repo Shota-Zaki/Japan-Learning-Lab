@@ -14,6 +14,10 @@ const outputDirectory = join(prototypeDirectory, "qa", "jll-fe-003-browser");
 const sitePrefix = "/Japan-Learning-Lab/";
 const viewports = [375, 768, 1280];
 const variants = ["1", "2", "3"];
+const expectedMinimums = {
+  sourceCount: 1900,
+  optionCounts: [3, 20, 20, 4],
+};
 
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -163,19 +167,78 @@ async function evaluate(client, expression) {
   return result.result?.value;
 }
 
+function renderStateExpression() {
+  return `(() => {
+    const round = (value) => Math.round(value * 10) / 10;
+    const cards = [...document.querySelectorAll('.fe-filter-variant-grid > fieldset')];
+    const countText = document.querySelector('.source-count')?.textContent || '';
+    return {
+      ready: document.readyState,
+      cards: cards.length,
+      subject: Boolean(document.querySelector('.fe-subject-selector')),
+      sourceCountText: countText,
+      sourceCount: Number.parseInt(countText.replace(/[^0-9]/g, ''), 10) || 0,
+      optionCounts: cards.map((card) => card.querySelectorAll('input[type="checkbox"]').length),
+      cardRects: cards.map((card) => {
+        const rect = card.getBoundingClientRect();
+        return [round(rect.x), round(rect.y), round(rect.width), round(rect.height)];
+      }),
+      layoutMeasured: document.querySelector('.fe-filter-variant-grid')?.dataset.feLayoutMeasured || ''
+    };
+  })()`;
+}
+
+function stateSignature(state) {
+  return JSON.stringify({
+    sourceCount: state.sourceCount,
+    optionCounts: state.optionCounts,
+    cardRects: state.cardRects,
+    layoutMeasured: state.layoutMeasured,
+  });
+}
+
+function hasFinalOptionCounts(state) {
+  return expectedMinimums.optionCounts.every((minimum, index) => state.optionCounts[index] >= minimum);
+}
+
 async function waitForApplication(client) {
   let lastState = null;
-  for (let attempt = 0; attempt < 120; attempt += 1) {
-    lastState = await evaluate(client, `(() => ({
-      ready: document.readyState,
-      cards: document.querySelectorAll('.fe-filter-variant-grid > fieldset').length,
-      subject: Boolean(document.querySelector('.fe-subject-selector')),
-      count: document.querySelector('.source-count')?.textContent || ''
-    }))()`);
-    if (lastState.ready === "complete" && lastState.cards === 4 && lastState.subject) return lastState;
-    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
+  let previousSignature = "";
+  let stableSamples = 0;
+  let fontsReady = false;
+
+  for (let attempt = 0; attempt < 180; attempt += 1) {
+    lastState = await evaluate(client, renderStateExpression());
+    const applicationReady = lastState.ready === "complete"
+      && lastState.cards === 4
+      && lastState.subject
+      && lastState.sourceCount >= expectedMinimums.sourceCount
+      && hasFinalOptionCounts(lastState)
+      && lastState.layoutMeasured === "true";
+
+    if (applicationReady && !fontsReady) {
+      await evaluate(client, `(async () => {
+        if (document.fonts) await document.fonts.ready;
+        return true;
+      })()`);
+      fontsReady = true;
+      previousSignature = "";
+      stableSamples = 0;
+    }
+
+    if (applicationReady && fontsReady) {
+      const signature = stateSignature(lastState);
+      stableSamples = signature === previousSignature ? stableSamples + 1 : 1;
+      previousSignature = signature;
+      if (stableSamples >= 5) return lastState;
+    } else {
+      previousSignature = "";
+      stableSamples = 0;
+    }
+
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 150));
   }
-  throw new Error(`Application did not become ready: ${JSON.stringify(lastState)}`);
+  throw new Error(`Application did not reach a stable final render: ${JSON.stringify(lastState)}`);
 }
 
 function metricExpression() {
@@ -190,8 +253,21 @@ function metricExpression() {
     const grid = document.querySelector('.fe-filter-variant-grid');
     const cards = [...grid.querySelectorAll(':scope > fieldset')];
     const labels = [...grid.querySelectorAll('.fe-check-grid-compact label strong')];
+    const countText = document.querySelector('.source-count')?.textContent || '';
+    const gridStyle = getComputedStyle(grid);
+    const cardMetrics = cards.map((card) => ({
+      legend: card.querySelector('legend')?.textContent?.trim() || '',
+      rect: rect(card),
+      optionCount: card.querySelectorAll('input[type="checkbox"]').length,
+      clientHeight: card.clientHeight,
+      scrollHeight: card.scrollHeight,
+      overflowY: getComputedStyle(card).overflowY,
+      internalVerticalOverflow: card.scrollHeight > card.clientHeight + 1
+    }));
     return {
       activeVariant: root.dataset.feFilterLayout || null,
+      sourceCount: Number.parseInt(countText.replace(/[^0-9]/g, ''), 10) || 0,
+      optionCounts: cardMetrics.map((card) => card.optionCount),
       viewport: {
         innerWidth: window.innerWidth,
         clientWidth: root.clientWidth,
@@ -200,16 +276,14 @@ function metricExpression() {
       },
       subject: rect(subject),
       grid: rect(grid),
+      rowGap: Number.parseFloat(gridStyle.rowGap) || 0,
+      layoutMeasured: grid.dataset.feLayoutMeasured || '',
+      layoutExtraSpace: gridStyle.getPropertyValue('--fe-filter-layout-2-extra-space').trim() || '0px',
       subjectIndependent: subject.getBoundingClientRect().bottom <= grid.getBoundingClientRect().top,
       cardCount: cards.length,
-      cards: cards.map((card) => ({
-        legend: card.querySelector('legend')?.textContent?.trim() || '',
-        rect: rect(card),
-        clientHeight: card.clientHeight,
-        scrollHeight: card.scrollHeight,
-        overflowY: getComputedStyle(card).overflowY,
-        internalVerticalOverflow: card.scrollHeight > card.clientHeight + 1
-      })),
+      cards: cardMetrics,
+      cardsContainedByGrid: cardMetrics.every((card) => card.rect.bottom <= grid.getBoundingClientRect().bottom + 1),
+      layout2LeftGap: cards.length === 4 ? round(cards[3].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom) : null,
       labels: {
         count: labels.length,
         clipped: labels.filter((label) => {
@@ -222,6 +296,16 @@ function metricExpression() {
       unitValues: [...cards[1].querySelectorAll('label input')].map((input) => input.value || '')
     };
   })()`;
+}
+
+function metricsRenderSignature(metrics) {
+  return JSON.stringify({
+    sourceCount: metrics.sourceCount,
+    optionCounts: metrics.optionCounts,
+    cards: metrics.cards.map((card) => card.rect),
+    grid: metrics.grid,
+    layoutExtraSpace: metrics.layoutExtraSpace,
+  });
 }
 
 async function keyboardCheck(client) {
@@ -284,27 +368,36 @@ async function auditScenario(debugOrigin, siteOrigin, variant, width) {
       mobile: width <= 430,
     });
     await client.send("Page.navigate", { url: targetUrl });
-    await waitForApplication(client);
+    const stableState = await waitForApplication(client);
     const metrics = await evaluate(client, metricExpression());
 
-    const screenshot = width === 1280 ? `layout-${variant}-1280.png` : null;
-    if (screenshot) await captureFullPage(client, join(outputDirectory, screenshot));
+    const screenshot = `layout-${variant}-${width}.png`;
+    await captureFullPage(client, join(outputDirectory, screenshot));
+    const postScreenshotMetrics = await evaluate(client, metricExpression());
     const keyboard = await keyboardCheck(client);
 
+    assert(metricsRenderSignature(metrics) === metricsRenderSignature(postScreenshotMetrics), `Render changed between metrics and screenshot for variant ${variant} at ${width}px`);
     assert(metrics.activeVariant === variant, `Variant ${variant} did not activate at ${width}px`);
     assert(metrics.cardCount === 4, `Variant ${variant} has ${metrics.cardCount} filter cards at ${width}px`);
+    assert(metrics.sourceCount >= expectedMinimums.sourceCount, `Question bank did not finish loading for variant ${variant} at ${width}px`);
+    assert(hasFinalOptionCounts({ optionCounts: metrics.optionCounts }), `Final filter option counts were not loaded for variant ${variant} at ${width}px`);
+    assert(metrics.layoutMeasured === "true", `Layout measurement did not settle for variant ${variant} at ${width}px`);
     assert(metrics.subjectIndependent, `Subject selector entered the filter grid at ${width}px`);
     assert(!metrics.viewport.pageHorizontalOverflow, `Page overflowed horizontally for variant ${variant} at ${width}px`);
+    assert(metrics.cardsContainedByGrid, `A filter card extends beyond the grid for variant ${variant} at ${width}px`);
     assert(metrics.cards.every((card) => !["auto", "scroll"].includes(card.overflowY)), `A filter card enables vertical scrolling for variant ${variant} at ${width}px`);
     assert(metrics.cards.every((card) => !card.internalVerticalOverflow), `A filter card clips content for variant ${variant} at ${width}px`);
     assert(metrics.labels.count > 0 && metrics.labels.clipped.length === 0, `Filter labels are clipped for variant ${variant} at ${width}px`);
     assert(metrics.unitLabels.length > 0 && metrics.unitLabels.every((label) => label && !/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(label)), `A raw unit identifier is visible for variant ${variant} at ${width}px`);
     assert(JSON.stringify(metrics.domOrder) === JSON.stringify(["1. 分野", "2. 単元", "3. 開催回・公開区分", "4. 回答・復習状態"]), `DOM order changed for variant ${variant}`);
+    if (variant === "2" && width > 720) {
+      assert(metrics.layout2LeftGap >= metrics.rowGap - 1 && metrics.layout2LeftGap <= metrics.rowGap + 2, `Layout 2 left-card gap is ${metrics.layout2LeftGap}px instead of the ${metrics.rowGap}px grid gap at ${width}px`);
+    }
     assert(keyboard.toggled, `Keyboard checkbox operation failed for variant ${variant} at ${width}px`);
     assert(consoleMessages.length === 0, `Console warnings or errors occurred for variant ${variant} at ${width}px`);
     assert(failedRequests.length === 0, `Network request failed for variant ${variant} at ${width}px`);
 
-    return { variant, width, screenshot, metrics, keyboard, consoleMessages, failedRequests };
+    return { variant, width, screenshot, stableState, metrics, postScreenshotMetrics, keyboard, consoleMessages, failedRequests };
   } finally {
     client.close();
     await fetch(`${debugOrigin}/json/close/${target.id}`, { method: "PUT" }).catch(() => {});
@@ -359,11 +452,12 @@ async function main() {
       browser: findChrome(),
       variants,
       viewports,
-      screenshots: variants.map((variant) => `layout-${variant}-1280.png`),
+      expectedMinimums,
+      screenshots: scenarios.map((scenario) => scenario.screenshot),
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: independent subject selector, four unchanged filter groups, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, identical metric/screenshot render state, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
     console.log(`FE filter browser audit passed for ${scenarios.length} scenarios`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
