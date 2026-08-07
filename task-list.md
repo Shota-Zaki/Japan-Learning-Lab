@@ -14,7 +14,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Status
 
-`needs_fix`
+`review_ready`
 
 ### Purpose
 
@@ -70,70 +70,64 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Current HEAD
 
-- Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
-- Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Browser evidence PR merge ref: `991017aa63c87ccf511a474e4047c0803bd7dd49`
-- Confirmation management source published by Pages: `b3a74e17898af4cda5e0933098fa0566bc234280`
-- Pages evidence synchronization HEAD: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
-- Confirmation evidence management commits after Pages sync use `[skip ci]`; this file update後の最新`work` / PR HEADはGitHub実状態を正本とする
+- Repair input HEAD: `1c7da3ad2d5e1a8f68b62de6b5b41045311d0863`
+- Corrected implementation / PR source HEAD: `8e894da0dcf13828151446315b0a53e00e3d62f7`
+- Corrected browser evidence PR merge ref: `a0262bdf0f24d3e02e76eb31a673382e4721c0fc`
+- Corrected Pages evidence synchronization HEAD: `a6fed94aba21f8a3298ea72a78b3339c822c5b06`
+- このreview-ready管理文書更新後の最新`work` / PR HEADはGitHub実状態を正本とする
 
 ### Validation result
 
-`failed / needs_fix`
+`passed / review_ready`
 
-Independent confirmation evidence:
+Repair verification evidence:
 
-- `main` HEAD at confirmation start: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- PR #5: Draft / mergeable / merge未実施
-- Confirmation開始時のPR review threads: 0
-- PR CI `Build and deploy GitHub Pages` at implementation source: workflow `31181066806` / run `457` / success
-- PR CI `npm run verify:fe`: success / tests 63 passed / TypeScript success / ESLint success / normal build success / Pages build success
-- PR CI `Audit FE filter layout variants`: workflow `31181066826` / run `86` / success
-- JLL-FE-004専用PR CI `Audit FE mock timer layout`: workflow `31181066801` / run `10` / success
-- 専用browser evidence artifact: `8994787534` / digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
-- browser widths: 375px / 768px / 1,280px
+- Blocking `B2` root causeを修正。`calculateMockRemainingSeconds`は設定durationを上限としてclampし、active mock切替時は1秒intervalを待たずmicrotaskでclockを更新する
+- 決定的回帰テストで、90分科目Aのclockが`startedAt`より15秒古い場合でも残時間は5,400秒を超えないこと、1.5秒後は5,399秒へ減少すること、100分科目B上限とcompleted時nullを確認
+- PR CI `Build and deploy GitHub Pages`: workflow `31183473005` / run `473` / success
+- `npm ci`: success
+- `npm run verify:fe`: success / tests 64 passed / TypeScript success / ESLint success / normal build success / Pages build success
+- PR CI `Audit FE filter layout variants`: workflow `31183473253` / run `94` / success
+- JLL-FE-004専用PR CI `Audit FE mock timer layout`: workflow `31183473016` / run `18` / success
+- 専用browser evidence artifact: `8995751840` / digest `sha256:30fac541c3d940967884c5d85316395675013d20754658bcc9eda5bd5b359872`
+- browser evidence head SHA: `8e894da0dcf13828151446315b0a53e00e3d62f7`; audit sourceRevisionはPR merge ref `a0262bdf0f24d3e02e76eb31a673382e4721c0fc`
+- 375px / 768px / 1,280pxの3幅すべてで開始直後`残り 90:00`、約1.2秒後`残り 89:59`
 - brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの矩形重なりは全て`false`
 - 180pxスクロール後も各幅でタイマーY座標不変、viewport内表示維持
 - page horizontal overflowなし
 - 通常topic演習ではmock timer / status row / legacy inline timerはいずれも0件
 - browser audit中のconsole message、failed requestなし
-- 問題本文と解説の視覚階層、2022年科目Aサンプルの通常`topic`除外と`mock`経路維持、`令和8年度 免除試験`表示と元データ非改変を差分・テストで確認
+- 375pxと1,280pxのbrowser artifact screenshotも確認し、専用ステータス行配置と問題操作の非重複を維持
+- 問題本文と解説の視覚階層、2022年科目Aサンプルの通常`topic`除外と`mock`経路維持、`令和8年度 免除試験`表示と元データ非改変は既存検証を維持
 - JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックの回帰監査はsuccess
-- Confirmation management source `b3a74e1`でもPR CIを再実行し、Build run `463`、filter audit run `89`、mock timer audit run `13`はすべてsuccess
-- 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため追加タスク化不要
-- 確認環境の外向きDNS制約によりlocal cloneは不可だったため、GitHub Actions固定PR merge ref、GitHub差分、workflow log、browser artifact、Pages workflowを独立照合した
+- 確認環境の外向きDNS制約によりlocal cloneは不可だったため、GitHub Actions固定PR merge ref、workflow log、browser artifact、Repository差分、Pages公開証拠を照合した
 
 ### Blocking finding
 
 - `B1`: resolved。タイマーは本文overlayではなくサイトヘッダー内の専用ステータス行へ移動済みで、代表幅の重なり・sticky・通常演習非表示は合格
-- `B2`: **Blocking / unresolved**。90分の科目A模試開始直後に専用browser evidenceで`残り 90:01`を記録した
-- Expected: 新規90分模試の最初の表示は`90:00`を超えない
-- Actual: `FeLearningApp.jsx`の`headerClockMs`がlearning app mount時の値のまま、新しいmock session開始直後の計算に使われる。active mock用effectは1秒intervalを登録するだけで即時clock refreshを行わないため、`startedAt - headerClockMs`が正の値となり設定時間へ加算される
-- セットアップ画面へ長く滞在してから開始すると、最初のinterval tickまでの短時間ではあるが超過幅がさらに大きくなり得る
-- 修正対象: `prototype/src/FeLearningApp.jsx`
-- 必須回帰防止: `prototype/tests/fe-004-regression.test.mjs`で設定時間を上限とする決定的テストを追加し、`prototype/scripts/audit-fe-mock-timer.mjs`で開始直後タイマーが設定時間を超えないことを検証する。可能なら時間経過後に減少することも検証する
-- 修正方針: active mock切替時にclockを即時更新し、残時間計算を設定durationで上限clampする防御的invariantを設ける。既存の0秒下限、科目A/B時間、restore、sticky header、通常演習非表示を維持する
+- `B2`: resolved。開始直後の残時間は設定durationで上限clampされ、active mock切替時にclockを即時更新する。専用browser auditで3幅すべて`90:00`開始、時間経過後`89:59`を確認
+- 修正後のBlocking finding: なし。確認担当による独立確認待ち
 
 ### Merge commit
 
-未マージ。Blocking `B2`のためPR #5はmergeしない。
+未マージ。修正担当はPR #5をDraftのまま維持し、`main`へmergeしない。
 
 ### GitHub Pages result
 
-- Current `work` Pages workflow after confirmation management update: `31182227798` / run `462` / success
+- Corrected source Pages workflow: `31183469063` / run `472` / success
 - Public smoke check: success
-- Published source Revision: `b3a74e17898af4cda5e0933098fa0566bc234280`
-- Public `build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
-- Repository `docs/build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31182227798` / run `462`
-- Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
+- Published source Revision: `8e894da0dcf13828151446315b0a53e00e3d62f7`
+- Public `build-info.json` sourceRevision: `8e894da0dcf13828151446315b0a53e00e3d62f7`
+- Repository `docs/build-info.json` sourceRevision: `8e894da0dcf13828151446315b0a53e00e3d62f7`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31183469063` / run `472`
+- Published script: `/Japan-Learning-Lab/assets/index-CYNhSz4W.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
-- `7b0c7d1`は公開結果の証拠更新だけで、`b3a74e1`からのアプリケーション差分はない
+- Pages evidence synchronization commit: `a6fed94aba21f8a3298ea72a78b3339c822c5b06`
+- `a6fed94`は公開結果の証拠更新で、修正アプリケーションsourceRevisionは`8e894da0dcf13828151446315b0a53e00e3d62f7`
 
 ### Next task
 
-`JLL-FE-004`のBlocking `B2`を`修正`で解消し、Draft PR #5のCI・専用browser evidence・Pagesを更新して`review_ready`へ戻す。合格・merge・`work`同期・Pages再確認完了後に`JLL-FE-LESSON-001`へ進む。
+別チャットの`確認`で`JLL-FE-004`を固定HEAD基準に独立確認する。合格・merge commit・`work`同期・Pages再確認完了後に`JLL-FE-LESSON-001`へ進む。
 
 ---
 
