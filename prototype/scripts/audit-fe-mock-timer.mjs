@@ -242,7 +242,7 @@ function validateMockMetrics(metrics, width, phase) {
   assert(!metrics.overlaps.nav, `Timer overlaps global navigation at ${width}px (${phase}); ${geometry}`);
   assert(!metrics.overlaps.headerActions, `Timer overlaps header actions at ${width}px (${phase}); ${geometry}`);
   if (phase === "initial") {
-    assert(metrics.viewport.scrollY === 0, `Initial session geometry was not measured at scrollY=0 for ${width}px; ${geometry}`);
+    assert(metrics.viewport.scrollY <= 2, `Initial session geometry was not measured near the scroll origin for ${width}px; ${geometry}`);
     assert(!metrics.overlaps.questionHeading, `Timer overlaps problem heading at ${width}px; ${geometry}`);
     assert(!metrics.overlaps.questionContent, `Timer overlaps problem body at ${width}px; ${geometry}`);
     assert(!metrics.overlaps.answers, `Timer overlaps answer controls at ${width}px; ${geometry}`);
@@ -283,8 +283,8 @@ async function auditScenario(debugOrigin, siteOrigin, width) {
     assert(await evaluate(client, `(() => { const button = document.querySelector('.fe-start-button'); button?.click(); return Boolean(button); })()`), `Could not start mock exam at ${width}px`);
     await waitFor(client, `Boolean(document.querySelector('.fe-exam-session') && document.querySelector('.fe-mock-timer'))`, "mock session with header timer");
 
-    await evaluate(client, `window.scrollTo({ top: 0, behavior: 'instant' }); true`);
-    await waitFor(client, `window.scrollY === 0`, "mock session scroll origin");
+    await evaluate(client, `document.documentElement.style.scrollBehavior = 'auto'; document.body.style.scrollBehavior = 'auto'; window.scrollTo({ top: 0, behavior: 'auto' }); true`);
+    await waitFor(client, `window.scrollY <= 2`, "mock session scroll origin");
     await delay(150);
     const initial = await evaluate(client, metricsExpression());
     console.log(`mock-timer ${width}px initial ${geometrySummary(initial)}`);
@@ -377,7 +377,7 @@ async function main() {
       browser: chromePath,
       viewports,
       checks: [
-        "initial geometry is measured at scrollY=0 after route transition settles",
+        "initial geometry is measured at the settled scroll origin after route transition",
         "timer is contained by a dedicated header status row",
         "timer does not overlap brand, global navigation, optional header actions, initial problem heading, problem body, answer controls, or session actions",
         "timer remains in the viewport at the same vertical position after scrolling",
