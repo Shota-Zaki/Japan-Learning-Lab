@@ -79,16 +79,22 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 現在の優先タスクは`JLL-FE-003`であり、状態は`review_ready`である。
 
-目的は、採用済みのFE絞り込みパターンBを既定表示にし、内容量の異なるカード間に生じる不要な空白を減らすとともに、canonical IDと実行時に日本語へ正規化された旧単元値を完全な日本語で、可能な限り1行、必要時は意味のまとまりで自然に折り返して表示することである。
+目的は、採用済みのFE絞り込みパターンBを既定表示にし、内容量の異なるカード間に生じる不要な空白を減らすとともに、canonical IDと実行時に日本語へ正規化された旧単元値を完全な日本語で、可能な限り1行、必要時は意味のまとまりで自然に折り返して表示することである。最新ユーザー指定により、絞り込みのDOM・キーボード順は「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」とする。
 
 確認対象:
 
-- Pull Request: `#4` / open / draft
-- Fixed application review HEAD: `4e71a6b77a5903de5fa2eac7187f76619c631b4a`
+- Pull Request: `#4` / open / draft / unmerged
+- Fixed application / order-test HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
+- Latest audited workflow / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
+- Repository Pages output synchronization commit: `4cd677854fda9f4a4f204df5519e86f5600fc595`
+- Browser audit: workflow `31155342511` / run `63` / success / 9 scenarios
+- Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
+- Pages deployment: workflow `31155340547` / run `403` / success
+- Pages public revision check: `afa550a41d2776543445a3cb727731f6fb902608` / success
 - 受験科目は独立ブロックのまま変更しない
-- 単元を全幅の主カードとして扱う
 - 分野と回答・復習状態を左側で縦積みする
 - 開催回・公開区分を右側の縦長領域として扱う
+- 単元は左右スタックの下に全幅カードとして配置する
 - カード高さを固定せず、内部スクロールを追加しない
 - 現在収録中のcanonical `unitId`と旧形式の実行時単元値を完全な日本語名へ対応付ける
 - 単元名は幅を有効利用して1行表示を優先する
@@ -110,34 +116,20 @@ FE問題数は次の区分を正確に使う。
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
 
-## 5.1 Temporary GitHub Pages skip policy
+## 5.1 GitHub Pages status
 
-2026-08-07のユーザー指示により、GitHub Pagesが正常に完了できる状態へ回復したと確認されるまで、すべてのタスクでPages依存工程をスキップする。
+2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-スキップ対象:
+解除根拠:
 
-- GitHub Pages deploymentの実行または再実行を完了条件にすること
-- 公開URLの最新Revision一致確認
-- 公開画面を使用した表示確認
-- 公開リソースのNetwork、Console、スモーク確認
-- deployment成功後にだけ行える`docs/`および公開証拠の同期
-- Pages障害だけを理由にタスクを`blocked`または`needs_fix`へ変更すること
-- Pages復旧確認前の連続retry
+- workflow `31155340547` / run `403` のbuildがsuccess
+- GitHub Pages deployがsuccess
+- 公開URLの`build-info.json` Revision一致確認がsuccess
+- index、生成アセット、問題データ、サンプル図表のpublic smoke checkがsuccess
+- Repository `docs/`と公開証拠の同期commit `4cd677854fda9f4a4f204df5519e86f5600fc595`が作成済み
+- `prototype/qa/pages-deployment.json`は`status: success`、`publicSmokeCheck: success`を記録済み
 
-継続対象:
-
-- 通常build
-- 自動テスト
-- 型検査
-- Lint
-- `npm run build:pages`によるPages成果物生成
-- Pages artifact uploadまでの検証
-- ソースコード、生成物、固定HEAD、Pull Request差分の確認
-- Pages以外の完了条件に基づく実装、確認、マージ、次タスク開始
-
-自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用しない。Pages deployの手動再実行は行わない。
-
-解除条件は、GitHub Pagesのdeploymentが正常完了可能であることを実際に確認し、ユーザーまたはRepository管理文書で本ルールを解除した場合とする。
+Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
 ## 6. Technical stack
 
@@ -255,7 +247,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
-絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善は`JLL-FE-003`で確認待ちである。これ以外の追加変更は別Task IDとして管理する。
+絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で`review_ready`である。これ以外の追加変更は別Task IDとして管理する。
 
 ## 11. Source data policy
 
@@ -265,7 +257,7 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 - 出典識別情報を内部データに保持する
 - 公式サンプルと実試験過去問題を区別する
 - 重複は、科目、問題文、選択肢、正答を正規化した指紋で扱う
-- 図表付き問題は、本文、選択肢、図表、正答が揃うまで公開セットとして完成扱いにしない
+- 図表付き問題は、本文、選択肢、正答、必要図表が揃うまで公開セットとして完成扱いにしない
 - 固定同期元に公式冊子の図表が存在しない場合は、公式冊子と照合した補完資産をRepository管理下へ置き、対象問題IDを明示して付与する
 - 補完資産には意味のある代替テキストを付け、通常buildとPages buildの双方へ含める
 - 図表要件は公式冊子の実構成を根拠とし、引継ぎ文書の誤った前提を優先しない
@@ -286,7 +278,5 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 8. 必要に応じてRootおよび`prototype/`の`DESIGN.md`
 9. 最新CI
 10. `docs/`とGitHub Pagesの公開状態
-
-GitHub Pagesの一時スキップ方針が有効な間は、手順10を状態記録だけに限定し、公開確認やretryをBlocking条件にしない。
 
 新しいチャットでユーザーが送る起動コマンドは、原則として`実装`、`修正`、`確認`のいずれかとする。
