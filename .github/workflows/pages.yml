@@ -24,22 +24,23 @@ jobs:
           import json
           from pathlib import Path
           info = json.loads(Path('docs/build-info.json').read_text())
-          expected = '66a03576b5b9ac2c86c35c63045f923137f08a0c'
-          assert info['sourceRevision'] == expected, info
+          assert info['sourceRevision'] == '66a03576b5b9ac2c86c35c63045f923137f08a0c'
           html = Path('docs/index.html').read_text()
           assert 'assets/index-BJI--2FR.js' in html
           assert 'assets/index-DSeV1n5v.css' in html
           assert Path('docs/assets/index-BJI--2FR.js').is_file()
           assert Path('docs/assets/index-DSeV1n5v.css').is_file()
           assert not Path('docs/assets/index-YqsZizrf.js').exists()
-          print('Synchronized Pages output verified')
           PY
 
-      - name: Update task handoff documents
+      - name: Update task list
         run: |
           python - <<'PY'
+          import base64
           from pathlib import Path
-
+          fixed = base64.b64decode('IyMjIEZpeGVkIGltcGxlbWVudGF0aW9uIGFuZCB2ZXJpZmljYXRpb24gSEVBRAoKYDY2YTAzNTc2YjViOWFjMmM4NmMzNWM2MzA0NWY5MjMxMzdmMDhhMGNgCgrjgqLjg5fjg6rjgrHjg7zjgrfjg6fjg7PjgrPjg7zjg4njgIHnm6Pmn7vjgrPjg7zjg4njgIHjg4bjgrnjg4jjga7norroqo3lr77osaHjga/jgZPjga5IRUFE44Gr5Zu65a6a44GZ44KL44CC5Lul5b6M44Gu5L+u5q2j44Gv5Y6f5YmH44Go44GX44Gm55Sf5oiQ5riI44G/YGRvY3MvYOOBqOeuoeeQhuaWh+abuOOBq+mZkOWumuOBmeOCi+OAggoKIyMjIFBhZ2VzIG91dHB1dCBzeW5jaHJvbml6YXRpb24gSEVBRAoKYDg3NWFjMjZlNWRkNTA2ZTExYTZlYzBmZjUyYTQ4YzIyMzI1MWNkYjlgCgojIyMgU3RhbmRhcmQgd29ya2Zsb3cgcmVzdG9yYXRpb24gSEVBRAoKYDZjYzg0NmE0ZjViNWFmOTdmODM2Zjg0NWI5NmMxYTk0YjgyMjU0NzRgCg==').decode()
+          result = base64.b64decode('IyMjIEZpeCByZXN1bHQKCiMjIyMgUmVwb3NpdG9yeeOBrmBkb2NzL2DjgpLlm7rlrprjgqLjg5fjg6rjgrHjg7zjgrfjg6fjg7NIRUFE44G45ZCM5pyfCgotIGBHSVRIVUJfU0hBPTY2YTAzNTc2YjViOWFjMmM4NmMzNWM2MzA0NWY5MjMxMzdmMDhhMGMgbnBtIHJ1biBidWlsZDpwYWdlc2DjgafnlJ/miJAKLSBgZG9jcy9idWlsZC1pbmZvLmpzb25gIHNvdXJjZVJldmlzaW9uOiBgNjZhMDM1NzZiNWI5YWMyYzg2YzM1YzYzMDQ1ZjkyMzEzN2YwOGEwY2AKLSBHZW5lcmF0ZWQgSmF2YVNjcmlwdDogYGRvY3MvYXNzZXRzL2luZGV4LUJKSS0tMkZSLmpzYAotIEdlbmVyYXRlZCBzdHlsZXNoZWV0OiBgZG9jcy9hc3NldHMvaW5kZXgtRFNlVjFuNXYuY3NzYAotIFN0YWxlIEphdmFTY3JpcHQgYGRvY3MvYXNzZXRzL2luZGV4LVlxc1ppenJmLmpzYDogcmVtb3ZlZAotIFN0YWxlIHN0eWxlc2hlZXTjga/mnIDmlrBzdHlsZXNoZWV044G4572u5o+bCi0gUGFnZXMgb3V0cHV0IGNvbW1pdDogYDg3NWFjMjZlNWRkNTA2ZTExYTZlYzBmZjUyYTQ4YzIyMzI1MWNkYjlgCi0g44Ki44OX44Oq44Kx44O844K344On44Oz44Kz44O844OJ44CBQ1NT44CB44OG44K544OI44CB55uj5p+744Kz44O844OJ44CB5ZWP6aGM44OH44O844K/44Gv5aSJ5pu044GX44Gm44GE44Gq44GECi0g5LiA5pmC5ZCM5pyfd29ya2Zsb3fjga/mqJnmupZ3b3JrZmxvd+OBuOW+qeWFg+OBmeOCiwoKIyMjIEZpeCB2YWxpZGF0aW9uIHJlc3VsdAoKLSBPbmUtc2hvdCBzeW5jaHJvbml6YXRpb24gd29ya2Zsb3c6IGAzMTE0NTgyNTQwNmAgLyBydW4gYDM4M2AgLyBzdWNjZXNzCi0gU3luY2hyb25pemF0aW9uIGpvYjogYDkyNzY0OTE4OTIxYCAvIHN1Y2Nlc3MKLSBBdXRvbWF0ZWQgdGVzdHM6IDYwIC8gNjAgcGFzc2VkCi0gVHlwZVNjcmlwdDogc3VjY2VzcwotIEVTTGludDogc3VjY2VzcwotIE5vcm1hbCBidWlsZDogc3VjY2VzcwotIFBhZ2VzIGJ1aWxkOiBzdWNjZXNzCi0gQ2hyb21pdW0gYXVkaXQ6IDkgc2NlbmFyaW9zIHBhc3NlZAotIEZpeGVkIHJldmlzaW9uIGFzc2VydGlvbjogc3VjY2VzcwotIFNhbWUgZml4ZWQtcmV2aXNpb24gUGFnZXMgYnVpbGQgZXhlY3V0ZWQgdHdpY2U6IHN1Y2Nlc3MKLSBSZXByb2R1Y2liaWxpdHkgZGlmZjogbm8gZGlmZmVyZW5jZXMKLSBHZW5lcmF0ZWQgY29tbWl0OiBgODc1YWMyNmU1ZGQ1MDZlMTFhNmVjMGZmNTJhNDhjMjIzMjUxY2RiOWAKLSBTdGFuZGFyZCB3b3JrZmxvdyByZXN0b3JlZCBhdDogYDZjYzg0NmE0ZjViNWFmOTdmODM2Zjg0NWI5NmMxYTk0YjgyMjU0NzRgCi0gUHVsbCBSZXF1ZXN0IGAjNGA6IG9wZW4gLyBkcmFmdCAvIHVubWVyZ2VkCi0gRmluYWwgc3RhbmRhcmQgd29ya2Zsb3cgYW5kIGJyb3dzZXIgd29ya2Zsb3fjga/jgIHnrqHnkIbmlofmm7jmm7TmlrDlvozjga5QUiBIRUFE44Gn5YaN5a6f6KGM44GZ44KLCgo=').decode()
+          pages = base64.b64decode('IyMjIEdpdEh1YiBQYWdlcyByZXN1bHQKCi0gUGFnZXMgYnVpbGQ6IHN1Y2Nlc3MKLSBSZXBvc2l0b3J5IGBkb2NzL2Agc3luY2hyb25pemF0aW9uOiBzdWNjZXNzCi0gUmVwb3NpdG9yeSBidWlsZCByZXZpc2lvbjogYDY2YTAzNTc2YjViOWFjMmM4NmMzNWM2MzA0NWY5MjMxMzdmMDhhMGNgCi0gR2VuZXJhdGVkIGFzc2V0czogYGluZGV4LUJKSS0tMkZSLmpzYCAvIGBpbmRleC1EU2VWMW41di5jc3NgCi0gUmVwcm9kdWNpYmlsaXR5IHZlcmlmaWNhdGlvbjogc3VjY2VzcyAvIG5vIGRpZmYKLSBQYWdlcyBhcnRpZmFjdCB1cGxvYWQ6IOacgOe1gnN0YW5kYXJkIHdvcmtmbG9344Gn5YaN56K66KqNCi0gRGVwbG95IGpvYjogdGVtcG9yYXJ5IHNraXAgcG9saWN544Gr44KI44KK5Yik5a6a5a++6LGh5aSWCi0gRGVwbG95bWVudCBhbmQgcHVibGljIHJldmlzaW9uIHZlcmlmaWNhdGlvbjogdGVtcG9yYXJ5IHNraXAgcG9saWN544Gr44KI44KK5Yik5a6a5a++6LGh5aSWCgo=').decode()
           path = Path('task-list.md')
           text = path.read_text()
           marker = '\n---\n\n## Planned task'
@@ -47,251 +48,27 @@ jobs:
           current = current.replace('`needs_fix`', '`review_ready`', 1)
           current = current.replace('Review state: changes required', 'Review state: review ready', 1)
           current = current.replace('### Confirmation result\n\n`failed`', '### Implementation fix result\n\n`passed / review_ready`', 1)
-
-          fixed_heading = '### Fixed implementation and verification HEAD\n\n`66a03576b5b9ac2c86c35c63045f923137f08a0c`\n\nアプリケーションコード、監査コード、テストの確認対象はこのHEADに固定する。以後の修正は原則として生成済み`docs/`と管理文書に限定する。'
-          fixed_replacement = fixed_heading + '''
-
-### Pages output synchronization HEAD
-
-`875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-
-### Standard workflow restoration HEAD
-
-`6cc846a4f5b5af97f836f845b96c1a94b8225474`
-'''
-          current = current.replace(fixed_heading, fixed_replacement, 1)
-
+          old_fixed = '### Fixed implementation and verification HEAD\n\n`66a03576b5b9ac2c86c35c63045f923137f08a0c`\n\nアプリケーションコード、監査コード、テストの確認対象はこのHEADに固定する。以後の修正は原則として生成済み`docs/`と管理文書に限定する。\n'
+          current = current.replace(old_fixed, fixed, 1)
           start = current.index('### Blocking finding')
           end = current.index('### Merge commit')
-          replacement = '''### Fix result
-
-#### Repositoryの`docs/`を固定アプリケーションHEADへ同期
-
-- `GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages`で生成
-- `docs/build-info.json` sourceRevision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Generated JavaScript: `docs/assets/index-BJI--2FR.js`
-- Generated stylesheet: `docs/assets/index-DSeV1n5v.css`
-- Stale JavaScript `docs/assets/index-YqsZizrf.js`: removed
-- Stale stylesheetは最新stylesheetへ置換
-- Pages output commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-- アプリケーションコード、CSS、テスト、監査コード、問題データは変更していない
-- 一時同期workflowは標準workflowへ復元済み。復元後blob SHAは`main`と同一の`79b4b84c532c435add383154ba90943f034f2003`
-
-### Fix validation result
-
-- One-shot synchronization workflow: `31145825406` / run `383` / success
-- Synchronization job: `92764918921` / success
-- Automated tests: 60 / 60 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Chromium audit: 9 scenarios passed
-- Fixed revision assertion: success
-- Same fixed-revision Pages build executed twice: success
-- Reproducibility diff: no differences
-- Generated commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-- Standard workflow restored at: `6cc846a4f5b5af97f836f845b96c1a94b8225474`
-- Pull Request `#4`: open / draft / unmerged
-- Final standard workflow and browser workflowは、この管理文書更新後のPR HEADで再実行して確認担当向け証拠を確定する
-
-'''
-          current = current[:start] + replacement + current[end:]
+          current = current[:start] + result + current[end:]
           current = current.replace('未着手。Blocking問題があるためマージしない。', '未着手。実装担当はマージしない。確認担当の独立検証待ち。', 1)
-
           pages_start = current.index('### GitHub Pages result')
           next_start = current.index('### Next task', pages_start)
-          pages = '''### GitHub Pages result
-
-- Pages build: success
-- Repository `docs/` synchronization: success
-- Repository build revision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Generated assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
-- Reproducibility verification: success / no diff
-- Pages artifact upload: 最終standard workflowで再確認
-- Deploy job: temporary skip policyにより判定対象外
-- Deployment and public revision verification: temporary skip policyにより判定対象外
-
-'''
           current = current[:pages_start] + pages + current[next_start:]
           current = current.replace('`JLL-FE-003`の`docs/`同期修正と再確認。合格後に`JLL-FE-004`へ進む。', '`JLL-FE-003`の独立確認。合格・merge・`work`同期後に`JLL-FE-004`へ進む。', 1)
           path.write_text(current + marker + planned)
-
-          Path('NEXT_WORK.md').write_text('''# Next Work
-
-## Current Task ID
-
-`JLL-FE-003`
-
-## Current phase
-
-`review_ready`
-
-## Next role
-
-確認担当。
-
-実装担当は、確認でBlockingとなったRepository直下`docs/`の同期を完了した。アプリケーションコードを変更せず、固定アプリケーションHEADのPages成果物を生成・コミットし、同一条件で2回buildして再現性を確認した。
-
-新しいチャットで`確認`と送られたら、Pull Request `#4`の最新HEAD、差分、通常CI、ブラウザ監査、生成済み`docs/`を独立検証する。合格時のみ管理文書更新、merge commit方式のマージ、`work`同期、公開状態確認へ進む。
-
-## Objective
-
-`JLL-FE-003`の実装、ブラウザ挙動、生成済みPages成果物、CI、管理文書の整合性を固定HEADで独立確認する。
-
-## Repository state
-
-- Repository: `Shota-Zaki/Japan-Learning-Lab`
-- Base Branch: `main`
-- Permanent working Branch: `work`
-- Application directory: `prototype/`
-- Current Task: `JLL-FE-003`
-- Task status: `review_ready`
-- Pull Request: `#4`
-- Pull Request state: open / draft / unmerged
-- Start HEAD: `1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
-- Fixed application / test / browser audit HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Pages output synchronization commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-- Standard workflow restoration commit: `6cc846a4f5b5af97f836f845b96c1a94b8225474`
-- Current `work` HEAD: この管理文書更新commit。確認開始時にGitHub実状態から固定する
-
-## Implemented fix
-
-- 固定アプリケーションHEADを`GITHUB_SHA`へ指定してPages buildを実行
-- Repository直下`docs/`を完全な生成結果へ置換
-- `docs/build-info.json` sourceRevisionを固定HEADへ更新
-- `docs/index.html`と`docs/404.html`を最新hash付きassetsへ更新
-- `docs/assets/index-BJI--2FR.js`を追加
-- `docs/assets/index-DSeV1n5v.css`へ置換
-- stale `docs/assets/index-YqsZizrf.js`を削除
-- 同一条件のPages buildを2回実行し、`diff -qr`で差分なしを確認
-- 一時同期workflowを標準Pages workflowへ復元
-- アプリケーションコード、CSS、テスト、監査コード、問題データは変更していない
-
-## Implementation verification evidence
-
-- One-shot synchronization workflow: `31145825406` / run `383` / success
-- Synchronization job: `92764918921` / success
-- Tests: 60 / 60 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Browser audit: 3 layouts × 375px / 768px / 1,280px、合計9 scenarios success
-- Reproducibility: same fixed-revision Pages build twice / no diff
-- Fixed sourceRevision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Generated assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
-- Pages output commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
-
-## Previously passed browser evidence
-
-- Pattern B: 単元カード全幅、左側2カード縦積み、右側開催回カード
-- 768px left-card gap: `8.8px` / row gap: `8.8px`
-- 1,280px left-card gap: `8.8px` / row gap: `8.8px`
-- 375px: 既存DOM順の1列
-- Final rendered source count: `1997`
-- Final option counts: `[3, 24, 28, 4]`
-- Horizontal overflow: 0
-- Internal scrollbar / clipping: 0
-- Raw English unit identifier / unresolved unit label: 0
-- Console warning/error: 0
-- Failed network request: 0
-- Keyboard checkbox operation: success
-- DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
-
-## Required independent verification
-
-1. Repository、`main`、`work`、Pull Request `#4`の実状態を再取得する。
-2. 最新PR HEADを固定し、`main`との差分を確認する。
-3. 一時workflowが残っておらず、`.github/workflows/pages.yml`が標準workflowであることを確認する。
-4. `docs/build-info.json` sourceRevisionが`66a03576b5b9ac2c86c35c63045f923137f08a0c`であることを確認する。
-5. `docs/index.html`と`docs/404.html`が`index-BJI--2FR.js` / `index-DSeV1n5v.css`を参照することを確認する。
-6. stale assetsが削除されていることを確認する。
-7. Pages output commit `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`の差分が生成済み`docs/`だけであることを確認する。
-8. 最新standard workflowとbrowser workflowのstatus、job、artifact ID、digestを確認する。
-9. Tests、TypeScript、ESLint、normal build、Pages build、9-scenario browser auditを独立確認する。
-10. PC 1,280px、tablet 768px、mobile 375pxの証拠を確認する。
-11. Pull Request commentsと未解決review threadsを確認する。
-12. Blocking問題がなければ確認合格処理を一括実行する。
-
-## Required commands
-
-```bash
-cd prototype
-npm ci
-npm test
-npm run typecheck
-npm run lint
-npm run build
-GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages
-npm run audit:fe-filter-layouts
-```
-
-同じ`GITHUB_SHA`でPages buildを再実行し、Repositoryの`docs/`と生成結果に差分がないことも確認する。
-
-## Change allowed for confirmation
-
-- `task-list.md`
-- `NEXT_WORK.md`
-- レビュー結果と検証証拠を記録する管理文書
-- 明白な管理メタデータの不一致
-
-## Change forbidden for confirmation
-
-- `prototype/src/`のアプリケーションコード
-- レイアウトCSS
-- テスト、browser audit、workflow
-- 問題データ、問題本文、選択肢、正答、解説、図表
-- `JLL-FE-004`の先行実装
-- レッスン内容作成の先行実装
-- Java Learning Labの実装
-- Blocking問題がある状態でのマージ
-- Squash merge、rebase merge、force push
-- `work` Branchの削除
-
-## Pages policy
-
-- Pages build: 必須
-- Repository `docs/` synchronization: 完了
-- Pages artifact upload: 最新standard workflowで確認
-- Pages deployment: temporary skip
-- Public URL revision verification: temporary skip
-- Pages障害だけを理由に追加retryしない
-
-## Latest user requests queued after this task
-
-`JLL-FE-003`確認合格後、`JLL-FE-004`として次を実装する。
-
-- 問題文と解説の文字サイズ・太さ・構造に差を付ける
-- 模擬試験の残り時間を右上へ固定する
-- 2022年科目Aサンプルを通常演習へ入れない
-- `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
-
-その後はJavaへ進まず、`JLL-FE-LESSON-001`としてレッスン内容作成を優先する。
-
-## Work completion update targets for confirmation
-
-- `task-list.md`
-- `NEXT_WORK.md`
-- Pull Request `#4`
-- `main` merge commit
-- `work` synchronization
-- GitHub Pages result
-
-## Next user command
-
-`確認`
-''')
           PY
 
-      - name: Restore standard workflow and commit handoff
+      - name: Restore standard workflow and commit
         run: |
           set -euo pipefail
           git fetch origin main
           git show origin/main:.github/workflows/pages.yml > .github/workflows/pages.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add task-list.md NEXT_WORK.md .github/workflows/pages.yml
+          git add task-list.md .github/workflows/pages.yml
           git diff --cached --quiet && exit 0
           git commit -m "docs: mark JLL-FE-003 review ready [skip ci]"
           git push origin HEAD:work
