@@ -12,7 +12,7 @@
 
 実装担当。
 
-`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。確認フローでは、この管理文書を含む最新`main`を`work`へfast-forwardし、通常CIとPages再公開を確認してから引き渡す。
+`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。`work`同期後の最終Pages再検証も成功しており、JLL-FE-003は`completed`として確定している。
 
 ## Objective
 
@@ -36,19 +36,23 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Previous Final Pull Request HEAD: `66ba0a45ba2cb963bb96fba144021073fb66e279`
 - Previous merge commit: `90f33bbcb01792e22426123f90f454bf3a7e4134`
 - Previous confirmation input HEAD: `31332628e5ad412c685c1e19f0c31eda99c51d43`
+- Previous fixed application / order-test HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
 - Previous audited application / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
 - Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
-- Previous Pages deployment: `31155340547` / run `403` / success
-- Main push CI after merge: no new run by design; `.github/workflows/pages.yml` triggers `push` only on `work`
 - Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final Pages verification: この管理文書commitの`work` pushで`pages.yml`を再実行し、公開Revision一致を確認する
-- JLL-FE-004 Start HEAD: 実装開始時に、確認完了後の最新`work` HEADをGitHub実状態から固定する
+- Final post-merge Pages workflow: `31157149416` / run `405` / success
+- Final post-merge build job: `92799024993` / success
+- Final post-merge deploy job: `92799145662` / success
+- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Final Pages evidence synchronization HEAD: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- Final public smoke check: success
+- JLL-FE-004 Start HEAD: 実装開始時に、この確認完了後の最新`work` HEADをGitHub実状態から固定する
 
 ## Required startup checks
 
 実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。
 
-1. `main`と`work`の最新HEADおよび、確認完了後にPages証拠同期commitが`work`へ追加されている場合はその関係
+1. `main`と`work`の最新HEAD、および`work`がJLL-FE-003完了後の管理・Pages証拠commitだけ`main`より進んでいること
 2. PR #4がmergedであること
 3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること
 4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`
