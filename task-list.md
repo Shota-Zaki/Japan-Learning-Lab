@@ -14,7 +14,7 @@ FEレッスン内容を作成する
 
 ### Status
 
-`review_ready`
+`completed`
 
 ### Purpose
 
@@ -31,6 +31,7 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - 375px / 768px / 1,280pxのレッスン専用browser auditとスクリーンショット証拠を追加
 - Pages buildではwebfontを除去する既存仕様のため、CIスクリーンショット時のみ日本語fallback fontを導入して実表示を確認
 - `docs/`生成、Draft PR、CI、Pages公開、管理文書を同期
+- 確認担当が固定実装HEAD、PR merge ref、後続差分、CIログ、browser artifact実画像、Pages deployログを独立照合し合格判定
 
 ### Out of scope respected
 
@@ -40,11 +41,11 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - `JLL-FE-004`で確定した演習・模試UIの目的外変更なし
 - `JLL-FE-003`で確定した絞り込み順序・配置・単元名表示の変更なし
 - 学習進捗・レッスン完了状態の永続保存なし
-- 実装担当による`main` merge、Ready for review化、squash / rebase / force push / `work`削除なし
+- squash / rebase / force push / `work`削除なし
 
 ### Completion criteria result
 
-実装担当の受入条件は達成し、確認担当へ独立確認可能な状態。Blocking findingなし。
+確認担当の独立確認に合格。Blocking findingなし。merge commit方式でPR #6を`main`へ統合し、`work`同期と最終Pages確認を行う。
 
 ### Dependencies
 
@@ -59,9 +60,10 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - Number: `#6`
 - Base: `main`
 - Head: `work`
-- State: open / Draft
-- Mergeable: true（実装中最終確認時点）
-- 実装担当ではReady for review化・mergeを行わない
+- Confirmation result: pass
+- Mergeable: true（確認時点）
+- Merge method: merge commit
+- この管理記録後に確認担当がReady for review化してmergeする
 
 ### Start HEAD
 
@@ -72,14 +74,19 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - First complete lesson routing source: `db8323921ee08e8fbe6df26c771ea9eed0d8480c`
 - Final audited implementation / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
 - Final successful Pages evidence synchronization HEAD before management handoff: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
-- この`review_ready`管理文書更新は`[skip ci]`の管理commitとして上記以後に追加される。確認担当は最新`work` HEADをGitHub実状態から再取得し、アプリ実装の固定確認基準は`614827ca62be5b72885b7774dc4f621975a6482f`とする
+- Independent confirmation pre-record work HEAD: `6c53a4da57d926cdc2abac62ef8d3a7b6932592b`
+- `614827ca62be5b72885b7774dc4f621975a6482f`から上記確認HEADまでの変更は`NEXT_WORK.md`、`PROJECT_CONTEXT.md`、`task-list.md`、`docs/build-info.json`、`prototype/qa/pages-deployment.json`のみで、アプリ実装差分なし
+- Confirmation management HEAD: この合格記録と`NEXT_WORK.md`更新後の最新`work` HEADをmerge直前に固定する
 
 ### Validation result
 
-`passed / review_ready`
+`passed / completed`
 
+- Review threads: 0
+- Submitted reviews: 0
+- PR mergeable before confirmation management update: true
 - Node.js: 22.23.1
-- `npm ci`: success
+- `npm ci`: success（固定PR merge ref CIログで独立確認）
 - `npm run verify:fe`: success
 - Tests: 67 / 67 passed
 - TypeScript: success
@@ -87,25 +94,28 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - Normal build: success
 - Pages build: success
 - PR Pages build workflow on final audited source: `31188040484` / run `491` / success
+- PR CI checkout merge ref: `c388e165344da10bddbe61f1bcd83b1e46a782a0` = `main` `36641bb1c183ecd489d15280f3070aa98fd1868d` + source `614827ca62be5b72885b7774dc4f621975a6482f`
 - Existing filter browser workflow: `31188040386` / run `102` / success
 - Existing mock timer browser workflow: `31188040635` / run `26` / success
 - FE lesson browser workflow: `31188040404` / run `3` / success
 - FE lesson browser artifact: `8997593877`
 - Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
-- Browser audit PR merge-ref sourceRevision: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
-- 375px / 768px / 1,280pxで概要と本文リーダーを検査
+- 375px / 768px / 1,280pxで概要と本文リーダーを独立実画像確認
 - 3サイズともhorizontal overflowなし、確認問題の最小選択肢高さ54px、開始ボタン48px
 - 375px / 768pxは本文ナビゲーションが下段へstack、1,280pxは本文右側へ配置
 - code / table / 4 sections / 5 lesson navigation links / 4 choicesの存在を確認
 - browser console error / runtime exception / failed requestなし
-- 6枚の最終スクリーンショットを実画像確認し、日本語表示、文字切れ、横はみ出し、カード重なりにBlocking issueなし
+- 日本語表示、文字切れ、横はみ出し、カード重なりにBlocking issueなし
+- レッスンrouteはpractice / history / sessionから分離され、永続完了状態を作らない実装をソース確認
+- 公式問題データファイルはPR変更対象外
 - 初回lesson audit失敗は読込途中の`document.body` null参照という監査コード側の問題で、`31b20188b0d7111976d3c8d9590e16031bfa21a2`で修正済み
 - Pagesの既存webfont除去仕様によりUbuntu screenshotが日本語glyphを持たなかったため、CI audit専用fallback fontを`614827ca62be5b72885b7774dc4f621975a6482f`で追加。アプリ配信仕様は変更していない
 - Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22の検証失敗ではなくNon-blocking
+- 確認環境の外向きDNS制約によりlocal cloneからの再実行は不可。固定PR merge refのCIログ、browser artifact、Repository差分、Pages deploy時の公開HTTP smoke checkを独立照合した
 
 ### Merge commit
 
-未merge。確認担当のみが合格後にmerge commit方式で`main`へmergeする。
+確認合格。PR #6をmerge commit方式で統合後に最終SHAを記録する。
 
 ### GitHub Pages result
 
@@ -120,10 +130,11 @@ FE演習UI修正完了後、Java実装へ進まず、学習用レッスンの最
 - Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
 - Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- merge後に`work`を最新`main`へfast-forward同期し、最終Pages再公開を確認して追記する
 
 ### Next task
 
-`JLL-FE-QBANK-001`。ただし`JLL-FE-LESSON-001`が確認担当に合格しmerge完了するまで開始しない。
+`JLL-FE-QBANK-001`。PR #6 merge、`work`同期、最終Pages確認完了後に開始可能。
 
 ---
 
@@ -417,79 +428,3 @@ FE優先タスク完了後、最新ユーザー指示とRepository実状態か�
 ### Next task
 
 着手時に決定する。
-
----
-
-## Completed task
-
-### Task ID
-
-`JLL-FE-003`
-
-### Status
-
-`completed`
-
-### Purpose
-
-FE絞り込みの余白を減らし、完全日本語単元名と「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」の順序を確定した。
-
-### Branch
-
-`work`
-
-### Pull Request
-
-`#4` / merged / merge commit方式
-
-### Start HEAD
-
-`1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
-
-### Current HEAD
-
-Final PR HEAD `66ba0a45ba2cb963bb96fba144021073fb66e279`。Final Pages source `dc290e1ba9a0a8101fabf187ac52add2730851c4`。
-
-### Validation result
-
-`passed / completed`。tests 60 / 60、TypeScript、ESLint、normal build、Pages build、9 browser scenarios、DOM / keyboard order、subject selector independence、horizontal overflow、unit-label verification、console/network checksを確認。
-
-### Merge commit
-
-`90f33bbcb01792e22426123f90f454bf3a7e4134`
-
-### GitHub Pages result
-
-Workflow `31157266500` / run `406` / success。Public smoke check success。
-
-### Next task
-
-`JLL-FE-004`
-
----
-
-## Completed task summary
-
-### JLL-FE-002
-
-- Status: `completed`
-- Branch: `work`
-- Pull Request: `#3` / merged
-- Start HEAD: Repository履歴を参照
-- Current HEAD: Final PR HEAD `aaac236ab887c7a55f0491cf40a9c88824e3507b`
-- Validation result: tests 56 / 56、TypeScript、ESLint、build、Pages build、9 browser scenarios success
-- Merge commit: `c01be523eb78d0a4ce9d7e6c8cf13eeb7868b3a8`
-- GitHub Pages result: completed / task history参照
-- Next task: `JLL-FE-003`
-
-### JLL-FE-001
-
-- Status: `completed`
-- Branch: `work`
-- Pull Request: `#1` / merged
-- Start HEAD: Repository履歴を参照
-- Current HEAD: Final PR HEAD `b50b5b2f301e135d7140aee015a41c12e8b62ab8`
-- Validation result: tests 52 / 52、TypeScript、ESLint、build、Pages build、PC / tablet / mobile browser review success
-- Merge commit: `82b7a01c042f339b5eae019f851905ce7505b39a`
-- GitHub Pages result: completed / task history参照
-- Next task: `JLL-FE-002`
