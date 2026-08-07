@@ -1,10 +1,14 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App.jsx";
+import { AppV5 } from "./AppV5.jsx";
 import "./styles.css";
+import "./fe-v5.css";
+import "./fe-filter-variants.css";
+import "./fe-result-review.css";
+import "./fe-session-enhancements.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <AppV5 />
   </React.StrictMode>,
 );

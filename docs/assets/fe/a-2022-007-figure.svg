@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 620" role="img" aria-labelledby="title desc">
+  <title id="title">ハッシュ表の配列位置</title>
+  <desc id="desc">位置0、1、2、省略、11、12に対応する空の配列を示す。</desc>
+  <rect width="620" height="620" fill="white"/>
+  <g font-family="sans-serif" fill="#111" stroke="#111" stroke-width="3">
+    <text x="175" y="55" font-size="30" text-anchor="middle" stroke="none">位置</text>
+    <text x="390" y="55" font-size="30" text-anchor="middle" stroke="none">配列</text>
+    <rect x="255" y="75" width="270" height="450" fill="white"/>
+    <path d="M255 135 H525 M255 195 H525 M255 255 H525 M255 405 H525 M255 465 H525" fill="none"/>
+    <g font-size="30" text-anchor="middle" stroke="none">
+      <text x="175" y="115">0</text>
+      <text x="175" y="175">1</text>
+      <text x="175" y="235">2</text>
+      <text x="175" y="330">⋮</text>
+      <text x="390" y="330">⋮</text>
+      <text x="175" y="445">11</text>
+      <text x="175" y="505">12</text>
+    </g>
+  </g>
+</svg>

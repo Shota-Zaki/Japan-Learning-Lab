@@ -35,7 +35,9 @@ function mergeSessions(remoteSessions, localSessions) {
 export function createFeSessionStore({
   storage = globalThis.localStorage,
   fetchImpl = globalThis.fetch?.bind(globalThis),
+  cloudSync = import.meta.env?.MODE !== "pages",
 } = {}) {
+  const remoteFetch = cloudSync ? fetchImpl : null;
   let saveQueue = Promise.resolve(false);
 
   function getDeviceId() {
@@ -49,10 +51,10 @@ export function createFeSessionStore({
 
   async function list(questionBank) {
     const local = safeReadCache(storage, questionBank);
-    if (!fetchImpl) return { sessions: local.sessions, source: "device", recovered: local.recovered };
+    if (!remoteFetch) return { sessions: local.sessions, source: "device", recovered: local.recovered };
 
     try {
-      const response = await fetchImpl(`/api/fe/sessions?deviceId=${encodeURIComponent(getDeviceId())}`, {
+      const response = await remoteFetch(`/api/fe/sessions?deviceId=${encodeURIComponent(getDeviceId())}`, {
         headers: { accept: "application/json" },
       });
       if (!response.ok) throw new Error(`Session list failed: ${response.status}`);
@@ -71,8 +73,8 @@ export function createFeSessionStore({
   }
 
   async function saveRemote(session) {
-    if (!fetchImpl) return false;
-    const response = await fetchImpl(`/api/fe/sessions/${encodeURIComponent(session.id)}?deviceId=${encodeURIComponent(getDeviceId())}`, {
+    if (!remoteFetch) return false;
+    const response = await remoteFetch(`/api/fe/sessions/${encodeURIComponent(session.id)}?deviceId=${encodeURIComponent(getDeviceId())}`, {
       method: "PUT",
       headers: { "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify(session),
@@ -89,8 +91,8 @@ export function createFeSessionStore({
   }
 
   async function clear() {
-    if (fetchImpl) {
-      const response = await fetchImpl(`/api/fe/sessions?deviceId=${encodeURIComponent(getDeviceId())}`, { method: "DELETE" });
+    if (remoteFetch) {
+      const response = await remoteFetch(`/api/fe/sessions?deviceId=${encodeURIComponent(getDeviceId())}`, { method: "DELETE" });
       if (!response.ok) throw new Error(`Session reset failed: ${response.status}`);
     }
     storage.removeItem(SESSION_CACHE_KEY);

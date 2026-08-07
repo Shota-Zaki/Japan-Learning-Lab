@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "sync:fe": "node scripts/sync-fe-question-bank.mjs",
-    "build": "vite build && node scripts/prepare-sites-build.mjs && node scripts/prepare-fe-migrations.mjs",
+    "sync:fe": "node scripts/sync-fe-question-bank.mjs && node scripts/complete-fe-sample-set.mjs && node scripts/validate-fe-question-bank.mjs",
+    "build": "npm run sync:fe && vite build && node scripts/prepare-sites-build.mjs && node scripts/prepare-fe-migrations.mjs",
+    "build:pages": "npm run sync:fe && vite build --mode pages && node scripts/prepare-pages-build.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src worker tests scripts vite.config.mjs",
     "test": "node --test tests/*.test.mjs",
-    "test:sites": "npm test"
+    "test:sites": "npm test",
+    "verify:fe": "npm run build && npm test && npm run typecheck && npm run lint && npm run build:pages"
   },
   "dependencies": {
     "@fontsource-variable/noto-sans-jp": "^5.3.0",

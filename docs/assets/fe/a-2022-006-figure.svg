@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">配列変換の流れ図と変換前後の配列</title>
+  <desc id="desc">二重ループの流れ図、配列Aの星印配置、実行後の配列Bの星印配置を示す。</desc>
+  <rect width="1400" height="760" fill="white"/>
+  <g font-family="sans-serif" fill="#111" stroke="#111" stroke-width="3">
+    <g fill="white">
+      <rect x="70" y="55" width="250" height="58" rx="29"/>
+      <path d="M70 145 H320 L350 175 V230 H40 V175 Z"/>
+      <path d="M70 260 H320 L350 290 V345 H40 V290 Z"/>
+      <rect x="65" y="375" width="260" height="70"/>
+      <rect x="95" y="390" width="200" height="38"/>
+      <path d="M40 475 H350 V535 L320 565 H70 L40 535 Z"/>
+      <path d="M40 595 H350 V655 L320 685 H70 L40 655 Z"/>
+      <rect x="70" y="700" width="250" height="50" rx="25"/>
+    </g>
+    <g fill="none">
+      <path d="M195 113 V145 M195 230 V260 M195 345 V375 M195 445 V475 M195 565 V595 M195 685 V700"/>
+    </g>
+    <g font-size="25" text-anchor="middle" stroke="none">
+      <text x="195" y="91">開始</text>
+      <text x="195" y="182">ループ 1</text><text x="195" y="214">i：0，1，7</text>
+      <text x="195" y="297">ループ 2</text><text x="195" y="329">j：0，1，7</text>
+      <text x="195" y="417">a</text>
+      <text x="195" y="526">ループ 2</text>
+      <text x="195" y="646">ループ 1</text>
+      <text x="195" y="733">終了</text>
+      <text x="195" y="750" font-size="21">図1　流れ図</text>
+    </g>
+  </g>
+
+  <g font-family="sans-serif" fill="#111" stroke="#111" stroke-width="2">
+    <g transform="translate(470 130)">
+      <text x="185" y="-55" font-size="25" text-anchor="middle" stroke="none">j</text>
+      <path d="M55 -42 H315 M315 -42 l-15 -10 M315 -42 l-15 10" fill="none"/>
+      <text x="10" y="185" font-size="25" text-anchor="middle" stroke="none">i</text>
+      <path d="M30 5 V315 M30 315 l-10 -15 M30 315 l10 -15" fill="none"/>
+      <g fill="white">
+        <rect x="55" y="0" width="280" height="280"/>
+      </g>
+      <g fill="none">
+        <path d="M90 0 V280 M125 0 V280 M160 0 V280 M195 0 V280 M230 0 V280 M265 0 V280 M300 0 V280"/>
+        <path d="M55 35 H335 M55 70 H335 M55 105 H335 M55 140 H335 M55 175 H335 M55 210 H335 M55 245 H335"/>
+      </g>
+      <g font-size="21" text-anchor="middle" stroke="none">
+        <text x="72" y="-10">0</text><text x="107" y="-10">1</text><text x="142" y="-10">2</text><text x="177" y="-10">3</text><text x="212" y="-10">4</text><text x="247" y="-10">5</text><text x="282" y="-10">6</text><text x="317" y="-10">7</text>
+        <text x="43" y="24">0</text><text x="43" y="59">1</text><text x="43" y="94">2</text><text x="43" y="129">3</text><text x="43" y="164">4</text><text x="43" y="199">5</text><text x="43" y="234">6</text><text x="43" y="269">7</text>
+        <text x="107" y="21">＊</text><text x="142" y="21">＊</text><text x="177" y="21">＊</text><text x="212" y="21">＊</text><text x="247" y="21">＊</text><text x="282" y="21">＊</text>
+        <text x="107" y="56">＊</text><text x="107" y="91">＊</text>
+        <text x="107" y="126">＊</text><text x="142" y="126">＊</text><text x="177" y="126">＊</text><text x="212" y="126">＊</text>
+        <text x="107" y="161">＊</text><text x="107" y="196">＊</text><text x="107" y="231">＊</text><text x="107" y="266">＊</text>
+        <text x="195" y="325" font-size="24">図2　配列Aの状態</text>
+      </g>
+    </g>
+
+    <g transform="translate(910 130)">
+      <text x="185" y="-55" font-size="25" text-anchor="middle" stroke="none">j</text>
+      <path d="M55 -42 H315 M315 -42 l-15 -10 M315 -42 l-15 10" fill="none"/>
+      <text x="10" y="185" font-size="25" text-anchor="middle" stroke="none">i</text>
+      <path d="M30 5 V315 M30 315 l-10 -15 M30 315 l10 -15" fill="none"/>
+      <g fill="white"><rect x="55" y="0" width="280" height="280"/></g>
+      <g fill="none">
+        <path d="M90 0 V280 M125 0 V280 M160 0 V280 M195 0 V280 M230 0 V280 M265 0 V280 M300 0 V280"/>
+        <path d="M55 35 H335 M55 70 H335 M55 105 H335 M55 140 H335 M55 175 H335 M55 210 H335 M55 245 H335"/>
+      </g>
+      <g font-size="21" text-anchor="middle" stroke="none">
+        <text x="72" y="-10">0</text><text x="107" y="-10">1</text><text x="142" y="-10">2</text><text x="177" y="-10">3</text><text x="212" y="-10">4</text><text x="247" y="-10">5</text><text x="282" y="-10">6</text><text x="317" y="-10">7</text>
+        <text x="43" y="24">0</text><text x="43" y="59">1</text><text x="43" y="94">2</text><text x="43" y="129">3</text><text x="43" y="164">4</text><text x="43" y="199">5</text><text x="43" y="234">6</text><text x="43" y="269">7</text>
+        <text x="72" y="56">＊</text><text x="107" y="56">＊</text><text x="142" y="56">＊</text><text x="177" y="56">＊</text><text x="212" y="56">＊</text><text x="247" y="56">＊</text><text x="282" y="56">＊</text><text x="317" y="56">＊</text>
+        <text x="212" y="91">＊</text><text x="317" y="91">＊</text>
+        <text x="212" y="126">＊</text><text x="317" y="126">＊</text>
+        <text x="212" y="161">＊</text><text x="317" y="161">＊</text>
+        <text x="317" y="196">＊</text><text x="317" y="231">＊</text><text x="317" y="266">＊</text>
+        <text x="195" y="325" font-size="24">図3　実行後の配列Bの状態</text>
+      </g>
+    </g>
+  </g>
+
+  <g font-family="sans-serif" fill="#111" font-size="24">
+    <text x="470" y="560">（注）ループ端の繰返し指定は、</text>
+    <text x="535" y="595">変数名：初期値，増分，終値</text>
+    <text x="535" y="630">を示す。</text>
+  </g>
+</svg>

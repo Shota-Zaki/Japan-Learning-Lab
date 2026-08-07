@@ -1,68 +1,109 @@
-# Java Learning Lab Bronzeデータ移行・画面接続指示
+# Prototype Next Work
 
-## 現在地
+Repository全体の作業状態は、Rootの`task-list.md`と`NEXT_WORK.md`を正本とする。
 
-Java Learning Labの初期監査と基盤実装を開始済み。
+## Current Task
 
-実装済み:
+- Task ID: `JLL-FE-001`
+- Status: `review_ready`
+- Next role: 確認担当
+- Branch: `work`
+- Pull Request: `#1` Draft / Open / Unmerged
+- Fixed implementation HEAD: `56482206a7aa24910148aff661fb0ab598316261`
 
-- Java Bronzeの確認済みカタログ
-  - 分野別演習4セット・107問
-  - 模試2セット・120問
-- Java専用セッションモデル
-- 単一正答・複数正答の集合一致判定
-- 回答確定後の不変性
-- 下書き、見直し、一時停止、再開、完了、復習集合、保存データ正規化
-- FEと分離した端末保存キー
-- Java専用クラウドAPI `/api/java/sessions`
-- Java専用D1テーブル `java_sessions`
-- Javaセッション自動テスト9件
-- 初期監査文書 `docs/java-learning-lab/audit.md`
+管理文書更新後の最新`work` HEADは、確認開始時にPull Request #1から再取得する。
 
-## 目的
+## Correction completed
 
-移行元のJava Bronze問題を内容・ID・選択肢順・正答・解説を変えずに変換し、Java Learning Labの実画面へ接続する。
+固定同期元では、2022年12月公開の科目Aサンプル問5、問6、問7について、公式冊子に存在する図表がデータ化されていなかった。
 
-## 実施内容
+次を実施した。
 
-1. `Shota-Zaki/Engineer-License-Lab` の `main` にある `docs/java/data/questions.js` を入力として、Bronze対象だけを移行する同期スクリプトを追加する。
-2. 対象を次に固定する。
-   - `bronze-p1`: 34問
-   - `bronze-p3`: 22問
-   - `bronze-p5`: 20問
-   - `bronze-p2`: 31問
-   - `bronze-exam-a`: 60問
-   - `bronze-exam-b`: 60問
-3. 変換後JSONについて次を自動検査する。
-   - 合計227問
-   - ID重複なし
-   - 各セット件数一致
-   - 選択肢IDと表示順の保持
-   - 正答IDが選択肢内に存在
-   - 単一・複数正答の保持
-   - 問題本文・コード・解説の欠落なし
-4. Java Learning Labの既存プレースホルダーを実フローへ置き換える。
-   - Bronzeコース選択
-   - 分野別演習／模試選択
-   - 問題数・復習条件設定
-   - 回答確定・解説
-   - 前後移動・未回答移動・見直し
-   - 一時停止・再開・再読込復元
-   - 結果・履歴・復習・再挑戦
-5. URLを追加する。
-   - `/engineer/java/lessons/`
-   - `/engineer/java/practice/`
-   - `/engineer/java/practice/session/`
-   - `/engineer/java/history/`
-6. Javaの画面では学習時間、残り時間、所要時間を表示しない。
-7. FE Learning Labの保存・再開・履歴・復習・深いURL・レスポンシブ表示を回帰させない。
-8. 375px、768px、1280px以上で主要フローを確認し、全自動テスト、TypeScript、ESLint、production buildを通す。
-9. 非公開Sitesへデプロイし、Javaの深いURL、D1保存、履歴復元、ブラウザ警告・エラー0件を確認する。
+- 問5、問6、問7の補完SVGを`public/assets/fe/`へ追加
+- 同期時に該当問題へだけ補完図表を付与
+- 問題、選択肢、HTML、参照画像の正規化処理を統合
+- Pagesのベースパスに対応したローカル画像解決
+- 問5、問6、問7の画像参照を自動テストで固定
+- 問9は公式冊子上で図表のないテキスト問題であるため、以前の図表必須要件を訂正
+- 問9の問題文、4選択肢、正答を自動テストで固定
+- 公開問題JSONと3 SVGを検証するPagesスモークテストを追加
 
-## Java Silverの扱い
+## Verification evidence
 
-Java Silver SE 17はまだ公開実装しない。全単元件数、問題ID、選択肢順、正答ID、解説レンダリング境界の監査が完了した単元から段階的に有効化する。
+### Pull Request workflow
 
-## 完了報告
+- Run ID: `31077350598`
+- Run number: `162`
+- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
+- Result: success
+- Tests: 43 total / 43 passed
+- TypeScript: success
+- ESLint: 0 errors / 1 existing warning
+- Normal build: success
+- Pages build: success
 
-固定HEAD、移行元SHA、対象件数、重複検査、実装導線、保存仕様、テスト結果、レスポンシブ確認、デプロイ先、FE回帰結果、Silver未実装範囲を明記する。
+### Public deployment
+
+- Run ID: `31077346989`
+- Run number: `161`
+- Source revision: `56482206a7aa24910148aff661fb0ab598316261`
+- Deploy: success
+- Public smoke check: success
+- Published Q5/Q6/Q7 SVG fetch: success
+- Evidence: `qa/pages-deployment.json`
+
+## Review target files
+
+1. `scripts/complete-fe-sample-set.mjs`
+2. `src/FeRichContent.jsx`
+3. `tests/fe-official-sample.test.mjs`
+4. `public/assets/fe/a-2022-005-figure.svg`
+5. `public/assets/fe/a-2022-006-figure.svg`
+6. `public/assets/fe/a-2022-007-figure.svg`
+7. `public/data/fe-official-past-questions.json`
+8. `../.github/workflows/pages.yml`
+9. `../docs/`
+10. `qa/fe-sample-figure-fix-2026-08-06/audit.md`
+
+## Mandatory validation
+
+```bash
+npm ci
+npm run verify:fe
+```
+
+追加で次を独立確認する。
+
+- 科目A 60問、科目B 20問
+- 問5、問6、問7の`image`ブロックと公開SVG
+- 問9のテキスト問題構成
+- 375px、768px、1280px以上で問5、問6、問7を表示
+- 図表が親幅へ収まり、ページ全体の横スクロールがないこと
+- 問題文、選択肢、正答の維持
+- Console error、Console warning、HTTP error、Request failure
+- Draft PR #1の最新CI
+- 最新HEAD相当のGitHub Pages公開
+
+## Existing non-blocking warning
+
+`src/FeSessionView.jsx`に`react-hooks/exhaustive-deps` warningが1件ある。
+
+今回の図表修正による新規errorではない。確認担当は、動作影響またはBlocking性を独立判断する。
+
+## Forbidden changes for confirmation role
+
+- アプリケーションコード、SVG、テスト、設定の修正
+- 図表必須テストの削除、skip、緩和
+- 問5、問6、問7の除外または別問題への置換
+- 60問未満または20問未満で固定サンプル模試を開始させること
+- Java Learning Labの実装
+- Squash merge、rebase merge、force push
+- `work` Branchの削除
+
+問題がある場合はコードを直さず、Root管理文書を`needs_fix`へ戻して実装担当向けの修正指示を作成する。
+
+## Completion Handoff
+
+合格時は、Rootの手順に従って管理文書更新、merge commit方式のマージ、`main` CI確認、`work`同期、Pages再公開確認まで一括で行う。
+
+次のユーザーコマンドは`確認`。
