@@ -44,6 +44,8 @@ jobs:
             git rm -f .github/workflows/apply-work-edit.yml
             git add .work-edit-failure.log
             git commit -m "test: record JLL-FE-003 edit failure [skip ci]"
+            git fetch origin work
+            git rebase origin/work
             git push origin HEAD:work
             exit ${status}
           fi
@@ -55,4 +57,6 @@ jobs:
           rm -f .work-edit-failure.log
           git add -A
           git commit -m "feat: refine FE filter density and unit labels"
+          git fetch origin work
+          git rebase origin/work
           git push origin HEAD:work
