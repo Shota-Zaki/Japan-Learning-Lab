@@ -31,9 +31,12 @@ JLL-FE-004の既存修正を維持したまま、模擬試験開始直後の残�
 - Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
 - Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
 - PR merge ref used by browser evidence: `991017aa63c87ccf511a474e4047c0803bd7dd49`
+- Confirmation management source published by Pages: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Pages evidence synchronization HEAD after confirmation management update: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
 - `main` HEAD at confirmation start: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- PR review threads: 0
+- PR review threads at confirmation start: 0
 - PR remains unmerged
+- このfailure evidence同期commit以後の最新`work` / PR HEADはGitHub実状態を正本とする
 
 ## Blocking B2: mock timer can start above configured duration
 
@@ -74,7 +77,7 @@ Update automated verification so this regression cannot pass again.
 
 ## Independent confirmation evidence already passed
 
-- PR CI `Build and deploy GitHub Pages`: workflow `31181066806` / run `457` / success
+- PR CI at implementation source `c0f32f8`: `Build and deploy GitHub Pages` workflow `31181066806` / run `457` / success
   - `npm ci`: success
   - `npm run verify:fe`: success
   - tests: 63 / 63 passed
@@ -86,10 +89,12 @@ Update automated verification so this regression cannot pass again.
 - PR CI `Audit FE mock timer layout`: workflow `31181066801` / run `10` / success, but the evidence itself exposed Blocking B2 because it did not assert the timer upper bound
 - Browser evidence artifact: `8994787534`, digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
 - Existing layout checks: 375px / 768px / 1,280px all non-overlap; timer Y remains fixed after 180px scroll; normal topic timer/status/legacy timer counts are 0; no horizontal overflow; console messages and failed requests are empty
-- Current public Pages workflow: `31181063294` / run `456` / success
-- Current published sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Confirmation management PR CI at `b3a74e1`: Build run `463`, filter audit run `89`, mock timer audit run `13`, all success
+- Current public Pages workflow after confirmation management update: `31182227798` / run `462` / success
+- Current published sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Public/repository `build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
 - Public smoke check: success
-- Pages evidence synchronization `work` HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- Pages evidence synchronization HEAD: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
 
 ## Required verification after correction
 
