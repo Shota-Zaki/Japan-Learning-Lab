@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "fe-question-extraction-candidates-v1",
+  "snapshotDate": "2026-08-08",
+  "candidateQuestionCount": 160,
+  "repositoryReadyCount": 0,
+  "extractionPolicy": {
+    "ocrAllowed": false,
+    "requiredBeforeImport": [
+      "question_text_verified",
+      "four_choices_verified",
+      "official_answer_verified",
+      "figure_or_table_dependency_reviewed",
+      "third_party_material_reviewed",
+      "domain_and_unit_verified",
+      "explanation_quality_verified"
+    ]
+  },
+  "sources": [
+    {
+      "sourceId": "2009-06-exemption",
+      "year": 2009,
+      "periodLabel": "2009年6月 修了試験",
+      "sourceType": "official-exemption-exam",
+      "questionCount": 80,
+      "questionUrl": "https://www.ipa.go.jp/shiken/about/ug65p90000001fci-att/tokurei_Mondai_200906_FE.pdf",
+      "answerUrl": "https://www.ipa.go.jp/shiken/about/ug65p90000001fci-att/tokurei_ans_200906_FE.pdf",
+      "availability": "verified",
+      "answerMapping": "source_url_verified",
+      "questionTextLayer": "text_extractable_verified",
+      "extractionAudit": "sequential_question_numbers_1_to_80_verified",
+      "contentStatus": "candidate_only",
+      "repositoryReadyCount": 0,
+      "thirdPartyMaterialReview": "required_before_import"
+    },
+    {
+      "sourceId": "2009-07-exemption",
+      "year": 2009,
+      "periodLabel": "2009年7月 修了試験",
+      "sourceType": "official-exemption-exam",
+      "questionCount": 80,
+      "questionUrl": "https://www.ipa.go.jp/shiken/about/ug65p90000001fci-att/tokurei_Mondai_200907_FE.pdf",
+      "answerUrl": "https://www.ipa.go.jp/shiken/about/ug65p90000001fci-att/tokurei_ans_200907_FE.pdf",
+      "availability": "verified",
+      "answerMapping": "source_url_verified",
+      "questionTextLayer": "text_extractable_verified",
+      "extractionAudit": "sequential_question_numbers_1_to_80_verified",
+      "contentStatus": "candidate_only",
+      "repositoryReadyCount": 0,
+      "thirdPartyMaterialReview": "required_before_import"
+    }
+  ]
+}
