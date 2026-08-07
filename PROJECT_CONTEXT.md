@@ -86,7 +86,7 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 3. 2022年科目Aサンプルを通常演習の出題対象から除外する
 4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格判定済みである。確認入力HEADは`31332628e5ad412c685c1e19f0c31eda99c51d43`。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。PR `#4`はmerge commit方式で`main`へマージし、`work`を最新`main`へ同期する。merge commitは確認フロー完了時に`task-list.md`へ記録する。
+`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格した。PR `#4`はmerge commit方式で`main`へマージ済みで、Final Pull Request HEADは`66ba0a45ba2cb963bb96fba144021073fb66e279`、merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。
 
 JLL-FE-003の確認証拠:
 
@@ -94,11 +94,12 @@ JLL-FE-003の確認証拠:
 - Browser audit workflow: `31155342511` / run `63` / success
 - Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
 - Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
-- Pages deployment: workflow `31155340547` / run `403` / success
-- Public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Pages deployment before merge: workflow `31155340547` / run `403` / success
+- Pre-merge public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
 - Tests: 60 / 60 success
 - TypeScript、ESLint、normal build、Pages build: success
 - 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
+- merge後の`main` pushでは新規CI runなし。`.github/workflows/pages.yml`の`push`対象は`work`のみで、最終`work`同期時に再検証する
 
 `JLL-FE-004`完了後の優先順は次のとおり。
 
@@ -106,7 +107,7 @@ JLL-FE-003の確認証拠:
 2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。既存の進行中作業と競合しない時点で着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-`JLL-FE-001`と`JLL-FE-002`は確認合格し、merge commit方式で`main`へマージ済みである。`JLL-FE-003`も確認合格済みで、PR #4のmerge処理中である。
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済みである。
 
 FE問題数は次の区分を正確に使う。
 
@@ -245,7 +246,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
-絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で確認合格済みである。以後の追加変更は別Task IDとして管理する。
+絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で確認合格・merge済みである。以後の追加変更は別Task IDとして管理する。
 
 ## 11. Source data policy
 
