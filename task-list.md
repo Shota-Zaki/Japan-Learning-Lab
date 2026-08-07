@@ -73,8 +73,9 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 - Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
 - Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
 - Browser evidence PR merge ref: `991017aa63c87ccf511a474e4047c0803bd7dd49`
-- Confirmation `NEXT_WORK.md` needs-fix update HEAD: `34976261df454bb9446b21f0573f9043120753a9`
-- この管理文書更新後の最新`work` / PR HEADはGitHub実状態を正本とする
+- Confirmation management source published by Pages: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Pages evidence synchronization HEAD: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
+- Confirmation evidence management commits after Pages sync use `[skip ci]`; this file update後の最新`work` / PR HEADはGitHub実状態を正本とする
 
 ### Validation result
 
@@ -82,9 +83,10 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 Independent confirmation evidence:
 
-- `main` HEAD: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- PR #5: Draft / mergeable / review threads 0 / merge未実施
-- PR CI `Build and deploy GitHub Pages`: workflow `31181066806` / run `457` / success
+- `main` HEAD at confirmation start: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- PR #5: Draft / mergeable / merge未実施
+- Confirmation開始時のPR review threads: 0
+- PR CI `Build and deploy GitHub Pages` at implementation source: workflow `31181066806` / run `457` / success
 - PR CI `npm run verify:fe`: success / tests 63 passed / TypeScript success / ESLint success / normal build success / Pages build success
 - PR CI `Audit FE filter layout variants`: workflow `31181066826` / run `86` / success
 - JLL-FE-004専用PR CI `Audit FE mock timer layout`: workflow `31181066801` / run `10` / success
@@ -97,6 +99,7 @@ Independent confirmation evidence:
 - browser audit中のconsole message、failed requestなし
 - 問題本文と解説の視覚階層、2022年科目Aサンプルの通常`topic`除外と`mock`経路維持、`令和8年度 免除試験`表示と元データ非改変を差分・テストで確認
 - JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックの回帰監査はsuccess
+- Confirmation management source `b3a74e1`でもPR CIを再実行し、Build run `463`、filter audit run `89`、mock timer audit run `13`はすべてsuccess
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため追加タスク化不要
 - 確認環境の外向きDNS制約によりlocal cloneは不可だったため、GitHub Actions固定PR merge ref、GitHub差分、workflow log、browser artifact、Pages workflowを独立照合した
 
@@ -117,16 +120,16 @@ Independent confirmation evidence:
 
 ### GitHub Pages result
 
-- Current `work` Pages workflow: `31181063294` / run `456` / success
+- Current `work` Pages workflow after confirmation management update: `31182227798` / run `462` / success
 - Public smoke check: success
-- Published source Revision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Public `build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Repository `docs/build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31181063294` / run `456`
+- Published source Revision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Public `build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Repository `docs/build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31182227798` / run `462`
 - Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
-- `7979e7a`は公開結果の証拠更新だけで、`c0f32f8`からのアプリケーション差分はない
+- Pages evidence synchronization commit: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
+- `7b0c7d1`は公開結果の証拠更新だけで、`b3a74e1`からのアプリケーション差分はない
 
 ### Next task
 
@@ -523,7 +526,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
 - Pages evidence synchronization commit: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 - Pages temporary skip policy: removed
-- `work`は`main`同期後、確認用管理commitとPages証拠commitのみが追加された状態。アプリケーション差分はない
+- `work`は`main`同期後、確認用管理文書とPages証拠commitのみが追加された状態。アプリケーション差分はない
 
 ### Next task
 
