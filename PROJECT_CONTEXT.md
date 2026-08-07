@@ -77,38 +77,36 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-FE-003`であり、状態は`review_ready`である。
+現在の優先タスクは`JLL-FE-004`であり、状態は`planned`である。
 
-目的は、採用済みのFE絞り込みパターンBを既定表示にし、内容量の異なるカード間に生じる不要な空白を減らすとともに、canonical IDと実行時に日本語へ正規化された旧単元値を完全な日本語で、可能な限り1行、必要時は意味のまとまりで自然に折り返して表示することである。最新ユーザー指定により、絞り込みのDOM・キーボード順は「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」とする。
+目的は次の4点をFE演習へ反映することである。
 
-確認対象:
+1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付ける
+2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
+3. 2022年科目Aサンプルを通常演習の出題対象から除外する
+4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-- Pull Request: `#4` / open / draft / unmerged
-- Fixed application / order-test HEAD: `8e9c0dfcf5ad23e60a40abb090180c526d0347d9`
-- Latest audited workflow / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
-- Repository Pages output synchronization commit: `4cd677854fda9f4a4f204df5519e86f5600fc595`
-- Browser audit: workflow `31155342511` / run `63` / success / 9 scenarios
+`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格判定済みである。確認入力HEADは`31332628e5ad412c685c1e19f0c31eda99c51d43`。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。PR `#4`はmerge commit方式で`main`へマージし、`work`を最新`main`へ同期する。merge commitは確認フロー完了時に`task-list.md`へ記録する。
+
+JLL-FE-003の確認証拠:
+
+- PR build workflow: `31155342510` / run `404` / success
+- Browser audit workflow: `31155342511` / run `63` / success
 - Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
+- Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
 - Pages deployment: workflow `31155340547` / run `403` / success
-- Pages public revision check: `afa550a41d2776543445a3cb727731f6fb902608` / success
-- 受験科目は独立ブロックのまま変更しない
-- 分野と回答・復習状態を左側で縦積みする
-- 開催回・公開区分を右側の縦長領域として扱う
-- 単元は左右スタックの下に全幅カードとして配置する
-- カード高さを固定せず、内部スクロールを追加しない
-- 現在収録中のcanonical `unitId`と旧形式の実行時単元値を完全な日本語名へ対応付ける
-- 単元名は幅を有効利用して1行表示を優先する
-- 改行時は意味のまとまりに設定した候補位置だけを使用する
-- 375px、768px、1,280pxで検証する
-- 未解決単元名と英語ID露出はCIブラウザ監査で失敗させる
+- Public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Tests: 60 / 60 success
+- TypeScript、ESLint、normal build、Pages build: success
+- 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
 
-`JLL-FE-003`確認合格後の優先順は次のとおり。
+`JLL-FE-004`完了後の優先順は次のとおり。
 
-1. `JLL-FE-004`: 問題文と解説の視覚階層、模擬試験の固定残り時間、2022年科目Aサンプルの通常演習除外、`令和8年度 免除試験`表記
-2. `JLL-FE-LESSON-001`: FEレッスン内容作成
+1. `JLL-FE-LESSON-001`: FEレッスン内容作成
+2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。既存の進行中作業と競合しない時点で着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-`JLL-FE-001`と`JLL-FE-002`は確認合格し、merge commit方式で`main`へマージ済みである。
+`JLL-FE-001`と`JLL-FE-002`は確認合格し、merge commit方式で`main`へマージ済みである。`JLL-FE-003`も確認合格済みで、PR #4のmerge処理中である。
 
 FE問題数は次の区分を正確に使う。
 
@@ -247,7 +245,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
-絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で`review_ready`である。これ以外の追加変更は別Task IDとして管理する。
+絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で確認合格済みである。以後の追加変更は別Task IDとして管理する。
 
 ## 11. Source data policy
 
