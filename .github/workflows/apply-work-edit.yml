@@ -1,6 +1,8 @@
 name: Temporary repository edit runner
 
 on:
+  push:
+    branches: [work]
   workflow_dispatch:
 
 permissions:
@@ -13,28 +15,44 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply prepared repository edit
+      - name: Apply, verify, and publish prepared edit
         shell: bash
         run: |
-          set -euo pipefail
-          python .github/work-edit.py
+          set +e
+          : > /tmp/work-edit.log
+          python .github/work-edit.py 2>&1 | tee -a /tmp/work-edit.log
+          status=${PIPESTATUS[0]}
+          if [[ ${status} -eq 0 ]]; then
+            (cd prototype && npm ci) 2>&1 | tee -a /tmp/work-edit.log
+            status=${PIPESTATUS[0]}
+          fi
+          if [[ ${status} -eq 0 ]]; then
+            (cd prototype && npm run verify:fe) 2>&1 | tee -a /tmp/work-edit.log
+            status=${PIPESTATUS[0]}
+          fi
+          if [[ ${status} -eq 0 ]]; then
+            (cd prototype && npm run audit:fe-filter-layouts) 2>&1 | tee -a /tmp/work-edit.log
+            status=${PIPESTATUS[0]}
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [[ ${status} -ne 0 ]]; then
+            git reset --hard HEAD
+            cp /tmp/work-edit.log .work-edit-failure.log
+            git rm -f .github/workflows/apply-work-edit.yml
+            git add .work-edit-failure.log
+            git commit -m "test: record JLL-FE-003 edit failure [skip ci]"
+            git push origin HEAD:work
+            exit ${status}
+          fi
+
           rm -f .github/work-edit.py
           rm -f .github/workflows/apply-work-edit.yml
           rm -f .github/workflows/source-snapshot.yml
-      - name: Install dependencies
-        working-directory: prototype
-        run: npm ci
-      - name: Verify and build
-        working-directory: prototype
-        run: |
-          npm run verify:fe
-          npm run audit:fe-filter-layouts
-      - name: Commit generated implementation
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .source-snapshot-run.json
+          rm -f .work-edit-failure.log
           git add -A
           git commit -m "feat: refine FE filter density and unit labels"
           git push origin HEAD:work
