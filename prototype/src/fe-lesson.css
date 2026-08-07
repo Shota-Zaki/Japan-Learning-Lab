@@ -1,0 +1,439 @@
+.fe-lesson-app {
+  --fe-lesson-ink: #20343d;
+  --fe-lesson-muted: #60757f;
+  --fe-lesson-soft: #f3f9fb;
+  --fe-lesson-correct: #17663d;
+  --fe-lesson-wrong: #8a4a24;
+}
+
+.fe-lesson-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: start;
+}
+
+.fe-lesson-feature,
+.fe-lesson-outline,
+.fe-lesson-reader-head,
+.fe-lesson-section,
+.fe-lesson-check {
+  border: 1px solid var(--fe-border);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.fe-lesson-feature {
+  padding: clamp(20px, 4vw, 34px);
+}
+
+.fe-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.fe-lesson-meta > span {
+  border: 1px solid #bdd6e0;
+  border-radius: 999px;
+  background: var(--fe-lesson-soft);
+  padding: 6px 10px;
+  color: var(--fe-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fe-lesson-feature > h2,
+.fe-lesson-reader-head > h1 {
+  margin: 0;
+  color: var(--fe-lesson-ink);
+  line-height: 1.35;
+}
+
+.fe-lesson-feature > h2 {
+  font-size: clamp(25px, 3.4vw, 34px);
+}
+
+.fe-lesson-feature > p {
+  max-width: 66ch;
+  margin: 12px 0 0;
+  color: var(--fe-lesson-muted);
+  line-height: 1.9;
+}
+
+.fe-lesson-objectives {
+  margin-top: 26px;
+  border-top: 1px solid #dce8ed;
+  padding-top: 22px;
+}
+
+.fe-lesson-objectives h3,
+.fe-lesson-outline h2 {
+  margin: 0;
+  color: var(--fe-lesson-ink);
+  font-size: 17px;
+}
+
+.fe-lesson-objectives ul {
+  display: grid;
+  gap: 11px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fe-lesson-objectives li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  color: #314851;
+  line-height: 1.75;
+}
+
+.fe-lesson-objectives li svg,
+.fe-lesson-reader-goals svg {
+  margin-top: 3px;
+  color: var(--fe-strong);
+  flex: 0 0 auto;
+}
+
+.fe-lesson-start {
+  margin-top: 26px;
+  min-height: 46px;
+}
+
+.fe-lesson-outline {
+  padding: 22px;
+}
+
+.fe-lesson-outline-heading {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #dce8ed;
+  color: var(--fe-strong);
+}
+
+.fe-lesson-outline ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fe-lesson-outline li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e5edf1;
+}
+
+.fe-lesson-outline li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.fe-lesson-step-number {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--fe-lesson-soft);
+  color: var(--fe-strong);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.fe-lesson-outline strong,
+.fe-lesson-outline small {
+  display: block;
+}
+
+.fe-lesson-outline strong {
+  color: var(--fe-lesson-ink);
+  line-height: 1.55;
+}
+
+.fe-lesson-outline small {
+  margin-top: 4px;
+  color: var(--fe-lesson-muted);
+  line-height: 1.6;
+}
+
+.fe-lesson-reader {
+  margin-top: 28px;
+}
+
+.fe-lesson-reader-back {
+  margin-bottom: 16px;
+}
+
+.fe-lesson-reader-head {
+  padding: clamp(22px, 4vw, 38px);
+}
+
+.fe-lesson-reader-head > h1 {
+  font-size: clamp(30px, 4.5vw, 44px);
+}
+
+.fe-lesson-reader-head > p {
+  max-width: 70ch;
+  margin: 12px 0 0;
+  color: var(--fe-lesson-muted);
+  line-height: 1.9;
+}
+
+.fe-lesson-reader-goals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.fe-lesson-reader-goals > span {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  border: 1px solid #d8e6eb;
+  border-radius: 12px;
+  background: var(--fe-lesson-soft);
+  padding: 12px;
+  color: #344b55;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.fe-lesson-reader-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 20px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.fe-lesson-reader-body {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.fe-lesson-section,
+.fe-lesson-check {
+  scroll-margin-top: 24px;
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.fe-lesson-section > h2,
+.fe-lesson-check > h2 {
+  margin: 4px 0 20px;
+  color: var(--fe-lesson-ink);
+  font-size: clamp(22px, 3vw, 29px);
+  line-height: 1.4;
+}
+
+.fe-lesson-section .fe-rich-content > p {
+  max-width: 72ch;
+}
+
+.fe-lesson-section-nav {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--fe-border);
+  border-radius: 16px;
+  background: #fff;
+  padding: 14px;
+}
+
+.fe-lesson-section-nav > strong {
+  padding: 7px 8px 10px;
+  color: var(--fe-lesson-ink);
+  font-size: 14px;
+}
+
+.fe-lesson-section-nav a {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  border-radius: 9px;
+  padding: 7px 8px;
+  color: #405862;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.fe-lesson-section-nav a:hover,
+.fe-lesson-section-nav a:focus-visible {
+  background: var(--fe-lesson-soft);
+  color: var(--fe-strong);
+}
+
+.fe-lesson-section-nav a > span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #eaf4f7;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fe-lesson-check-prompt {
+  max-width: 70ch;
+  margin: 0;
+  color: #2d424b;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.9;
+}
+
+.fe-lesson-check-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.fe-lesson-check-options button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 50px;
+  border: 1px solid #cadce4;
+  border-radius: 12px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--fe-lesson-ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.fe-lesson-check-options button:hover:not(:disabled),
+.fe-lesson-check-options button:focus-visible,
+.fe-lesson-check-options button.is-selected {
+  border-color: var(--fe-strong);
+  background: var(--fe-lesson-soft);
+}
+
+.fe-lesson-check-options button:disabled {
+  cursor: default;
+}
+
+.fe-lesson-check-options button > span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e9f3f7;
+  color: var(--fe-strong);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.fe-lesson-check-result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  margin-top: 16px;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.fe-lesson-check-result.is-correct {
+  background: #edf8f1;
+  color: var(--fe-lesson-correct);
+}
+
+.fe-lesson-check-result.is-wrong {
+  background: #fff4ec;
+  color: var(--fe-lesson-wrong);
+}
+
+.fe-lesson-check-result strong,
+.fe-lesson-check-result p {
+  display: block;
+}
+
+.fe-lesson-check-result p {
+  margin: 5px 0 0;
+  color: #40555d;
+  line-height: 1.75;
+}
+
+.fe-lesson-check-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.fe-lesson-check-actions .button {
+  min-height: 44px;
+}
+
+@media (max-width: 980px) {
+  .fe-lesson-overview-grid,
+  .fe-lesson-reader-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .fe-lesson-section-nav {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fe-lesson-section-nav > strong {
+    grid-column: 1 / -1;
+  }
+
+  .fe-lesson-reader-goals {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .fe-lesson-overview-grid {
+    gap: 14px;
+  }
+
+  .fe-lesson-feature,
+  .fe-lesson-outline,
+  .fe-lesson-reader-head,
+  .fe-lesson-section,
+  .fe-lesson-check {
+    border-radius: 14px;
+  }
+
+  .fe-lesson-check-options,
+  .fe-lesson-section-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .fe-lesson-section-nav > strong {
+    grid-column: auto;
+  }
+
+  .fe-lesson-check-actions {
+    display: grid;
+  }
+
+  .fe-lesson-check-actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+}
