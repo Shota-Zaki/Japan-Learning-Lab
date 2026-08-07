@@ -14,7 +14,7 @@ const outputDirectory = join(prototypeDirectory, "qa", "jll-fe-003-browser");
 const sitePrefix = "/Japan-Learning-Lab/";
 const viewports = [375, 768, 1280];
 const variants = ["1", "2", "3"];
-const expectedMinimums = { sourceCount: 1900, optionCounts: [3, 20, 20, 4] };
+const expectedMinimums = { sourceCount: 1900, optionCounts: [3, 4, 20, 20] };
 
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -211,7 +211,7 @@ function browserStateExpression() {
       cardCount: cards.length,
       cards: cardMetrics,
       cardsContainedByGrid: Boolean(grid && cardMetrics.every((card) => card.rect.bottom <= grid.getBoundingClientRect().bottom + 1)),
-      layout2LeftGap: cards.length === 4 ? round(cards[3].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom) : null,
+      layout2LeftGap: cards.length === 4 ? round(cards[1].getBoundingClientRect().top - cards[0].getBoundingClientRect().bottom) : null,
       labels: {
         count: labels.length,
         clipped: labels.filter((label) => {
@@ -220,8 +220,9 @@ function browserStateExpression() {
         }).map((label) => label.textContent?.trim() || '')
       },
       domOrder: cards.map((card) => card.querySelector('legend')?.textContent?.trim() || ''),
-      unitLabels: cards[1] ? [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '') : [],
-      unitValues: cards[1] ? [...cards[1].querySelectorAll('label input')].map((input) => input.value || '') : []
+      keyboardGroupOrder: grid ? [...grid.querySelectorAll('input[type="checkbox"]')].map((input) => input.closest('fieldset')?.querySelector('legend')?.textContent?.trim() || '').filter((legend, index, all) => legend && all.indexOf(legend) === index) : [],
+      unitLabels: cards[3] ? [...cards[3].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '') : [],
+      unitValues: cards[3] ? [...cards[3].querySelectorAll('label input')].map((input) => input.value || '') : []
     };
   })()`;
 }
@@ -278,6 +279,7 @@ function finalDataStatesMatch(before, after) {
     && before.sourceCount === after.sourceCount
     && JSON.stringify(before.optionCounts) === JSON.stringify(after.optionCounts)
     && JSON.stringify(before.domOrder) === JSON.stringify(after.domOrder)
+    && JSON.stringify(before.keyboardGroupOrder) === JSON.stringify(after.keyboardGroupOrder)
     && JSON.stringify(before.unitLabels) === JSON.stringify(after.unitLabels)
     && JSON.stringify(before.unitValues) === JSON.stringify(after.unitValues)
     && before.layoutMeasured === "true"
@@ -330,7 +332,9 @@ function validateMetrics(metrics, variant, width) {
   assert(metrics.cards.every((card) => !card.internalVerticalOverflow), `A filter card clips content for variant ${variant} at ${width}px`);
   assert(metrics.labels.count > 0 && metrics.labels.clipped.length === 0, `Filter labels are clipped for variant ${variant} at ${width}px`);
   assert(metrics.unitLabels.length > 0 && metrics.unitLabels.every((label) => label && !/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(label)), `A raw unit identifier is visible for variant ${variant} at ${width}px`);
-  assert(JSON.stringify(metrics.domOrder) === JSON.stringify(["1. 分野", "2. 単元", "3. 開催回・公開区分", "4. 回答・復習状態"]), `DOM order changed for variant ${variant}`);
+  const expectedGroupOrder = ["1. 分野", "2. 回答・復習状態", "3. 開催回・公開区分", "4. 単元"];
+  assert(JSON.stringify(metrics.domOrder) === JSON.stringify(expectedGroupOrder), `DOM order changed for variant ${variant}`);
+  assert(JSON.stringify(metrics.keyboardGroupOrder) === JSON.stringify(expectedGroupOrder), `Keyboard group order changed for variant ${variant}`);
   if (variant === "2" && width > 720) {
     assert(metrics.layout2LeftGap >= metrics.rowGap - 1 && metrics.layout2LeftGap <= metrics.rowGap + 2, `Layout 2 left-card gap is ${metrics.layout2LeftGap}px instead of the ${metrics.rowGap}px grid gap at ${width}px`);
   }
@@ -442,7 +446,7 @@ async function main() {
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, final-data consistency across screenshot capture, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, final-data consistency across screenshot capture, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM and keyboard group order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
     console.log(`FE filter browser audit passed for ${scenarios.length} scenarios`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
