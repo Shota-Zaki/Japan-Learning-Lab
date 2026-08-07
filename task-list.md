@@ -73,7 +73,8 @@ https://github.com/Shota-Zaki/Japan-Learning-Lab/pull/5
 - Final verified Pages evidence HEAD before review handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
 - Confirmation review input HEAD: `c2bde678c721ce3f889a9b8a380843e20068fdad`
 - First confirmation management update HEAD: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
-- 確認管理更新は管理文書のみ。修正担当は作業開始時にGitHub実状態から最新`work` HEADを再固定する。
+- Review-management Pages evidence synchronization HEAD: `04a075686789012af45ca4347287b0b714224d72`
+- 確認管理更新は管理文書とPages証拠のみ。修正担当は作業開始時にGitHub実状態から最新`work` HEADを再固定する。
 
 ### Validation result
 
@@ -87,8 +88,10 @@ Passed checks:
 - PR CI deploy job `92807249153`: pull_requestではskipped by design
 - PR CI `Audit FE filter layout variants`: workflow `31159735305` / run `64` / job `92807114034` / success
 - PR CI `npm run verify:fe`: success / tests 63 passed / TypeScript success / ESLint success / normal build success / Pages build success
-- work Pages workflow: `31159729019` / run `412` / build job `92807093951` / deploy job `92807204151` / success
-- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Review-input work Pages: `31159729019` / run `412` / build `92807093951` / deploy `92807204151` / success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Review-management work Pages: `31175896418` / run `414` / build `92857703115` / deploy `92857819536` / success / sourceRevision `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- Current published/repository `build-info.json` after run 414: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- Published assets remain `/Japan-Learning-Lab/assets/index-CCwVLhbI.js` and `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`; review management commits do not change application code
 - 問題本文と解説の視覚階層はCSS上で明確に分離
 - 2022年科目Aサンプルは通常`topic`セットアップ候補から除外し、`mock`経路は維持
 - `2026-exemption-07`はlearner-facing helperで`令和8年度 免除試験`へ正規化し、元の`periodLabel`・`sourceRef`等の問題データは変更していない
@@ -119,12 +122,14 @@ Required repair:
 
 ### GitHub Pages result
 
-- work push Pages workflow: `31159729019` / run `412` / success
-- Published source Revision recorded by workflow: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Review-input work Pages: workflow `31159729019` / run `412` / success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Review-management work Pages: workflow `31175896418` / run `414` / build job `92857703115` / deploy job `92857819536` / success
+- Current public `build-info.json` sourceRevision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- Current repository `docs/build-info.json` sourceRevision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
+- Current repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31175896418` / run `414`
 - Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`
-- Pages evidence synchronization HEAD: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
+- Pages evidence synchronization commit: `04a075686789012af45ca4347287b0b714224d72`
 - 確認担当はPR artifactを取得して実装成果物を再調査した。今回のBlockingはPages配信失敗ではなく、配信済みUIの固定タイマー配置に関する受入条件不適合である
 
 ### Next task
@@ -497,7 +502,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Card internal scrollbar / clipping: none
 - Japanese unit-label data verification: passed
 - Console error/warning and failed request: none
-- Main Branch CI after merge: no new run/status because current workflow triggers `push` only for `work` and `pull_request` for `main`
+- Main Branch CI after merge: no new run/status because current workflow triggers `push` only for `work` and `pull_request` for`main`
 - Final post-merge Pages workflow: `31157266500` / run `406` / success
 - Final post-merge build job: `92799385185` / success
 - Final post-merge deploy job: `92799508602` / success
