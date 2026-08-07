@@ -43,11 +43,20 @@ export const FE_UNIT_LABELS = {
 };
 
 const UNKNOWN_UNIT_LABEL = "単元名未登録";
+const FE_UNIT_IDS_BY_LENGTH = Object.keys(FE_UNIT_LABELS).sort((left, right) => right.length - left.length);
+
+export function resolveFeUnitLabelId(unitId) {
+  const normalized = String(unitId ?? "").normalize("NFKC").trim().toLowerCase();
+  if (FE_UNIT_LABELS[normalized]) return normalized;
+  return FE_UNIT_IDS_BY_LENGTH.find((candidate) => normalized.endsWith(candidate)) || null;
+}
 
 export function getFeUnitLabel(unitId) {
-  return FE_UNIT_LABELS[unitId]?.label || UNKNOWN_UNIT_LABEL;
+  const resolved = resolveFeUnitLabelId(unitId);
+  return resolved ? FE_UNIT_LABELS[resolved].label : UNKNOWN_UNIT_LABEL;
 }
 
 export function getFeUnitLabelParts(unitId) {
-  return FE_UNIT_LABELS[unitId]?.parts || [UNKNOWN_UNIT_LABEL];
+  const resolved = resolveFeUnitLabelId(unitId);
+  return resolved ? FE_UNIT_LABELS[resolved].parts : [UNKNOWN_UNIT_LABEL];
 }
