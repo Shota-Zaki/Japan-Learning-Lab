@@ -6,11 +6,14 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const prototypeRoot = path.resolve(scriptDir, "..");
 const candidatePath = path.join(prototypeRoot, "data", "source", "fe", "question-extraction-candidates.json");
+const riskHintPath = path.join(prototypeRoot, "data", "source", "fe", "question-extraction-risk-hints.json");
 const payload = JSON.parse(await readFile(candidatePath, "utf8"));
 const reviewPath = path.join(prototypeRoot, payload.reviewManifest ?? "");
 const review = JSON.parse(await readFile(reviewPath, "utf8"));
+const riskHints = JSON.parse(await readFile(riskHintPath, "utf8"));
 const sources = Array.isArray(payload.sources) ? payload.sources : [];
 const reviewSources = Array.isArray(review.sources) ? review.sources : [];
+const riskSources = Array.isArray(riskHints.sources) ? riskHints.sources : [];
 
 function ensure(condition, message) {
   if (!condition) throw new Error(message);
@@ -18,12 +21,16 @@ function ensure(condition, message) {
 
 ensure(payload.schemaVersion === "fe-question-extraction-candidates-v1", "Unexpected FE extraction candidate schema");
 ensure(review.schemaVersion === "fe-question-extraction-review-v1", "Unexpected FE extraction review schema");
+ensure(riskHints.schemaVersion === "fe-question-extraction-risk-hints-v1", "Unexpected FE extraction risk-hint schema");
+ensure(riskHints.policy === "heuristic_hints_only_never_auto_import", "Risk hints must never authorize automatic import");
 ensure(payload.extractionPolicy?.ocrAllowed === false, "OCR must remain disabled for FE bulk extraction candidates");
 ensure(payload.reviewManifest === "data/source/fe/question-extraction-review.json", "Unexpected FE extraction review manifest path");
 ensure(sources.length > 0, "FE extraction candidate list is empty");
 ensure(new Set(sources.map((source) => source.sourceId)).size === sources.length, "FE extraction candidate source IDs must be unique");
 ensure(new Set(reviewSources.map((source) => source.sourceId)).size === reviewSources.length, "FE extraction review source IDs must be unique");
+ensure(new Set(riskSources.map((source) => source.sourceId)).size === riskSources.length, "FE extraction risk source IDs must be unique");
 ensure(reviewSources.length === sources.length, "FE extraction review source count is inconsistent");
+ensure(riskSources.length === sources.length, "FE extraction risk source count is inconsistent");
 
 for (const source of sources) {
   ensure(source.sourceType === "official-exemption-exam", `Unexpected extraction source type: ${source.sourceId}`);
@@ -65,6 +72,19 @@ for (const source of sources) {
     ensure(question.domainAndUnitVerified === false, `Domain/unit must remain pending: ${source.sourceId} Q${question.questionNumber}`);
     ensure(question.explanationQualityVerified === false, `Explanation quality must remain pending: ${source.sourceId} Q${question.questionNumber}`);
   }
+
+  const riskSource = riskSources.find((item) => item.sourceId === source.sourceId);
+  ensure(riskSource, `Missing extraction risk hints: ${source.sourceId}`);
+  ensure(Array.isArray(riskSource.visualDependencyHints), `Missing visual dependency hints: ${source.sourceId}`);
+  ensure(new Set(riskSource.visualDependencyHints.map((item) => item.questionNumber)).size === riskSource.visualDependencyHints.length, `Duplicate visual dependency hint: ${source.sourceId}`);
+  for (const hint of riskSource.visualDependencyHints) {
+    ensure(Number.isInteger(hint.questionNumber) && hint.questionNumber >= 1 && hint.questionNumber <= source.questionCount, `Invalid visual dependency question: ${source.sourceId}`);
+    ensure(Array.isArray(hint.dependencyHints) && hint.dependencyHints.length > 0, `Missing dependency hint types: ${source.sourceId} Q${hint.questionNumber}`);
+    ensure(hint.dependencyHints.every((type) => ["figure", "table"].includes(type)), `Unexpected dependency hint type: ${source.sourceId} Q${hint.questionNumber}`);
+    const question = reviewSource.questions.find((item) => item.questionNumber === hint.questionNumber);
+    ensure(question?.importDecision === "hold", `Visual-risk question must remain on hold: ${source.sourceId} Q${hint.questionNumber}`);
+    ensure(question?.figureOrTableDependency === "pending_review", `Visual-risk question must require manual dependency review: ${source.sourceId} Q${hint.questionNumber}`);
+  }
 }
 
 const candidateQuestionCount = sources.reduce((sum, source) => sum + source.questionCount, 0);
@@ -73,6 +93,7 @@ const officialAnswerVerifiedCount = sources.reduce((sum, source) => sum + source
 const repositoryReadyCount = sources.reduce((sum, source) => sum + source.repositoryReadyCount, 0);
 const reviewQuestionCount = reviewSources.reduce((sum, source) => sum + source.questions.length, 0);
 const reviewAnswerVerifiedCount = reviewSources.reduce((sum, source) => sum + source.questions.filter((question) => question.officialAnswerVerified).length, 0);
+const visualRiskHintCount = riskSources.reduce((sum, source) => sum + source.visualDependencyHints.length, 0);
 
 ensure(candidateQuestionCount === payload.candidateQuestionCount, "Extraction candidate question count metadata is inconsistent");
 ensure(structuredQuestionCount === payload.structuredQuestionCount, "Extraction structured question count metadata is inconsistent");
@@ -91,5 +112,6 @@ console.log(JSON.stringify({
   officialAnswerVerifiedCount,
   repositoryReadyCount,
   pendingContentReviewCount: candidateQuestionCount - repositoryReadyCount,
+  visualRiskHintCount,
   ocrAllowed: payload.extractionPolicy.ocrAllowed,
 }, null, 2));
