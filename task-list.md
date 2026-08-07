@@ -173,8 +173,8 @@ FE Learning Labの最初の実用レッスンとして、科目Bの擬似言語�
 - Confirmation record commit: `85943bd4095e88912f8ddae10ad4cc84686f7396`
 - Confirmation management PR HEAD: `dc8d93fece42082b18f187ff1b053949c6045cd5`
 - Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
-- Post-merge handoff commit: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
-- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
+- Post-merge handoff / final Pages source HEAD: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
+- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
 
 ### Validation result
 
@@ -215,18 +215,18 @@ FE Learning Labの最初の実用レッスンとして、科目Bの擬似言語�
 
 - Pre-merge workflow: `31188038465` / run `490` / success / sourceRevision `614827ca62be5b72885b7774dc4f621975a6482f`
 - `main` merge後、`work`をmerge commitへforceなしでfast-forward同期
-- Final post-merge workflow: `31189901419` / run `492`
-- Build job: `92903779534` / success
-- Deploy job: `92903963014` / GitHub job conclusionは`cancelled`
+- Intermediate post-merge workflow: `31189901419` / run `492`; Pages deploy・public revision checkは成功したが後続pushのconcurrencyでjob全体はcancelled
+- Final post-merge workflow: `31190078701` / run `493` / success
+- Final build job: `92904398023` / success
+- Final deploy job: `92904601920` / success
 - `Deploy to GitHub Pages`: success
 - `Verify public Pages resources and revision`: success
-- Public smoke check: success at `2c3700f57f195199d365e009b7b9248746366eab`
+- Public smoke check: success
+- Published sourceRevision: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
 - Public / repository `build-info.json` sourceRevision一致
-- Published sourceRevision: `2c3700f57f195199d365e009b7b9248746366eab`
 - Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
-- deploy jobの`cancelled`は、公開・public revision検証成功後に証拠commit `83a36279...`を`work`へpushしたことでconcurrency cancellationが発生したもの。証拠commitのpush自体は成功しており、公開失敗ではない
+- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
 
 ### Next task
 
