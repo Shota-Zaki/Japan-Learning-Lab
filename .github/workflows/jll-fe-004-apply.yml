@@ -35,7 +35,6 @@ jobs:
                   raise SystemExit(f"expected text not found in {path}: {old[:120]!r}")
               file.write_text(text.replace(old, new, 1))
 
-          # Design first: make the requested hierarchy and timer behavior explicit.
           replace_once(
               "DESIGN.md",
               "- 本文、コード、表、選択肢、解説を視覚的に分離する\n- コードは等幅書体と内部横スクロールを使用する",
@@ -57,7 +56,6 @@ jobs:
               "- 模擬試験終了前は正誤・解説を表示しない。\n- 模擬試験中の残り時間はサイトヘッダー右上の空き領域へ固定し、スクロール中も常時表示する。\n- 375px、768px、1,280px以上で固定タイマーがブランド、ナビゲーション、問題本文、主要操作を覆わないことを確認する。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
           )
 
-          # Learner-facing label normalization without changing source IDs or sourceRef.
           replace_once(
               "prototype/src/feQuestionBank.js",
               "function normalizeIdentityValue(value) {",
@@ -69,7 +67,6 @@ jobs:
               "    subject: question.subject || \"A\",\n    periodLabel: learnerFacingPeriodLabels[question.periodId] || question.periodLabel,\n    title: learnerFacingQuestionTitle(question),\n    sourceDisplayLabel: learnerFacingSourceLabel(question),\n    sourceUnitId,",
           )
 
-          # 2022 subject-A sample is only eligible through the dedicated fixed sample mock path.
           replace_once(
               "prototype/src/feSession.js",
               "function matchesSelected(value, selected) {\n  return selected.length === 0 || selected.includes(String(value));\n}\n\nexport function filterPracticeQuestions(questionBank, config, sessions = []) {",
@@ -81,31 +78,26 @@ jobs:
               "  return questionBank.filter((question) => (\n    eligibleForSessionMode(question, config)\n    && matchesSelected(question.subject || \"A\", filters.subjects)",
           )
 
-          # Hide the dedicated sample period from normal-practice filter options as well.
           replace_once(
               "prototype/src/FePracticeSetup.jsx",
               "  const relevantBySubject = useMemo(\n    () => questionBank.filter((question) => (question.subject || \"A\") === subject),\n    [questionBank, subject],\n  );",
               "  const relevantBySubject = useMemo(\n    () => questionBank.filter((question) => (\n      (question.subject || \"A\") === subject\n      && !(sessionType === \"topic\" && subject === \"A\" && question.periodId === officialSample.periodId)\n    )),\n    [questionBank, sessionType, subject],\n  );",
           )
 
-          # Preserve raw sourceRef internally while rendering the learner-facing source label.
           replace_once(
               "prototype/src/FeSessionView.jsx",
               "<div><dt>識別</dt><dd>{question.sourceRef || question.sourceQuestionNumber || question.id}</dd></div>",
               "<div><dt>識別</dt><dd>{question.sourceDisplayLabel || question.sourceRef || question.sourceQuestionNumber || question.id}</dd></div>",
           )
 
-          # Visual hierarchy and fixed timer. This stylesheet is loaded last among FE session styles.
           css = Path("prototype/src/fe-session-enhancements.css")
           css_text = css.read_text()
           marker = "/* JLL-FE-004 readability and fixed mock timer */"
           if marker not in css_text:
               css.write_text(css_text + f'''\n\n{marker}\n.fe-question-card > h1 {{\n  margin: 0 0 .9rem;\n  color: #173844;\n  font-size: clamp(1.28rem, 2.2vw, 1.6rem);\n  font-weight: 850;\n  letter-spacing: -.02em;\n  line-height: 1.35;\n  text-transform: none;\n}}\n\n.fe-question-content {{\n  color: #1c3038;\n  font-size: 1.075rem;\n  font-weight: 620;\n  line-height: 1.95;\n}}\n\n.fe-question-content.fe-rich-content > p {{\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n}}\n\n.fe-detailed-explanation {{\n  color: #34484f;\n  font-size: .95rem;\n  font-weight: 400;\n  line-height: 1.8;\n}}\n\n.fe-explanation-heading h2,\n.fe-explanation-heading h3 {{\n  color: #20383f;\n  font-size: 1.16rem;\n  font-weight: 820;\n  letter-spacing: -.01em;\n}}\n\n.fe-explanation-section h3,\n.fe-explanation-section h4 {{\n  color: #29434a;\n  font-size: 1rem;\n  font-weight: 790;\n}}\n\n.fe-explanation-content {{\n  font-size: .95rem;\n  font-weight: 400;\n  line-height: 1.85;\n}}\n\n.fe-explanation-content.fe-rich-content > p {{\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n}}\n\n.result-question-detail > h3:first-of-type {{\n  color: #173844;\n  font-size: 1.2rem;\n  font-weight: 820;\n}}\n\n.session-topbar > span > strong {{\n  position: fixed;\n  top: max(10px, env(safe-area-inset-top));\n  right: max(16px, calc((100vw - 1400px) / 2 + 24px));\n  z-index: 30;\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  padding: 0 12px;\n  border: 1px solid color-mix(in srgb, var(--accent-700) 45%, #cfdde3);\n  border-radius: 999px;\n  background: rgb(255 255 255 / 96%);\n  box-shadow: 0 4px 14px rgb(23 61 77 / 12%);\n  color: var(--accent-950);\n  font-size: .86rem;\n  font-variant-numeric: tabular-nums;\n  font-weight: 850;\n  letter-spacing: .01em;\n  line-height: 1;\n  white-space: nowrap;\n  pointer-events: none;\n}}\n\n@media (max-width: 520px) {{\n  .fe-question-content {{\n    font-size: 1rem;\n    font-weight: 610;\n  }}\n\n  .fe-detailed-explanation,\n  .fe-explanation-content {{\n    font-size: .9rem;\n  }}\n\n  .session-topbar > span > strong {{\n    top: max(12px, env(safe-area-inset-top));\n    right: 12px;\n    min-height: 40px;\n    padding-inline: 10px;\n    font-size: .78rem;\n  }}\n}}\n''')
 
-          # Focused regression tests for task-specific behavior and static layout contracts.
           Path("prototype/tests/fe-004-regression.test.mjs").write_text('''import assert from "node:assert/strict";\nimport fs from "node:fs";\nimport test from "node:test";\nimport { normalizeQuestion } from "../src/feQuestionBank.js";\nimport { filterPracticeQuestions } from "../src/feSession.js";\n\nconst choices = [\n  { id: "ア", text: "a" },\n  { id: "イ", text: "b" },\n];\n\nconst subjectASample = {\n  id: "sample-a",\n  subject: "A",\n  domain: "technology",\n  unitId: "basic-theory",\n  periodId: "2022-sample",\n  periodLabel: "2022年12月公開サンプル問題",\n  question: "sample",\n  choices,\n  correctAnswer: "ア",\n};\n\nconst subjectANormal = {\n  ...subjectASample,\n  id: "normal-a",\n  periodId: "2025-public",\n  periodLabel: "2025年度公開問題",\n  question: "normal",\n};\n\ntest("subject A 2022 sample is excluded from normal and random practice but kept for the dedicated fixed sample mock", () => {\n  const bank = [subjectASample, subjectANormal];\n  assert.deepEqual(filterPracticeQuestions(bank, { type: "topic", subjects: ["A"] }).map(({ id }) => id), ["normal-a"]);\n  assert.deepEqual(filterPracticeQuestions(bank, { type: "mock", mockMode: "random", subjects: ["A"] }).map(({ id }) => id), ["normal-a"]);\n  assert.deepEqual(filterPracticeQuestions(bank, { type: "mock", mockMode: "official-sample", subjects: ["A"], periodIds: ["2022-sample"] }).map(({ id }) => id), ["sample-a"]);\n});\n\ntest("exemption exam learner-facing labels are normalized without changing source identifiers", () => {\n  const normalized = normalizeQuestion({\n    id: "fe-exemption-202607-q001",\n    subject: "A",\n    domain: "technology",\n    unitId: "basic-theory",\n    periodId: "2026-exemption-07",\n    periodLabel: "2026年7月 科目A免除制度 修了試験",\n    title: "2026年7月 修了試験 問1",\n    sourceRef: "2026年7月 科目A免除制度 修了試験 問1",\n    sourceQuestionNumber: 1,\n    question: "question",\n    choices,\n    correctAnswer: "ア",\n  });\n  assert.equal(normalized.periodLabel, "令和8年度 免除試験");\n  assert.equal(normalized.title, "令和8年度 免除試験 問1");\n  assert.equal(normalized.sourceDisplayLabel, "令和8年度 免除試験 問1");\n  assert.equal(normalized.sourceRef, "2026年7月 科目A免除制度 修了試験 問1");\n});\n\ntest("session stylesheet keeps a distinct question/explanation hierarchy and fixes mock time in the header area", () => {\n  const css = fs.readFileSync(new URL("../src/fe-session-enhancements.css", import.meta.url), "utf8");\n  assert.match(css, /\\.fe-question-content \\{[^}]*font-size:\\s*1\\.075rem;[^}]*font-weight:\\s*620;/s);\n  assert.match(css, /\\.fe-explanation-content \\{[^}]*font-size:\\s*\\.95rem;[^}]*font-weight:\\s*400;/s);\n  assert.match(css, /\\.session-topbar > span > strong \\{[^}]*position:\\s*fixed;[^}]*top:[^;]+;[^}]*right:[^;]+;[^}]*z-index:\\s*30;/s);\n  assert.match(css, /@media \\(max-width: 520px\\)[\\s\\S]*\\.session-topbar > span > strong/);\n});\n''')
 
-          # Record the task as in progress before implementation is committed.
           task = Path("task-list.md")
           task_text = task.read_text()
           task_text = task_text.replace("### Status\n\n`planned`", "### Status\n\n`in_progress`", 1)
@@ -164,3 +156,5 @@ jobs:
           git diff --cached --check
           git commit -m "feat: implement JLL-FE-004 exercise refinements"
           git push origin HEAD:work
+
+# trigger: 2
