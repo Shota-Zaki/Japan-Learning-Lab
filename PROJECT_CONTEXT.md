@@ -77,7 +77,7 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-FE-004`であり、状態は`needs_fix`である。Draft PR #5は未mergeのまま維持する。確認入力HEADは`c2bde678c721ce3f889a9b8a380843e20068fdad`、Fixed implementation HEADは`5e6036980195108ed9f9429be53ebdba01e9ddcb`、PR CIで検証済みのアプリケーションsourceRevisionは`a1851e21ab0192c3577a03b67f4f79e0b99ce08f`である。確認管理更新後の最新Pages sourceRevisionは`f8bccf21e421c0e5e2d442fa1e253ed0891318f5`で、アプリケーションassetは変更されていない。
+現在の優先タスクは`JLL-FE-004`であり、状態は`needs_fix`である。Draft PR #5は未mergeのまま維持する。確認入力HEADは`c2bde678c721ce3f889a9b8a380843e20068fdad`、Fixed implementation HEADは`5e6036980195108ed9f9429be53ebdba01e9ddcb`、PR CIで検証済みのアプリケーションsourceRevisionは`a1851e21ab0192c3577a03b67f4f79e0b99ce08f`である。確認管理更新後の最終Pages sourceRevisionは`b157d97799b8c992e14650d9fe14e375c25e8f24`で、アプリケーションassetは変更されていない。
 
 目的は次の4点をFE演習へ反映することである。
 
@@ -95,9 +95,9 @@ JLL-FE-004確認時の主要証拠:
 - PR browser workflow: `31159735305` / run `64` / job `92807114034` / success。ただし対象はFE filter layout auditであり、固定タイマーの非重複証拠には使用しない
 - `npm run verify:fe`: success / tests 63 passed / TypeScript・ESLint・normal build・Pages build success
 - Review-input work Pages: `31159729019` / run `412` / success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Review-management work Pages: `31175896418` / run `414` / build `92857703115` / deploy `92857819536` / success
-- Current public/repository `build-info.json` sourceRevision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
-- Pages evidence synchronization commit for run 414: `04a075686789012af45ca4347287b0b714224d72`
+- Final review-management work Pages: `31176033019` / run `418` / build `92858126749` / deploy `92858292374` / success
+- Current public/repository `build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
+- Pages evidence synchronization commit for run 418: `770c725031cbc079b5749bc19a464605f42cf1db`
 - Published assets remain `index-CCwVLhbI.js` / `index-eTi5h_EL.css`; review-management commits are management/evidence-only
 - Blocking: fixed timerとheader actionsの重なり
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に反映済みのため追加タスク化不要
@@ -142,20 +142,20 @@ FE問題数は次の区分を正確に使う。
 
 2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-JLL-FE-004確認管理更新後の最新正常状態:
+JLL-FE-004確認管理更新後の最終正常状態:
 
-- Workflow: `31175896418` / run `414` / success
-- Build job: `92857703115` / success
-- Deploy job: `92857819536` / success
+- Workflow: `31176033019` / run `418` / success
+- Build job: `92858126749` / success
+- Deploy job: `92858292374` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
-- Published source Revision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
-- Public `build-info.json` sourceRevision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
-- Repository `docs/build-info.json` sourceRevision: `f8bccf21e421c0e5e2d442fa1e253ed0891318f5`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31175896418`
+- Published source Revision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
+- Public `build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
+- Repository `docs/build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31176033019`
 - Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`
-- Pages evidence synchronization commit: `04a075686789012af45ca4347287b0b714224d72`
+- Pages evidence synchronization commit: `770c725031cbc079b5749bc19a464605f42cf1db`
 
 JLL-FE-004はPages deployment自体には成功しているが、確認担当がUI配置のBlocking findingを検出したため未完了である。Pages successをタスク合格とみなさない。
 
