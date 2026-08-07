@@ -22,6 +22,10 @@ jobs:
           cache: npm
           cache-dependency-path: prototype/package-lock.json
       - run: npm ci
+      - name: Install Japanese fallback font for screenshots
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
       - name: Build Pages artifact
         run: npm run build:pages
       - name: Audit FE lesson at three viewports
