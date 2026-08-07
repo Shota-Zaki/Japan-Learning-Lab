@@ -28,6 +28,9 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - 同一問題が別開催回に掲載された場合、canonical問題を重複登録せず`sourceOccurrences`で開催履歴を保持
 - 2024〜2026の候補13ソース・660問をRepository管理下のsource inventoryへ固定
 - 2009年6月・7月の各80問をtext-extractable candidateとして別管理し、採用前監査条件を固定
+- 2009年160問を設問単位review manifestへ構造化し、公式正答を個別固定
+- heuristic visual-risk hint 30問を保守的にtriageし、図・表・レイアウト再構成必要範囲を分離
+- 公式の過去問題利用条件をRepositoryへ記録し、第三者著作物は設問単位で別途review
 - source inventory / extraction candidate / canonical coverage監査を通常build経路へ組み込む
 - 同期・検証スクリプト、テスト、出典メタデータを更新
 - 最終収録数と追加不可範囲・理由を記録
@@ -36,12 +39,19 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 ### Implemented / current findings
 
 - Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
-- Latest audited application/data implementation HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
+- Latest audited application/data implementation HEAD: `c5afca1b022bfc104c3ebcea8c031b5aaca14e5f`
+- Latest successful Pages evidence synchronization HEAD: `1263bc92ecbf750f7270658819fff5cfef7301d5`
 - Source inventory: 13ソース / 候補660問 / Repository content-ready 20問 / pending 640問
 - Text-extractable candidate: 2009年6月・7月 / 2ソース / 160問 / Repository-ready 0問
+- 2009年160問は問1〜80を各開催回で構造化し、公式正答160件を個別確認済み
+- heuristic visual-risk hint: 30問
+- visual-risk triage: 30 / 30完了。26問は図・表・レイアウト再構成が必要、4問はテキスト層だけで意味を保持できる可能性が高い候補
+- PDF screenshot取得はtool cache missで実画像確認未完了のため、visual triageだけで採用可にはしない。`visualRenderVerified=false`を維持
 - Audited candidate universe: 820問 / ready 20問 / pending review 800問
+- 公式の過去問題利用条件を確認し、教育目的利用について許諾・使用料不要、著作権存続、出典明記、改変時明示が必要という条件をcandidate manifestへ固定
+- 第三者著作物・外部資料依存は一般利用条件で自動許可せず設問単位で確認する
 - `audit-fe-question-source-inventory.mjs`でID、URL、件数、公式PDF、ready件数、第三者著作物確認フラグを検証
-- `audit-fe-question-extraction-candidates.mjs`でOCR禁止、公式host、text layer、問1〜80連番確認、candidate-only、ready=0を検証
+- `audit-fe-question-extraction-candidates.mjs`でOCR禁止、公式host、text layer、問1〜80連番、公式正答160件、全件hold、visual-risk 30件とtriage 30件の1対1対応、再構成必要26件、text-layer-sufficient候補4件、reuse policy metadataを検証
 - `feQuestionBank.js`でcontent fingerprintとsource occurrence fingerprintを分離
 - 既存primary 1,977問は互換性baselineとして一切削除しない
 - supplementalだけをprimaryへ照合し、unique一致は`sourceOccurrences`へ統合、ambiguous一致は自動統合しない
@@ -52,13 +62,15 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - supplementalとprimaryのunique repeated occurrence: 1件
 - Existing primary duplicate-content groups: 80 / duplicate-source groups: 62。既存互換性のため削除せず監査値として扱う
 - 2020年6月、2022年6月、2026年7月の公式問題PDFは安定した本文テキストレイヤーがないことを確認
-- 2009年6月・7月は公式PDF本文をテキスト抽出可能で、それぞれ問1〜80の連番と公式解答を確認。ただし表・図・数式、第三者著作物、既存問題との重複、分類、解説品質を個別監査してから採用する
+- 2009年6月・7月は公式PDF本文をテキスト抽出可能。ただし本文・4択・図表再構成・第三者著作物・既存問題との重複・分類・解説品質を個別監査してから採用する
 - 画像主体PDFを大量OCRして件数を作る方法は品質保証上採用しない
 
 ### Out of scope
 
 - 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
 - OCR結果の無検証大量投入
+- heuristic visual-risk hintまたはvisual triageだけで採用可否を決定すること
+- PDF実画像未確認のvisual-risk問題を図表確認済みと扱うこと
 - placeholder解説で件数を増やすこと
 - primary 1,977問を互換性確認なく削除すること
 - 科目B問題バンクの意図しない増減
@@ -92,6 +104,9 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - Source authority: Driveは調査結果の参照資料であり、問題本文・選択肢・正答の正本ではない。採用時は公式一次資料を再確認する
 - Repository source inventory: `prototype/data/source/fe/question-source-inventory.json`
 - Repository extraction candidates: `prototype/data/source/fe/question-extraction-candidates.json`
+- Repository per-question review: `prototype/data/source/fe/question-extraction-review.json`
+- Repository heuristic risk hints: `prototype/data/source/fe/question-extraction-risk-hints.json`
+- Repository visual triage: `prototype/data/source/fe/question-extraction-visual-review.json`
 
 ### Branch
 
@@ -111,9 +126,10 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### Current HEAD
 
-- Latest audited application/data implementation HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
-- NEXT_WORK management update: `55d645495234233b25551eee24812483d855b0ae`
-- PROJECT_CONTEXT management update: `abfebb3bc1639179e5d9d54dc74cf2fd33d0836e`
+- Latest audited application/data implementation HEAD: `c5afca1b022bfc104c3ebcea8c031b5aaca14e5f`
+- Successful Pages evidence synchronization HEAD: `1263bc92ecbf750f7270658819fff5cfef7301d5`
+- PROJECT_CONTEXT management update: `5d2ccaf5f2bdced7ac4bc84f8ebcb853b10bd577`
+- NEXT_WORK management update: `b85e494220d8a6182019abbc4bfbea3b9c6b88f0`
 - この管理文書更新commit以後の最新`work` HEADはGitHub実状態を正本とする
 
 ### Validation result
@@ -122,17 +138,21 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 - Source inventory audit: 13 sources / 660 candidates / 20 ready / 640 pending
 - Extraction candidate audit: 2 sources / 160 candidates / 0 ready / OCR disabled
+- 2009 official-answer verified: 160 / 160
+- Visual-risk hint: 30 / triaged 30 / visual-or-layout reconstruction required 26 / text-layer-sufficient candidate 4
 - Coverage audit: primary 1,977 / supplemental occurrence 20 / canonical 1,996 / source occurrence 1,997
 - Coverage audit: A 1,829 / B 167 / primary duplicate-content groups 80 / duplicate-source groups 62
 - Candidate universe: 820 / ready 20 / pending review 800
-- Draft PR #7作成済み
-- Implementation HEAD `31f53da8203ffdd451ef45a7d60173e19466fb45`のPR workflowsは全4件success
-- Pages build / verify workflow: `31195732534` / run `523` / success
-- Build job: `92923438558` / success
-- Filter layout workflow: `31195732632` / run `114` / success
-- Mock timer workflow: `31195732251` / run `38` / success
-- Lesson layout workflow: `31195732735` / run `15` / success
+- Draft PR #7維持
+- Implementation HEAD `c5afca1b022bfc104c3ebcea8c031b5aaca14e5f`のPR workflowsは全4件success
+- PR Pages build / verify workflow: `31227701215` / run `535` / success
+- PR build job: `93025207544` / success
+- Filter layout workflow: `31227701176` / run `120` / success
+- Mock timer workflow: `31227701207` / run `44` / success
+- Lesson layout workflow: `31227701178` / run `21` / success
+- work-push Pages workflow: `31227699196` / run `534` / success
 - `npm ci` / `verify:fe` / normal build / tests / typecheck / lint / Pages buildは成功したPages build jobで検証済み
+- Public smoke check: success
 
 ### Merge commit
 
@@ -140,13 +160,15 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### GitHub Pages result
 
-- PR-context Pages build / verify: success
-- PR-context deploy job: skipped as expected
-- work-push側の公開sourceRevisionは次回開始時にもGitHub実状態から再確認する
+- Published sourceRevision: `c5afca1b022bfc104c3ebcea8c031b5aaca14e5f`
+- Public / repository `build-info.json` sourceRevision一致
+- work-push Pages workflow: `31227699196` / run `534` / success
+- Successful Pages evidence synchronization HEAD: `1263bc92ecbf750f7270658819fff5cfef7301d5`
+- 管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物sourceRevisionと最新Branch HEADは区別する
 
 ### Next task
 
-`JLL-FE-QBANK-001`を継続。2009年6月・7月160問の構造化・個別監査を進める。完了後の既定次タスクは`JLL-JAVA-001`。
+`JLL-FE-QBANK-001`を継続。2009年6月・7月160問の本文・4択・第三者著作物・分類・解説品質の個別監査を進める。visual/layout reconstruction required 26問は実画像確認・安全な再構成確認までholdを維持する。完了後の既定次タスクは`JLL-JAVA-001`。
 
 ---
 
