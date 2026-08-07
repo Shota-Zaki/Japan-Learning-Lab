@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: jll-fe-004-apply
+  cancel-in-progress: true
+
 jobs:
   apply-and-verify:
     runs-on: ubuntu-latest
@@ -16,6 +20,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: work
+      - name: Sync latest work
+        run: git pull --ff-only origin work
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -51,8 +57,8 @@ jobs:
           )
           replace_once(
               "prototype/DESIGN.md",
-              "- 模擬試験終了前は正誤・解説を表示しない。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
-              "- 模擬試験終了前は正誤・解説を表示しない。\n- 模擬試験中の残り時間はサイトヘッダー右上の空き領域へ固定し、スクロール中も常時表示する。\n- 375px、768px、1,280px以上で固定タイマーがブランド、ナビゲーション、問題本文、主要操作を覆わないことを確認する。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
+              "- 模擬試験終了前は正誤と解説を表示しない。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
+              "- 模擬試験終了前は正誤と解説を表示しない。\n- 模擬試験中の残り時間はサイトヘッダー右上の空き領域へ固定し、スクロール中も常時表示する。\n- 375px、768px、1,280px以上で固定タイマーがブランド、ナビゲーション、問題本文、主要操作を覆わないことを確認する。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
           )
 
           Path("prototype/src/feQuestionAvailability.js").write_text('''export function isFeQuestionAvailableForSetup(question, sessionType) {\n  if (sessionType !== "topic") return true;\n  return !((question.subject || "A") === "A" && question.periodId === "2022-sample");\n}\n''')
@@ -123,8 +129,14 @@ jobs:
           git add DESIGN.md prototype/DESIGN.md prototype/src prototype/tests/fe-004-regression.test.mjs
           git diff --cached --check
           git commit -m "feat: implement JLL-FE-004 exercise refinements"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:work; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            git pull --rebase origin work
+          done
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          git push origin HEAD:work
 
       - name: Install dependencies
         working-directory: prototype
@@ -144,6 +156,8 @@ jobs:
           IMPLEMENTATION_SHA: ${{ steps.implementation.outputs.sha }}
         run: |
           git restore docs prototype/public/data/fe-official-past-questions.json prototype/qa/jll-fe-003-browser || true
+          git fetch origin work
+          git rebase origin/work
           cat > prototype/qa/jll-fe-004-implementation-verification.json <<EOF
           {
             "status": "success",
@@ -165,6 +179,8 @@ jobs:
           IMPLEMENTATION_SHA: ${{ steps.implementation.outputs.sha }}
         run: |
           git restore docs prototype/public/data/fe-official-past-questions.json prototype/qa/jll-fe-003-browser || true
+          git fetch origin work
+          git rebase origin/work
           cat > prototype/qa/jll-fe-004-implementation-verification.json <<EOF
           {
             "status": "failure",
