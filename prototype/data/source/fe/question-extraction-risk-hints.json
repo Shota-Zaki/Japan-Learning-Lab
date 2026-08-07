@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "fe-question-extraction-risk-hints-v1",
+  "snapshotDate": "2026-08-08",
+  "policy": "heuristic_hints_only_never_auto_import",
+  "sources": [
+    {
+      "sourceId": "2009-06-exemption",
+      "visualDependencyHints": [
+        {"questionNumber": 2, "dependencyHints": ["figure"]},
+        {"questionNumber": 4, "dependencyHints": ["table"]},
+        {"questionNumber": 6, "dependencyHints": ["figure"]},
+        {"questionNumber": 9, "dependencyHints": ["table"]},
+        {"questionNumber": 16, "dependencyHints": ["figure", "table"]},
+        {"questionNumber": 17, "dependencyHints": ["table"]},
+        {"questionNumber": 21, "dependencyHints": ["table"]},
+        {"questionNumber": 25, "dependencyHints": ["figure"]},
+        {"questionNumber": 53, "dependencyHints": ["figure"]},
+        {"questionNumber": 71, "dependencyHints": ["table"]},
+        {"questionNumber": 74, "dependencyHints": ["figure"]},
+        {"questionNumber": 77, "dependencyHints": ["table"]},
+        {"questionNumber": 80, "dependencyHints": ["figure", "table"]}
+      ]
+    },
+    {
+      "sourceId": "2009-07-exemption",
+      "visualDependencyHints": [
+        {"questionNumber": 3, "dependencyHints": ["table"]},
+        {"questionNumber": 13, "dependencyHints": ["table"]},
+        {"questionNumber": 16, "dependencyHints": ["figure"]},
+        {"questionNumber": 18, "dependencyHints": ["table"]},
+        {"questionNumber": 20, "dependencyHints": ["table"]},
+        {"questionNumber": 24, "dependencyHints": ["figure"]},
+        {"questionNumber": 25, "dependencyHints": ["figure"]},
+        {"questionNumber": 33, "dependencyHints": ["table"]},
+        {"questionNumber": 35, "dependencyHints": ["table"]},
+        {"questionNumber": 36, "dependencyHints": ["table"]},
+        {"questionNumber": 48, "dependencyHints": ["figure"]},
+        {"questionNumber": 49, "dependencyHints": ["figure"]},
+        {"questionNumber": 54, "dependencyHints": ["figure"]},
+        {"questionNumber": 69, "dependencyHints": ["table"]},
+        {"questionNumber": 75, "dependencyHints": ["figure"]},
+        {"questionNumber": 77, "dependencyHints": ["table"]},
+        {"questionNumber": 80, "dependencyHints": ["figure", "table"]}
+      ]
+    }
+  ]
+}
