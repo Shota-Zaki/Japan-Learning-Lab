@@ -14,19 +14,18 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
-採用済みのパターンBを通常表示の既定にし、内容量の異なるカードを無理に同じ高さへ揃えず、短いカードを縦方向に組み合わせて不要な空白を減らす。単元名は実行時に正規化された旧形式を含めて完全な日本語名で表示し、表示幅が許す限り1行に収め、折り返す場合は意味のまとまりで自然に改行する。
+採用済みのパターンBを通常表示の既定にし、内容量の異なるカードを無理に同じ高さへ揃えず、不要な空白を減らす。単元名は実行時に正規化された旧形式を含めて完全な日本語名で表示し、表示幅が許す限り1行に収め、折り返す場合は意味のまとまりで自然に改行する。加えて、最新のユーザー指定に従い、絞り込みブロックの表示・読み上げ順を「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」に変更する。
 
 ### Scope
 
 - `filterLayout=2`を指定なし・無効値時の既定表示として維持
-- 単元カードを全幅の主カードとして維持
-- PC・タブレットで「分野」と「回答・復習状態」を左側へ通常のGrid gapで縦積み
-- 「開催回・公開区分」を右側へ配置し、左右の高さ計算を分離
-- 375pxでは既存DOM順の1列を維持
+- 絞り込みブロックを「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」の順に表示する
+- DOM順・キーボード移動順も同じ順序へ揃え、375pxの1列表示でもこの順序を維持する
+- 既存のBento Grid方針と不要な余白削減方針を維持し、カードの具体的な配置は上記順序を壊さない範囲で調整する
 - 受験科目ブロックの独立状態を維持
 - canonical `unitId`と旧形式の実行時単元値を完全な日本語表示名へ解決
 - 単元名を可能な限り1行表示し、必要時のみ自然な位置で折り返す
@@ -48,16 +47,17 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 ### Completion criteria
 
 - 指定なし・無効な`filterLayout`でパターンBが表示される
-- 768px・1,280pxで「分野」と「回答・復習状態」の間隔が通常のGrid gap相当となる
-- 右側カードの高さに由来する大きな未使用空間が発生しない
+- 375px、768px、1,280pxのすべてで、絞り込みブロックの表示順が「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」になっている
+- DOM順・キーボード移動順が表示順と一致する
+- 不要な大きな未使用空間が発生しない
 - カード高さを固定せず、条件群内部へ縦スクロールを追加しない
 - 単元名が英語IDや「単元名未登録」ではなく完全な日本語名で表示される
 - 単元カードは表示幅を有効利用し、必要時のみ自然に折り返す
 - ブラウザ監査が問題データ・選択肢・フォントの最終描画後を測定する
 - 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
-- キーボード操作とDOM順、fieldset/legend、label/input関連付けが維持される
+- fieldset/legend、label/input関連付けが維持される
 - テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
-- Repository直下`docs/`が固定アプリケーションHEADの最新Pages buildと一致する
+- Repository直下`docs/`が最新の固定アプリケーションHEADのPages buildと一致する
 - Draft Pull Requestと固定検証証拠が存在する
 
 ### Dependencies
@@ -65,6 +65,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - `JLL-FE-001`: completed
 - `JLL-FE-002`: completed
 - ユーザー指定: パターンB採用、不要な余白削減、単元名の完全日本語表示と自然な折返し
+- 最新ユーザー指定: 絞り込み順を「1. 分野 2. 回答・復習状態 3. 開催回・公開区分 4. 単元」に変更
 
 ### Branch
 
@@ -76,7 +77,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Base: `main`
 - Head: `work`
 - State: open / draft / unmerged
-- Review state: review ready
+- Review state: needs fix
 
 ### Start HEAD
 
@@ -90,7 +91,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `66a03576b5b9ac2c86c35c63045f923137f08a0c`
 
-アプリケーションコード、監査コード、テストの確認対象はこのHEADに固定する。以後の修正は原則として生成済み`docs/`と管理文書に限定する。
+このHEADまでのアプリケーション実装・監査結果は、最新の並び順指定により旧仕様の検証証拠となった。次回修正では最新PR HEADから実装し、新しい固定HEADを記録する。
 
 ### Pages output synchronization HEAD
 
@@ -100,16 +101,16 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `6cc846a4f5b5af97f836f845b96c1a94b8225474`
 
-### Implementation fix result
+### Previous implementation result
 
-`passed / review_ready`
+`passed under prior ordering / superseded by latest user request`
 
-#### Passed checks
+#### Previously passed checks
 
 - Pattern B: 単元カード全幅、左側2カード縦積み、右側開催回カード配置を確認
 - 768px left-card gap: `8.8px` / computed row gap: `8.8px`
 - 1,280px left-card gap: `8.8px` / computed row gap: `8.8px`
-- 375px: DOM順の1列表示
+- 375px: 旧DOM順の1列表示
 - Final rendered source count: `1997`
 - Final option counts: `[3, 24, 28, 4]`
 - Horizontal overflow: 0
@@ -118,7 +119,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Console warning/error: 0
 - Failed network request: 0
 - Keyboard checkbox operation: success
-- DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
+- Previous DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
 - Standard workflow: `31144511506` / run `370` / success
 - Standard build job: `92761099227` / success
 - Automated tests: 60 / 60 passed
@@ -137,7 +138,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Pull Request comments: 確認開始時点でなし
 - Unresolved review threads: 確認開始時点でなし
 
-### Fix result
+### Previous fix result
 
 #### Repositoryの`docs/`を固定アプリケーションHEADへ同期
 
@@ -151,7 +152,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - アプリケーションコード、CSS、テスト、監査コード、問題データは変更していない
 - 一時同期workflowは標準workflowへ復元する
 
-### Fix validation result
+### Previous fix validation result
 
 - One-shot synchronization workflow: `31145825406` / run `383` / success
 - Synchronization job: `92764918921` / success
@@ -167,26 +168,34 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Generated commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
 - Standard workflow restored at: `6cc846a4f5b5af97f836f845b96c1a94b8225474`
 - Pull Request `#4`: open / draft / unmerged
-- Final standard workflow and browser workflowは、管理文書更新後のPR HEADで再実行する
+
+### Latest user change request
+
+- 絞り込みブロックの順番を次へ変更する。
+  1. 分野
+  2. 回答・復習状態
+  3. 開催回・公開区分
+  4. 単元
+- この変更により、旧順序を前提とした`review_ready`は取り消し、`needs_fix`へ戻す。
+- 次回実装担当がコード、テスト、監査、`docs/`、管理文書を新仕様に合わせて更新する。
 
 ### Merge commit
 
-未着手。実装担当はマージしない。確認担当の独立検証待ち。
+未着手。最新ユーザー指定の修正完了前はマージしない。
 
 ### GitHub Pages result
 
-- Pages build: success
-- Repository `docs/` synchronization: success
-- Repository build revision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Prior Pages build: success
+- Prior Repository `docs/` synchronization: success
+- Prior Repository build revision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
 - Generated assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
 - Reproducibility verification: success / no diff
-- Pages artifact upload: 最終standard workflowで再確認
-- Deploy job: temporary skip policyにより判定対象外
+- 最新の並び順修正後にPages buildと`docs/`同期を再実行する
 - Deployment and public revision verification: temporary skip policyにより判定対象外
 
 ### Next task
 
-`JLL-FE-003`の独立確認。合格・merge・`work`同期後に`JLL-FE-004`へ進む。
+`JLL-FE-003`の最新並び順指定を修正し、再検証して`review_ready`へ戻す。合格・merge・`work`同期後に`JLL-FE-004`へ進む。
 
 ---
 
