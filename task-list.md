@@ -14,16 +14,17 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
-問題文と解説の視覚的な区別を明確にし、模擬試験中の残り時間を常時確認できるようにする。通常演習へ混在させない公式サンプルの扱いと、免除試験の表示名をユーザー指定に合わせる。
+問題文と解説の視覚的な区別を明確にし、模擬試験中の残り時間を常時かつ正確に確認できるようにする。通常演習へ混在させない公式サンプルの扱いと、免除試験の表示名をユーザー指定に合わせる。
 
 ### Scope
 
 - 問題文と解説で文字サイズ、太さ、見出し、余白に明確な差を付ける
 - 模擬試験の残り時間をサイトヘッダー内の専用ステータス行へ固定し、スクロール中も常時表示する
+- 新規模擬試験の開始直後を含め、表示残時間が設定時間を超えないようにする
 - 375px / 768px / 1,280pxでタイマーとヘッダー・問題本文・回答操作の非重複を専用browser auditで検証する
 - 2022年科目Aサンプルを通常の演習出題対象から除外する
 - `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
@@ -44,6 +45,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 - 問題文と解説が文字サイズ・太さ・構造で明確に区別できる
 - 模擬試験の残り時間が専用ヘッダーステータス行に固定され、375pxを含む対象画面幅でブランド、ナビゲーション、ヘッダー操作、本文、回答・主要操作を妨げない
+- 新規模擬試験の最初の表示を含め、残り時間が設定時間を超えず、時間経過に応じて減少する
 - スクロール後もタイマーが常時見え、通常演習では表示されない
 - 2022年科目Aサンプルが通常演習の候補へ入らない
 - 対象開催回が`令和8年度 免除試験`と表示される
@@ -60,7 +62,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Pull Request
 
-`#5` / Draft / `work` → `main`
+`#5` / Draft / `work` → `main` / unmerged
 
 ### Start HEAD
 
@@ -68,71 +70,67 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Current HEAD
 
-- Blocking修正・専用browser audit固定HEAD: `4178cecde659c4501d04344ca115f3c70bd19663`
-- 修正後Pages evidence synchronization HEAD: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
-- Review handoff `NEXT_WORK.md` update HEAD: `ad2b89810a45d6271639f41e3b8aaa6fce1af65c`
-- この管理文書更新後の最新`work` / PR HEADはGitHub実状態を正本とし、確認担当が開始時に再固定する
+- Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Browser evidence PR merge ref: `991017aa63c87ccf511a474e4047c0803bd7dd49`
+- Confirmation `NEXT_WORK.md` needs-fix update HEAD: `34976261df454bb9446b21f0573f9043120753a9`
+- この管理文書更新後の最新`work` / PR HEADはGitHub実状態を正本とする
 
 ### Validation result
 
-`passed / review_ready`
+`failed / needs_fix`
 
-Repair verification:
+Independent confirmation evidence:
 
-- live entry pointを`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`として再確認
-- Root / prototype `DESIGN.md`を実装前に更新し、模擬試験タイマーをブランド・ナビゲーション等と別行の専用ステータス領域へ配置する方針へ変更
-- `PlatformHeader`にmock session status用の領域を追加し、通常フローで高さを確保
-- legacy inline timerは非表示化し、通常topic演習ではmock status row自体を生成しない
-- 旧確認ではlegacy `App.jsx`の`.header-actions`をlive headerとして扱っていたが、現在の公開経路は`AppV5.jsx`。確認時は実entry pointを基準に独立判定する。ただし旧タイマーが専用レイアウト領域を持たない問題は構造修正済み
-- PR #5: Draft維持 / mergeable。mergeは確認担当へ委ねる
-- PR CI `Build and deploy GitHub Pages`: workflow `31180417745` / run `451` / success
+- `main` HEAD: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- PR #5: Draft / mergeable / review threads 0 / merge未実施
+- PR CI `Build and deploy GitHub Pages`: workflow `31181066806` / run `457` / success
 - PR CI `npm run verify:fe`: success / tests 63 passed / TypeScript success / ESLint success / normal build success / Pages build success
-- PR CI `Audit FE filter layout variants`: workflow `31180417961` / run `83` / success
-- JLL-FE-004専用PR CI `Audit FE mock timer layout`: workflow `31180417818` / run `7` / job `92872090509` / success
-- 専用browser evidence artifact: `8994534328` / `fe-mock-timer-evidence`
+- PR CI `Audit FE filter layout variants`: workflow `31181066826` / run `86` / success
+- JLL-FE-004専用PR CI `Audit FE mock timer layout`: workflow `31181066801` / run `10` / success
+- 専用browser evidence artifact: `8994787534` / digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
 - browser widths: 375px / 768px / 1,280px
-- 375px: timer `y=80–116`、problem heading `y≈311`以降、problem body `y≈353`以降、answers `y≈408`以降、session actions `y≈821`以降。全overlap `false`
-- 768px: timer `y=96–136`、problem heading `y≈343`以降。全overlap `false`
-- 1,280px: timer `y=107–147`、problem heading `y≈360`以降。全overlap `false`
+- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの矩形重なりは全て`false`
 - 180pxスクロール後も各幅でタイマーY座標不変、viewport内表示維持
-- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの重なりなし
 - page horizontal overflowなし
 - 通常topic演習ではmock timer / status row / legacy inline timerはいずれも0件
-- browser audit中のconsole warning/error、failed requestなし
-- 問題本文と解説の視覚階層は既存JLL-FE-004要件を維持
-- 2022年科目Aサンプルは通常`topic`候補から除外し、`mock`経路は維持
-- `2026-exemption-07`はlearner-facing helperで`令和8年度 免除試験`へ正規化し、元の`periodLabel`・`sourceRef`等の問題データは変更していない
-- JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックには変更なし
+- browser audit中のconsole message、failed requestなし
+- 問題本文と解説の視覚階層、2022年科目Aサンプルの通常`topic`除外と`mock`経路維持、`令和8年度 免除試験`表示と元データ非改変を差分・テストで確認
+- JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックの回帰監査はsuccess
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に実装・検証済みのため追加タスク化不要
+- 確認環境の外向きDNS制約によりlocal cloneは不可だったため、GitHub Actions固定PR merge ref、GitHub差分、workflow log、browser artifact、Pages workflowを独立照合した
 
-### Resolved blocking finding
+### Blocking finding
 
-- `B1`: resolved by repair; independent confirmation pending
-- 旧実装のタイマーを本文側のfixed overlayとして扱わず、サイトヘッダー内の専用ステータス行へ移動した
-- z-indexのみの回避ではなくDOM / layout上で専用領域を確保した
-- 固定タイマー専用browser auditを新設し、既存`audit:fe-filter-layouts`を代替証拠として扱わない
-- 375px / 768px / 1,280pxの矩形監査、スクロール後固定、通常演習非表示がすべてpass
+- `B1`: resolved。タイマーは本文overlayではなくサイトヘッダー内の専用ステータス行へ移動済みで、代表幅の重なり・sticky・通常演習非表示は合格
+- `B2`: **Blocking / unresolved**。90分の科目A模試開始直後に専用browser evidenceで`残り 90:01`を記録した
+- Expected: 新規90分模試の最初の表示は`90:00`を超えない
+- Actual: `FeLearningApp.jsx`の`headerClockMs`がlearning app mount時の値のまま、新しいmock session開始直後の計算に使われる。active mock用effectは1秒intervalを登録するだけで即時clock refreshを行わないため、`startedAt - headerClockMs`が正の値となり設定時間へ加算される
+- セットアップ画面へ長く滞在してから開始すると、最初のinterval tickまでの短時間ではあるが超過幅がさらに大きくなり得る
+- 修正対象: `prototype/src/FeLearningApp.jsx`
+- 必須回帰防止: `prototype/tests/fe-004-regression.test.mjs`で設定時間を上限とする決定的テストを追加し、`prototype/scripts/audit-fe-mock-timer.mjs`で開始直後タイマーが設定時間を超えないことを検証する。可能なら時間経過後に減少することも検証する
+- 修正方針: active mock切替時にclockを即時更新し、残時間計算を設定durationで上限clampする防御的invariantを設ける。既存の0秒下限、科目A/B時間、restore、sticky header、通常演習非表示を維持する
 
 ### Merge commit
 
-未マージ。実装担当のためPR #5はDraftのまま維持し、別チャットの`確認`で独立合否判定後にmergeする。
+未マージ。Blocking `B2`のためPR #5はmergeしない。
 
 ### GitHub Pages result
 
-- 修正後`work` Pages workflow: `31180413956` / run `450` / success
+- Current `work` Pages workflow: `31181063294` / run `456` / success
 - Public smoke check: success
-- Published source Revision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Public `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Repository `docs/build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31180413956` / run `450`
+- Published source Revision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Public `build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Repository `docs/build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow `31181063294` / run `456`
 - Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
-- 管理文書更新後のPagesはGitHub Actionsで再検証し、確認担当は開始時に最新公開Revisionとの整合を再確認する
+- Pages evidence synchronization commit: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- `7979e7a`は公開結果の証拠更新だけで、`c0f32f8`からのアプリケーション差分はない
 
 ### Next task
 
-別チャットの`確認`で`JLL-FE-004`を独立確認する。合格・merge・`work`同期・Pages再確認完了後に`JLL-FE-LESSON-001`へ進む。
+`JLL-FE-004`のBlocking `B2`を`修正`で解消し、Draft PR #5のCI・専用browser evidence・Pagesを更新して`review_ready`へ戻す。合格・merge・`work`同期・Pages再確認完了後に`JLL-FE-LESSON-001`へ進む。
 
 ---
 
