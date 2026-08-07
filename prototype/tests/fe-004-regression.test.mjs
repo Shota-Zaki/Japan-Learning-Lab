@@ -27,10 +27,20 @@ test("exemption exam learner-facing labels are normalized without mutating sourc
   assert.equal(question.sourceRef, "2026年7月 科目A免除制度 修了試験 問1");
 });
 
-test("session stylesheet has a distinct question/explanation hierarchy and fixed mock timer", () => {
+test("session stylesheet keeps question hierarchy and moves the mock timer into a reserved header row", () => {
   const css = fs.readFileSync(new URL("../src/fe-session-enhancements.css", import.meta.url), "utf8");
+  const shell = fs.readFileSync(new URL("../src/PlatformShell.jsx", import.meta.url), "utf8");
+  const app = fs.readFileSync(new URL("../src/AppV5.jsx", import.meta.url), "utf8");
+  const learningApp = fs.readFileSync(new URL("../src/FeLearningApp.jsx", import.meta.url), "utf8");
+
   assert.match(css, /\.fe-question-content \{[^}]*font-size:\s*1\.075rem;[^}]*font-weight:\s*620;/s);
   assert.match(css, /\.fe-explanation-content \{[^}]*font-size:\s*\.95rem;[^}]*font-weight:\s*400;/s);
-  assert.match(css, /\.session-topbar > span > strong \{[^}]*position:\s*fixed;[^}]*top:[^;]+;[^}]*right:[^;]+;[^}]*z-index:\s*30;/s);
-  assert.match(css, /@media \(max-width: 520px\)[\s\S]*\.session-topbar > span > strong/);
+  assert.match(css, /\.session-topbar > span > strong \{[^}]*display:\s*none;/s);
+  assert.match(css, /\.header-session-status-inner \{[^}]*display:\s*flex;[^}]*justify-content:\s*flex-end;/s);
+  assert.match(css, /\.fe-mock-timer \{[^}]*min-height:\s*40px;[^}]*font-variant-numeric:\s*tabular-nums;/s);
+  assert.doesNotMatch(css, /\.session-topbar > span > strong \{[^}]*position:\s*fixed;/s);
+  assert.match(shell, /data-fe-session-status="mock"/);
+  assert.match(shell, /className="fe-mock-timer"/);
+  assert.match(app, /statusText=\{headerStatus\}/);
+  assert.match(learningApp, /remainingMockSeconds === null \? null : `残り \$\{formatMockRemaining\(remainingMockSeconds\)\}`/);
 });
