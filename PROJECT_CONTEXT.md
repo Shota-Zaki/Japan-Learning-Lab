@@ -47,9 +47,40 @@
 
 ## 4. Current priority
 
-現在の優先タスクは`JLL-FE-QBANK-001`で、状態は`planned`。次の実装チャットでは`実装`で開始し、最新`work` HEADをStart HEADとして記録する。
+現在の優先タスクは`JLL-FE-QBANK-001`で、状態は`in_progress`。Task Start HEADは`2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`、Draft PRは#7。大量の問題本文取り込みは未完了のため、次の`実装`でも同タスクを継続する。
 
 `JLL-FE-LESSON-001`は確認担当の独立確認に合格し、完了済み。
+
+### JLL-FE-QBANK-001 current state
+
+- Latest audited application/data implementation HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
+- PR #7: Draft / open / `work` → `main`
+- 2024〜2026 source inventory: 13ソース / 660候補 / 20 content-ready / 640 pending
+- 2009年6月・7月 official text-extractable candidate: 2ソース / 160候補 / 0 ready
+- Audited candidate universe: 820問 / 20 ready / 800 pending review
+- Recent image-only official PDFsは無検証OCRで取り込まない
+- 2009年候補も、設問・4択・公式正答・図表/表・第三者著作物・domain/unit・解説品質を確認するまでruntimeへ入れない
+- Existing primary 1,977問は互換性baselineとして保持し、primary-primary重複を自動削除しない
+- New supplemental dataだけをsource/content fingerprintで照合する
+- unique一致は`sourceOccurrences`へ統合し、ambiguous一致は自動統合しない
+
+Latest measured runtime at `31f53da8203ffdd451ef45a7d60173e19466fb45`:
+
+- Primary: 1,977問（A 1,810 / B 167）
+- Supplemental source occurrences: 20件
+- Runtime canonical: 1,996問（A 1,829 / B 167）
+- Runtime source occurrences: 1,997件
+- Supplementalとprimaryのunique repeated occurrence: 1件
+- Existing primary duplicate-content groups: 80
+- Existing primary duplicate-source groups: 62
+
+Latest CI for the audited application/data HEAD:
+
+- Pages build / verify: `31195732534` / run `523` / success
+- Build job: `92923438558` / success
+- Filter layout: `31195732632` / run `114` / success
+- Mock timer layout: `31195732251` / run `38` / success
+- Lesson layout: `31195732735` / run `15` / success
 
 ### JLL-FE-LESSON-001 final state
 
@@ -112,22 +143,39 @@ JLL-FE-004で確定した方針も維持する。
 
 ### 4.1 Work queue
 
-1. `JLL-FE-QBANK-001`: `planned`。次の`実装`で開始
+1. `JLL-FE-QBANK-001`: `in_progress`。次の`実装`で2009年候補の構造化・個別監査を継続
 2. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
 `JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`、`JLL-FE-LESSON-001`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
 
 ## 5. FE question-bank counts
 
-現行の区分は次のとおり。`JLL-FE-QBANK-001`着手時に実データから再計測する。
+`JLL-FE-QBANK-001`の現行実測は次のとおり。
 
 - 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
-- 補足問題バンク: 科目A 20問
-- 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
+- 補足source occurrence: 科目A 20件
+- 実行時canonical: 1,996問（科目A 1,829 / 科目B 167）
+- 実行時source occurrence: 1,997件
+- primary duplicate-content groups: 80
+- primary duplicate-source groups: 62
+- 2024〜2026 staging candidate: 660問
+- 2009 text-extractable candidate: 160問
+- audited candidate universe: 820問 / ready 20問 / pending review 800問
 
-`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本は公式一次資料とする。データモデルは`canonicalQuestion`と`sourceOccurrence`の分離を優先検討する。
+外部サイトの2,960問相当はユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本はRepositoryに固定したprovenanceと公式一次資料とする。canonical問題とsource occurrenceは分離し、同一内容の再出題を単純に問題数へ加算しない。
 
 ## 6. GitHub Pages status
+
+Current JLL-FE-QBANK-001 PR validation:
+
+- Audited application/data HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
+- PR Pages build / verify workflow: `31195732534` / run `523` / success
+- Build job: `92923438558` / success
+- PR-context deploy job: skipped
+- Filter browser workflow: `31195732632` / run `114` / success
+- Mock timer browser workflow: `31195732251` / run `38` / success
+- Lesson browser workflow: `31195732735` / run `15` / success
+- work-push側の公開sourceRevisionは次回開始時にもGitHub実状態から再確認する
 
 JLL-FE-LESSON-001 final post-merge publication:
 
@@ -144,13 +192,7 @@ JLL-FE-LESSON-001 final post-merge publication:
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
 - Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
 
-Pre-merge publication:
-
-- Workflow: `31188038465` / run `490` / success
-- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
-- Public smoke check: success
-
-管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物の最終sourceRevisionは上記`1ed246c...`で、次タスク開始時のBranch HEADとは区別して扱う。
+管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物sourceRevisionと最新Branch HEADは区別して扱う。
 
 ## 7. Technical stack
 
@@ -174,6 +216,9 @@ Pre-merge publication:
 cd prototype
 npm ci
 npm run dev
+npm run audit:fe-question-sources
+npm run audit:fe-question-extraction-candidates
+npm run audit:fe-question-coverage
 npm run build
 npm test
 npm run typecheck
