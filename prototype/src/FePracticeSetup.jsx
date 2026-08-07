@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowRight, CheckCircle, Exam, ListChecks, ShieldCheck, WarningCircle } from "@phosphor-icons/react";
 import { filterPracticeQuestions, scopeLabel } from "./feSession.js";
+import { getFeUnitLabel, getFeUnitLabelParts } from "./feUnitLabels.js";
 
 const subjectLabels = { A: "科目A", B: "科目B" };
 const domainLabels = {
@@ -9,20 +10,6 @@ const domainLabels = {
   strategy: "ストラテジ系",
   algorithm: "アルゴリズムとプログラミング",
   security: "情報セキュリティ",
-};
-const unitLabels = {
-  security: "情報セキュリティ",
-  network: "ネットワーク",
-  database: "データベース",
-  algorithm: "アルゴリズムとプログラミング",
-  "computer-system": "コンピュータシステム",
-  software: "ソフトウェア",
-  "project-management": "プロジェクトマネジメント",
-  "service-management": "サービスマネジメント",
-  "system-strategy": "システム戦略",
-  "business-strategy": "経営戦略",
-  "corporate-legal": "企業と法務",
-  "system-audit": "システム監査",
 };
 const mockSpecs = {
   A: { count: 60, durationMinutes: 90, label: "科目A 模擬試験" },
@@ -48,6 +35,13 @@ function resolveSelection(selection, options) {
   return selection.filter((value) => available.has(value));
 }
 
+function renderOptionLabel(option) {
+  const parts = option.labelParts?.length ? option.labelParts : [option.label];
+  return parts.map((part, index) => (
+    <span key={`${option.value}-${index}`}>{index > 0 && <wbr />}{part}</span>
+  ));
+}
+
 function ChoicePanelBody({ title, description, values, options, onChange, emptyLabel }) {
   const allSelected = options.length > 0 && values.length === options.length;
   return (
@@ -66,7 +60,7 @@ function ChoicePanelBody({ title, description, values, options, onChange, emptyL
           return (
             <label className={selected ? "is-selected" : ""} key={option.value}>
               <input type="checkbox" checked={selected} onChange={() => onChange(toggleValue(values, option.value))} />
-              <span><strong>{option.label}</strong>{option.count !== undefined && <small>{option.count}問</small>}</span>
+              <span><strong>{renderOptionLabel(option)}</strong>{option.count !== undefined && <small>{option.count}問</small>}</span>
               <CheckCircle size={16} weight={selected ? "fill" : "regular"} />
             </label>
           );
@@ -102,7 +96,7 @@ function SubjectSelector({ value, options, onChange }) {
 }
 
 function selectedLabel(value) {
-  return domainLabels[value] || unitLabels[value] || value;
+  return domainLabels[value] || getFeUnitLabel(value) || value;
 }
 
 function createGroupChips(group, title, values, options) {
@@ -151,7 +145,8 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
     .sort((left, right) => String(left).localeCompare(String(right), "ja"))
     .map((value) => ({
       value,
-      label: unitLabels[value] || value,
+      label: getFeUnitLabel(value),
+      labelParts: getFeUnitLabelParts(value),
       count: relevantByDomain.filter((question) => question.unitId === value).length,
     })), [relevantByDomain]);
   const selectedUnitIds = resolveSelection(unitIds, unitOptions);
@@ -275,9 +270,9 @@ export function FePracticeSetup({ questionBank, sessions, activeSession, bankSta
 
   const filterGroups = [
     { key: "domains", title: "1. 分野", description: "同じ条件群ではOR、他の条件群とはANDで絞り込みます。", values: selectedDomains, options: domainOptions, onChange: (next) => setGroupSelection("domains", next) },
-    { key: "unitIds", title: "2. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
+    { key: "reviewScopes", title: "2. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
     { key: "periodIds", title: "3. 開催回・公開区分", values: selectedPeriodIds, options: periodOptions, onChange: (next) => setGroupSelection("periodIds", next) },
-    { key: "reviewScopes", title: "4. 回答・復習状態", description: "未選択の場合は回答履歴で絞り込みません。", values: reviewScopes, options: reviewScopeOptions, onChange: (next) => setGroupSelection("reviewScopes", next) },
+    { key: "unitIds", title: "4. 単元", description: "日本語の単元名から複数選択できます。", values: selectedUnitIds, options: unitOptions, onChange: (next) => setGroupSelection("unitIds", next) },
   ];
 
   return (

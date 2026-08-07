@@ -77,21 +77,36 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-JAVA-001`である。
+現在の優先タスクは`JLL-FE-004`であり、状態は`planned`である。
 
-目的は、Repository内のJava Learning Labの設計、既存実装、テスト、未完了範囲を再確認し、単一の実装タスクとして具体化して再開することである。
+目的は次の4点をFE演習へ反映することである。
 
-確定条件:
+1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付ける
+2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
+3. 2022年科目Aサンプルを通常演習の出題対象から除外する
+4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-- Repository実状態を正本としてJava関連のsrc、tests、scripts、routing、build設定を確認する
-- 現在実装済みの機能、未完了機能、壊れている経路、テスト不足を整理する
-- 目的、対象範囲、対象外、完了条件、検証方法を`task-list.md`と`NEXT_WORK.md`へ記録する
-- UIまたは画面構成を変更する場合は、実装前にRootおよび`prototype/`の`DESIGN.md`を更新する
-- 完了済みFE機能の追加仕様変更を混在させない
-- GitHub Pagesの一時スキップ方針を継続する
+`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格判定済みである。確認入力HEADは`31332628e5ad412c685c1e19f0c31eda99c51d43`。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。PR `#4`はmerge commit方式で`main`へマージし、`work`を最新`main`へ同期する。merge commitは確認フロー完了時に`task-list.md`へ記録する。
 
-`JLL-FE-002`は確認合格し、Pull Request #3をmerge commit方式で`main`へマージ済みである。
-`JLL-FE-001`は確認合格し、Pull Request #1をmerge commit方式で`main`へマージ済みである。
+JLL-FE-003の確認証拠:
+
+- PR build workflow: `31155342510` / run `404` / success
+- Browser audit workflow: `31155342511` / run `63` / success
+- Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
+- Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
+- Pages deployment: workflow `31155340547` / run `403` / success
+- Public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
+- Tests: 60 / 60 success
+- TypeScript、ESLint、normal build、Pages build: success
+- 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
+
+`JLL-FE-004`完了後の優先順は次のとおり。
+
+1. `JLL-FE-LESSON-001`: FEレッスン内容作成
+2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。既存の進行中作業と競合しない時点で着手
+3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
+
+`JLL-FE-001`と`JLL-FE-002`は確認合格し、merge commit方式で`main`へマージ済みである。`JLL-FE-003`も確認合格済みで、PR #4のmerge処理中である。
 
 FE問題数は次の区分を正確に使う。
 
@@ -99,34 +114,20 @@ FE問題数は次の区分を正確に使う。
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
 
-## 5.1 Temporary GitHub Pages skip policy
+## 5.1 GitHub Pages status
 
-2026-08-07のユーザー指示により、GitHub Pagesが正常に完了できる状態へ回復したと確認されるまで、すべてのタスクでPages依存工程をスキップする。
+2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-スキップ対象:
+解除根拠:
 
-- GitHub Pages deploymentの実行または再実行を完了条件にすること
-- 公開URLの最新Revision一致確認
-- 公開画面を使用した表示確認
-- 公開リソースのNetwork、Console、スモーク確認
-- deployment成功後にだけ行える`docs/`および公開証拠の同期
-- Pages障害だけを理由にタスクを`blocked`または`needs_fix`へ変更すること
-- Pages復旧確認前の連続retry
+- workflow `31155340547` / run `403` のbuildがsuccess
+- GitHub Pages deployがsuccess
+- 公開URLの`build-info.json` Revision一致確認がsuccess
+- index、生成アセット、問題データ、サンプル図表のpublic smoke checkがsuccess
+- Repository `docs/`と公開証拠の同期commit `4cd677854fda9f4a4f204df5519e86f5600fc595`が作成済み
+- `prototype/qa/pages-deployment.json`は`status: success`、`publicSmokeCheck: success`を記録済み
 
-継続対象:
-
-- 通常build
-- 自動テスト
-- 型検査
-- Lint
-- `npm run build:pages`によるPages成果物生成
-- Pages artifact uploadまでの検証
-- ソースコード、生成物、固定HEAD、Pull Request差分の確認
-- Pages以外の完了条件に基づく実装、確認、マージ、次タスク開始
-
-自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用しない。Pages deployの手動再実行は行わない。
-
-解除条件は、GitHub Pagesのdeploymentが正常完了可能であることを実際に確認し、ユーザーまたはRepository管理文書で本ルールを解除した場合とする。
+Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
 ## 6. Technical stack
 
@@ -244,7 +245,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
-絞り込みレイアウト改善は`JLL-FE-002`で完了済みであり、追加変更を行う場合は新しいTask IDを作成する。
+絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で確認合格済みである。以後の追加変更は別Task IDとして管理する。
 
 ## 11. Source data policy
 
@@ -254,7 +255,7 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 - 出典識別情報を内部データに保持する
 - 公式サンプルと実試験過去問題を区別する
 - 重複は、科目、問題文、選択肢、正答を正規化した指紋で扱う
-- 図表付き問題は、本文、選択肢、図表、正答が揃うまで公開セットとして完成扱いにしない
+- 図表付き問題は、本文、選択肢、正答、必要図表が揃うまで公開セットとして完成扱いにしない
 - 固定同期元に公式冊子の図表が存在しない場合は、公式冊子と照合した補完資産をRepository管理下へ置き、対象問題IDを明示して付与する
 - 補完資産には意味のある代替テキストを付け、通常buildとPages buildの双方へ含める
 - 図表要件は公式冊子の実構成を根拠とし、引継ぎ文書の誤った前提を優先しない
@@ -275,7 +276,5 @@ FE問題データの同期元は、Repository内の管理文書と同期スク�
 8. 必要に応じてRootおよび`prototype/`の`DESIGN.md`
 9. 最新CI
 10. `docs/`とGitHub Pagesの公開状態
-
-GitHub Pagesの一時スキップ方針が有効な間は、手順10を状態記録だけに限定し、公開確認やretryをBlocking条件にしない。
 
 新しいチャットでユーザーが送る起動コマンドは、原則として`実装`、`修正`、`確認`のいずれかとする。

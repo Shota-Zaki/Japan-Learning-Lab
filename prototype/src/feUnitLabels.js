@@ -1,0 +1,89 @@
+export const FE_UNIT_LABELS = {
+  "algorithm-design": { label: "アルゴリズム設計", parts: ["アルゴリズム", "設計"] },
+  "algorithm-programming": { label: "アルゴリズムとプログラミング", parts: ["アルゴリズムと", "プログラミング"] },
+  "algorithm-programming-basics": { label: "アルゴリズム・プログラミング基礎", parts: ["アルゴリズム・", "プログラミング基礎"] },
+  arrays: { label: "配列", parts: ["配列"] },
+  "basic-theory": { label: "基礎理論", parts: ["基礎理論"] },
+  "business-industry": { label: "ビジネスインダストリ", parts: ["ビジネス", "インダストリ"] },
+  "business-strategy": { label: "経営戦略", parts: ["経営戦略"] },
+  complexity: { label: "計算量", parts: ["計算量"] },
+  "computer-components": { label: "コンピュータ構成要素", parts: ["コンピュータ", "構成要素"] },
+  "computer-system": { label: "コンピュータシステム", parts: ["コンピュータ", "システム"] },
+  conditionals: { label: "条件分岐", parts: ["条件分岐"] },
+  "corporate-activity": { label: "企業活動", parts: ["企業活動"] },
+  "corporate-legal": { label: "企業と法務", parts: ["企業と", "法務"] },
+  database: { label: "データベース", parts: ["データベース"] },
+  "functions-procedures": { label: "関数・手続", parts: ["関数・", "手続"] },
+  hardware: { label: "ハードウェア", parts: ["ハードウェア"] },
+  "human-interface": { label: "ヒューマンインタフェース", parts: ["ヒューマン", "インタフェース"] },
+  "information-security": { label: "情報セキュリティ", parts: ["情報", "セキュリティ"] },
+  law: { label: "法務", parts: ["法務"] },
+  lists: { label: "リスト", parts: ["リスト"] },
+  loops: { label: "繰返し", parts: ["繰返し"] },
+  multimedia: { label: "マルチメディア", parts: ["マルチメディア"] },
+  network: { label: "ネットワーク", parts: ["ネットワーク"] },
+  "program-trace": { label: "プログラムトレース", parts: ["プログラム", "トレース"] },
+  "project-management": { label: "プロジェクトマネジメント", parts: ["プロジェクト", "マネジメント"] },
+  queue: { label: "キュー", parts: ["キュー"] },
+  recursion: { label: "再帰", parts: ["再帰"] },
+  search: { label: "探索", parts: ["探索"] },
+  security: { label: "セキュリティ", parts: ["セキュリティ"] },
+  "service-management": { label: "サービスマネジメント", parts: ["サービス", "マネジメント"] },
+  software: { label: "ソフトウェア", parts: ["ソフトウェア"] },
+  "software-development-management": { label: "ソフトウェア開発管理", parts: ["ソフトウェア", "開発管理"] },
+  sorting: { label: "整列", parts: ["整列"] },
+  stack: { label: "スタック", parts: ["スタック"] },
+  "string-processing": { label: "文字列処理", parts: ["文字列", "処理"] },
+  "system-audit": { label: "システム監査", parts: ["システム", "監査"] },
+  "system-components": { label: "システム構成要素", parts: ["システム", "構成要素"] },
+  "system-development": { label: "システム開発", parts: ["システム", "開発"] },
+  "system-planning": { label: "システム企画", parts: ["システム", "企画"] },
+  "system-strategy": { label: "システム戦略", parts: ["システム", "戦略"] },
+  "technology-strategy": { label: "技術戦略マネジメント", parts: ["技術戦略", "マネジメント"] },
+  trees: { label: "木構造", parts: ["木構造"] },
+  "two-dimensional-arrays": { label: "二次元配列", parts: ["二次元", "配列"] },
+  unclassified: { label: "未分類", parts: ["未分類"] },
+  "variables-data-types": { label: "変数・データ型", parts: ["変数・", "データ型"] },
+};
+
+const UNKNOWN_UNIT_LABEL = "単元名未登録";
+const FE_UNIT_LABEL_ALIASES = {
+  "アルゴリズムとプログラミング": "algorithm-programming",
+  "システム開発技術": "system-development",
+  "ソフトウェア開発管理技術": "software-development-management",
+};
+
+function normalizeLookupValue(value) {
+  return String(value ?? "").normalize("NFKC").trim().toLowerCase();
+}
+
+const FE_UNIT_IDS_BY_LENGTH = Object.keys(FE_UNIT_LABELS).sort((left, right) => right.length - left.length);
+const FE_UNIT_IDS_BY_LABEL = new Map(
+  Object.entries(FE_UNIT_LABELS).map(([unitId, entry]) => [normalizeLookupValue(entry.label), unitId]),
+);
+for (const [label, unitId] of Object.entries(FE_UNIT_LABEL_ALIASES)) {
+  FE_UNIT_IDS_BY_LABEL.set(normalizeLookupValue(label), unitId);
+}
+const FE_UNIT_LABELS_BY_LENGTH = [...FE_UNIT_IDS_BY_LABEL.keys()].sort((left, right) => right.length - left.length);
+
+export function resolveFeUnitLabelId(unitId) {
+  const normalized = normalizeLookupValue(unitId);
+  if (FE_UNIT_LABELS[normalized]) return normalized;
+  if (FE_UNIT_IDS_BY_LABEL.has(normalized)) return FE_UNIT_IDS_BY_LABEL.get(normalized);
+
+  const canonicalSuffix = FE_UNIT_IDS_BY_LENGTH.find((candidate) => normalized.endsWith(candidate));
+  if (canonicalSuffix) return canonicalSuffix;
+
+  const labelSuffix = FE_UNIT_LABELS_BY_LENGTH.find((label) => normalized.endsWith(label));
+  return labelSuffix ? FE_UNIT_IDS_BY_LABEL.get(labelSuffix) : null;
+}
+
+export function getFeUnitLabel(unitId) {
+  const resolved = resolveFeUnitLabelId(unitId);
+  return resolved ? FE_UNIT_LABELS[resolved].label : UNKNOWN_UNIT_LABEL;
+}
+
+export function getFeUnitLabelParts(unitId) {
+  const resolved = resolveFeUnitLabelId(unitId);
+  return resolved ? FE_UNIT_LABELS[resolved].parts : [UNKNOWN_UNIT_LABEL];
+}

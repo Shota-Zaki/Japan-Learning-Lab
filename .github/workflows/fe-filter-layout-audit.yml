@@ -25,11 +25,35 @@ jobs:
       - name: Build Pages artifact
         run: npm run build:pages
       - name: Audit three filter layouts
-        run: npm run audit:fe-filter-layouts
+        run: |
+          for attempt in 1 2; do
+            if npm run audit:fe-filter-layouts; then
+              break
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+            echo "Browser audit did not produce valid evidence; retrying once after a short delay"
+            sleep 5
+          done
+      - name: Verify complete Japanese unit labels
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+
+          const evidence = JSON.parse(await readFile("qa/jll-fe-003-browser/audit.json", "utf8"));
+          const labels = evidence.scenarios.flatMap((scenario) => scenario.metrics.unitLabels || []);
+          const unknownLabels = labels.filter((label) => label === "単元名未登録");
+          const uniqueLabels = new Set(labels);
+
+          if (labels.length === 0) throw new Error("Unit labels were not captured by the browser audit");
+          if (unknownLabels.length > 0) throw new Error(`${unknownLabels.length} learner-facing unit labels are unresolved`);
+          if (uniqueLabels.size < 10) throw new Error(`Only ${uniqueLabels.size} distinct unit labels were rendered`);
+          NODE
       - name: Upload browser evidence
         uses: actions/upload-artifact@v4
         with:
-          name: fe-filter-layout-evidence
-          path: prototype/qa/jll-fe-002-browser
+          name: fe-filter-density-evidence
+          path: prototype/qa/jll-fe-003-browser
           include-hidden-files: true
           retention-days: 7
