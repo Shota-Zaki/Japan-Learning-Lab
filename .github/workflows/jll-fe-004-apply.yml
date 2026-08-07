@@ -10,18 +10,171 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  apply-and-verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: work
-      - name: Record workflow execution
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+
+      - name: Apply implementation
         run: |
-          mkdir -p prototype/qa
-          printf '%s\n' "${GITHUB_SHA}" > prototype/qa/jll-fe-004-workflow-start.txt
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"expected text not found in {path}: {old[:160]!r}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "DESIGN.md",
+              "- 本文、コード、表、選択肢、解説を視覚的に分離する\n- コードは等幅書体と内部横スクロールを使用する",
+              "- 本文、コード、表、選択肢、解説を視覚的に分離する\n- 問題本文は解説本文より一段強い文字サイズとウェイトを使い、問題見出し・本文・解説見出し・解説本文の順に視覚階層を明確にする\n- 解説は正答根拠などの構造を保ちつつ、問題本文より小さく軽い本文ウェイトで読み分けられるようにする\n- コードは等幅書体と内部横スクロールを使用する",
+          )
+          replace_once(
+              "DESIGN.md",
+              "- 模擬試験終了前に正誤と解説を表示しない\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する",
+              "- 模擬試験終了前に正誤と解説を表示しない\n- 模擬試験中の残り時間はサイトヘッダー右上の未使用領域へ固定し、スクロール中も常時表示する\n- 固定タイマーは375pxを含む代表幅で本文・操作・グローバルナビゲーションを覆わない小型表示とする\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する",
+          )
+          replace_once(
+              "prototype/DESIGN.md",
+              "- 本文、コード、表、選択肢、解説を視覚的に分離する。\n- 通常演習は回答確定後に選択内容を変更できない。",
+              "- 本文、コード、表、選択肢、解説を視覚的に分離する。\n- 問題本文は解説本文より一段強い文字サイズ・ウェイトとし、問題見出し、問題本文、解説見出し、解説本文の差を明確にする。\n- 解説本文は問題本文より小さく軽いウェイトとし、詳細解説の各見出しで構造を補強する。\n- 通常演習は回答確定後に選択内容を変更できない。",
+          )
+          replace_once(
+              "prototype/DESIGN.md",
+              "- 模擬試験終了前は正誤・解説を表示しない。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
+              "- 模擬試験終了前は正誤・解説を表示しない。\n- 模擬試験中の残り時間はサイトヘッダー右上の空き領域へ固定し、スクロール中も常時表示する。\n- 375px、768px、1,280px以上で固定タイマーがブランド、ナビゲーション、問題本文、主要操作を覆わないことを確認する。\n- 完了後は各問題をキーボード操作可能な開閉ブロックとして表示する。",
+          )
+
+          Path("prototype/src/feQuestionAvailability.js").write_text('''export function isFeQuestionAvailableForSetup(question, sessionType) {\n  if (sessionType !== "topic") return true;\n  return !((question.subject || "A") === "A" && question.periodId === "2022-sample");\n}\n''')
+
+          Path("prototype/src/feLearnerLabels.js").write_text('''const periodLabels = {\n  "2026-exemption-07": "令和8年度 免除試験",\n};\n\nexport function fePeriodLabel(periodId, fallback = "") {\n  return periodLabels[periodId] || fallback || periodId || "";\n}\n\nfunction normalizedQuestionNumber(question) {\n  const value = Number(question?.sourceQuestionNumber);\n  return Number.isFinite(value) ? value : null;\n}\n\nexport function feQuestionTitle(question) {\n  if (!question) return "";\n  const mappedPeriod = periodLabels[question.periodId];\n  if (mappedPeriod) {\n    const questionNumber = normalizedQuestionNumber(question);\n    return questionNumber === null ? mappedPeriod : `${mappedPeriod} 問${questionNumber}`;\n  }\n  return question.title || question.sourceRef || question.id || "";\n}\n\nexport function feSourceDisplayLabel(question) {\n  if (!question) return "";\n  const mappedPeriod = periodLabels[question.periodId];\n  if (mappedPeriod) {\n    const questionNumber = normalizedQuestionNumber(question);\n    return questionNumber === null ? mappedPeriod : `${mappedPeriod} 問${questionNumber}`;\n  }\n  return question.sourceRef || question.sourceQuestionNumber || question.id || "";\n}\n''')
+
+          replace_once(
+              "prototype/src/FePracticeSetup.jsx",
+              'import { getFeUnitLabel, getFeUnitLabelParts } from "./feUnitLabels.js";',
+              'import { getFeUnitLabel, getFeUnitLabelParts } from "./feUnitLabels.js";\nimport { isFeQuestionAvailableForSetup } from "./feQuestionAvailability.js";\nimport { fePeriodLabel } from "./feLearnerLabels.js";',
+          )
+          replace_once(
+              "prototype/src/FePracticeSetup.jsx",
+              '  const relevantBySubject = useMemo(\n    () => questionBank.filter((question) => (question.subject || "A") === subject),\n    [questionBank, subject],\n  );',
+              '  const relevantBySubject = useMemo(\n    () => questionBank.filter((question) => (question.subject || "A") === subject && isFeQuestionAvailableForSetup(question, sessionType)),\n    [questionBank, sessionType, subject],\n  );',
+          )
+          replace_once(
+              "prototype/src/FePracticeSetup.jsx",
+              '  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, question.periodLabel])).entries()]',
+              '  const periodOptions = useMemo(() => [...new Map(relevantByUnit.map((question) => [question.periodId, fePeriodLabel(question.periodId, question.periodLabel)])).entries()]',
+          )
+
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              'import { buildSessionReviewItems, choiceLabels } from "./fePresentation.js";',
+              'import { buildSessionReviewItems, choiceLabels } from "./fePresentation.js";\nimport { fePeriodLabel, feQuestionTitle, feSourceDisplayLabel } from "./feLearnerLabels.js";',
+          )
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              '<span>{question.periodLabel}</span>',
+              '<span>{fePeriodLabel(question.periodId, question.periodLabel)}</span>',
+          )
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              '<p className="question-source-title">{question.title || question.sourceRef}</p>',
+              '<p className="question-source-title">{feQuestionTitle(question)}</p>',
+          )
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              '<div><dt>識別</dt><dd>{question.sourceRef || question.sourceQuestionNumber || question.id}</dd></div>',
+              '<div><dt>識別</dt><dd>{feSourceDisplayLabel(question)}</dd></div>',
+          )
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              '<strong>{subjectLabels[question?.subject || "A"]}・{question?.title || questionId}</strong>',
+              '<strong>{subjectLabels[question?.subject || "A"]}・{question ? feQuestionTitle(question) : questionId}</strong>',
+          )
+          replace_once(
+              "prototype/src/FeSessionView.jsx",
+              '{question.periodLabel && <span>{question.periodLabel}</span>}',
+              '{question.periodLabel && <span>{fePeriodLabel(question.periodId, question.periodLabel)}</span>}',
+          )
+
+          css = Path("prototype/src/fe-session-enhancements.css")
+          marker = "/* JLL-FE-004 readability and fixed mock timer */"
+          css_text = css.read_text()
+          if marker not in css_text:
+              css.write_text(css_text + f'''\n\n{marker}\n.fe-question-card > h1 {{\n  margin: 0 0 .9rem;\n  color: #173844;\n  font-size: clamp(1.28rem, 2.2vw, 1.6rem);\n  font-weight: 850;\n  letter-spacing: -.02em;\n  line-height: 1.35;\n  text-transform: none;\n}}\n\n.fe-question-content {{\n  color: #1c3038;\n  font-size: 1.075rem;\n  font-weight: 620;\n  line-height: 1.95;\n}}\n\n.fe-question-content.fe-rich-content > p {{\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n}}\n\n.fe-detailed-explanation {{\n  color: #34484f;\n  font-size: .95rem;\n  font-weight: 400;\n  line-height: 1.8;\n}}\n\n.fe-explanation-heading h2,\n.fe-explanation-heading h3 {{\n  color: #20383f;\n  font-size: 1.16rem;\n  font-weight: 820;\n  letter-spacing: -.01em;\n}}\n\n.fe-explanation-section h3,\n.fe-explanation-section h4 {{\n  color: #29434a;\n  font-size: 1rem;\n  font-weight: 790;\n}}\n\n.fe-explanation-content {{\n  font-size: .95rem;\n  font-weight: 400;\n  line-height: 1.85;\n}}\n\n.fe-explanation-content.fe-rich-content > p {{\n  font-size: inherit;\n  font-weight: inherit;\n  line-height: inherit;\n}}\n\n.result-question-detail > h3:first-of-type {{\n  color: #173844;\n  font-size: 1.2rem;\n  font-weight: 820;\n}}\n\n.session-topbar > span > strong {{\n  position: fixed;\n  top: max(10px, env(safe-area-inset-top));\n  right: max(16px, calc((100vw - 1400px) / 2 + 24px));\n  z-index: 30;\n  display: inline-flex;\n  align-items: center;\n  min-height: 44px;\n  padding: 0 12px;\n  border: 1px solid color-mix(in srgb, var(--accent-700) 45%, #cfdde3);\n  border-radius: 999px;\n  background: rgb(255 255 255 / 96%);\n  box-shadow: 0 4px 14px rgb(23 61 77 / 12%);\n  color: var(--accent-950);\n  font-size: .86rem;\n  font-variant-numeric: tabular-nums;\n  font-weight: 850;\n  letter-spacing: .01em;\n  line-height: 1;\n  white-space: nowrap;\n  pointer-events: none;\n}}\n\n@media (max-width: 520px) {{\n  .fe-question-content {{\n    font-size: 1rem;\n    font-weight: 610;\n  }}\n\n  .fe-detailed-explanation,\n  .fe-explanation-content {{\n    font-size: .9rem;\n  }}\n\n  .session-topbar > span > strong {{\n    top: max(12px, env(safe-area-inset-top));\n    right: 12px;\n    min-height: 40px;\n    padding-inline: 10px;\n    font-size: .78rem;\n  }}\n}}\n''')
+
+          Path("prototype/tests/fe-004-regression.test.mjs").write_text('''import assert from "node:assert/strict";\nimport fs from "node:fs";\nimport test from "node:test";\nimport { isFeQuestionAvailableForSetup } from "../src/feQuestionAvailability.js";\nimport { fePeriodLabel, feQuestionTitle, feSourceDisplayLabel } from "../src/feLearnerLabels.js";\n\ntest("2022 subject A sample is excluded only from normal topic setup", () => {\n  const sample = { subject: "A", periodId: "2022-sample" };\n  assert.equal(isFeQuestionAvailableForSetup(sample, "topic"), false);\n  assert.equal(isFeQuestionAvailableForSetup(sample, "mock"), true);\n  assert.equal(isFeQuestionAvailableForSetup({ ...sample, subject: "B" }, "topic"), true);\n});\n\ntest("exemption exam learner-facing labels are normalized without mutating source data", () => {\n  const question = {\n    id: "fe-exemption-202607-q001",\n    periodId: "2026-exemption-07",\n    periodLabel: "2026年7月 科目A免除制度 修了試験",\n    title: "2026年7月 修了試験 問1",\n    sourceRef: "2026年7月 科目A免除制度 修了試験 問1",\n    sourceQuestionNumber: 1,\n  };\n  assert.equal(fePeriodLabel(question.periodId, question.periodLabel), "令和8年度 免除試験");\n  assert.equal(feQuestionTitle(question), "令和8年度 免除試験 問1");\n  assert.equal(feSourceDisplayLabel(question), "令和8年度 免除試験 問1");\n  assert.equal(question.periodLabel, "2026年7月 科目A免除制度 修了試験");\n  assert.equal(question.sourceRef, "2026年7月 科目A免除制度 修了試験 問1");\n});\n\ntest("session stylesheet has a distinct question/explanation hierarchy and fixed mock timer", () => {\n  const css = fs.readFileSync(new URL("../src/fe-session-enhancements.css", import.meta.url), "utf8");\n  assert.match(css, /\\.fe-question-content \\{[^}]*font-size:\\s*1\\.075rem;[^}]*font-weight:\\s*620;/s);\n  assert.match(css, /\\.fe-explanation-content \\{[^}]*font-size:\\s*\\.95rem;[^}]*font-weight:\\s*400;/s);\n  assert.match(css, /\\.session-topbar > span > strong \\{[^}]*position:\\s*fixed;[^}]*top:[^;]+;[^}]*right:[^;]+;[^}]*z-index:\\s*30;/s);\n  assert.match(css, /@media \\(max-width: 520px\\)[\\s\\S]*\\.session-topbar > span > strong/);\n});\n''')
+          PY
+
+      - name: Commit implementation before verification
+        id: implementation
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prototype/qa/jll-fe-004-workflow-start.txt
-          git commit -m "chore: record JLL-FE-004 workflow execution [skip ci]"
+          git add DESIGN.md prototype/DESIGN.md prototype/src prototype/tests/fe-004-regression.test.mjs
+          git diff --cached --check
+          git commit -m "feat: implement JLL-FE-004 exercise refinements"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          git push origin HEAD:work
+
+      - name: Install dependencies
+        working-directory: prototype
+        run: npm ci
+
+      - name: Verify FE implementation
+        working-directory: prototype
+        run: npm run verify:fe
+
+      - name: Run responsive browser audit
+        working-directory: prototype
+        run: npm run audit:fe-filter-layouts
+
+      - name: Record successful verification
+        if: success()
+        env:
+          IMPLEMENTATION_SHA: ${{ steps.implementation.outputs.sha }}
+        run: |
+          git restore docs prototype/public/data/fe-official-past-questions.json prototype/qa/jll-fe-003-browser || true
+          cat > prototype/qa/jll-fe-004-implementation-verification.json <<EOF
+          {
+            "status": "success",
+            "implementationRevision": "${IMPLEMENTATION_SHA}",
+            "verifyFe": "success",
+            "responsiveBrowserAudit": "success",
+            "representativeWidths": [375, 768, 1280]
+          }
+          EOF
+          git rm .github/workflows/jll-fe-004-apply.yml
+          git rm -f prototype/qa/jll-fe-004-workflow-start.txt || true
+          git add prototype/qa/jll-fe-004-implementation-verification.json
+          git commit -m "chore: record JLL-FE-004 implementation verification [skip ci]"
+          git push origin HEAD:work
+
+      - name: Record failed verification
+        if: failure() && steps.implementation.outcome == 'success'
+        env:
+          IMPLEMENTATION_SHA: ${{ steps.implementation.outputs.sha }}
+        run: |
+          git restore docs prototype/public/data/fe-official-past-questions.json prototype/qa/jll-fe-003-browser || true
+          cat > prototype/qa/jll-fe-004-implementation-verification.json <<EOF
+          {
+            "status": "failure",
+            "implementationRevision": "${IMPLEMENTATION_SHA}",
+            "workflowRunId": "${GITHUB_RUN_ID}",
+            "workflowRunNumber": "${GITHUB_RUN_NUMBER}"
+          }
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prototype/qa/jll-fe-004-implementation-verification.json
+          git commit -m "chore: record JLL-FE-004 verification failure [skip ci]"
           git push origin HEAD:work
