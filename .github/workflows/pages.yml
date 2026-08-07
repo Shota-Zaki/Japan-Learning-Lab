@@ -1,250 +1,58 @@
-name: Build and deploy GitHub Pages
+name: One-shot repository docs synchronization
 
 on:
   push:
     branches: [work]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  group: docs-sync-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
+  sync:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: prototype
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: work
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: prototype/package-lock.json
-      - run: npm ci
-      - name: Verify FE implementation
-        run: npm run verify:fe
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs
-      - name: Upload generated repository output
-        if: github.ref == 'refs/heads/work' && github.event_name == 'push'
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-pages-source
-          path: |
-            docs
-            prototype/public/data/fe-official-past-questions.json
-          include-hidden-files: true
-          retention-days: 1
-
-  deploy:
-    if: github.ref == 'refs/heads/work' && github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Request cancellation of stale Pages deployment
+      - name: Install dependencies
+        working-directory: prototype
+        run: npm ci
+      - name: Run required verification
+        working-directory: prototype
+        run: |
+          npm test
+          npm run typecheck
+          npm run lint
+          npm run build
+          npm run audit:fe-filter-layouts
+      - name: Build fixed Pages output twice
+        working-directory: prototype
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          STALE_DEPLOYMENT: 7ac17dd605546149649223e88dd67f22d32c70d3
+          FIXED_APPLICATION_SHA: 66a03576b5b9ac2c86c35c63045f923137f08a0c
         run: |
           set -euo pipefail
-          api="https://api.github.com/repos/${REPOSITORY}/pages/deployments/${STALE_DEPLOYMENT}"
-          headers=(
-            -H "Accept: application/vnd.github+json"
-            -H "Authorization: Bearer ${GH_TOKEN}"
-            -H "X-GitHub-Api-Version: 2022-11-28"
-          )
-          code="$(curl -sS -L -o /tmp/deployment.json -w '%{http_code}' "${headers[@]}" "${api}")"
-          if [[ "${code}" == "404" ]]; then exit 0; fi
-          if [[ "${code}" != "200" ]]; then cat /tmp/deployment.json; exit 1; fi
-          status="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/deployment.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
-          echo "Stale Pages deployment status: ${status}"
-          case "${status}" in
-            succeed|success|cancelled|canceled|error|failure|deployment_succeeded|deployment_cancelled|deployment_canceled|deployment_failed)
-              exit 0
-              ;;
-          esac
-          cancel_code="$(curl -sS -L -X POST -o /tmp/cancel.json -w '%{http_code}' "${headers[@]}" "${api}/cancel")"
-          if [[ "${cancel_code}" != "204" && "${cancel_code}" != "404" ]]; then
-            cat /tmp/cancel.json
-            echo "Unable to request stale deployment cancellation: HTTP ${cancel_code}" >&2
-            exit 1
-          fi
-          sleep 5
-          check_code="$(curl -sS -L -o /tmp/check.json -w '%{http_code}' "${headers[@]}" "${api}")"
-          if [[ "${check_code}" == "404" ]]; then exit 0; fi
-          if [[ "${check_code}" != "200" ]]; then cat /tmp/check.json; exit 1; fi
-          current="$(node --input-type=module -e 'import { readFileSync } from "node:fs"; const data=JSON.parse(readFileSync("/tmp/check.json","utf8")); process.stdout.write(String(data.status ?? "unknown"));')"
-          echo "Status after cancellation request: ${current}"
-          case "${current}" in
-            cancelled|canceled|error|failure|deployment_cancelled|deployment_canceled|deployment_failed) exit 0 ;;
-            *) echo "Cancellation was accepted but the stale status has not propagated; continuing to the authoritative deploy step." ;;
-          esac
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Verify public Pages resources and revision
-        env:
-          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-          SOURCE_SHA: ${{ github.sha }}
+          GITHUB_SHA="$FIXED_APPLICATION_SHA" npm run build:pages
+          test "$(node -p "require('../docs/build-info.json').sourceRevision")" = "$FIXED_APPLICATION_SHA"
+          rm -rf /tmp/pages-first
+          cp -a ../docs /tmp/pages-first
+          GITHUB_SHA="$FIXED_APPLICATION_SHA" npm run build:pages
+          diff -qr /tmp/pages-first ../docs
+      - name: Commit generated docs
         run: |
-          node --input-type=module <<'NODE'
-          const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-          async function get(url, attempts = 24) {
-            let lastError;
-            for (let attempt = 1; attempt <= attempts; attempt += 1) {
-              try {
-                const target = new URL(url);
-                target.searchParams.set("verify", `${process.env.SOURCE_SHA}-${attempt}`);
-                const response = await fetch(target, { cache: "no-store", redirect: "follow" });
-                if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-                return response;
-              } catch (error) {
-                lastError = error;
-                if (attempt < attempts) await delay(5000);
-              }
-            }
-            throw lastError;
-          }
-          const root = new URL(process.env.PAGE_URL);
-          const buildInfoUrl = new URL("build-info.json", root);
-          let buildInfo;
-          for (let attempt = 1; attempt <= 24; attempt += 1) {
-            buildInfo = await (await get(buildInfoUrl, 1)).json();
-            if (buildInfo.sourceRevision === process.env.SOURCE_SHA) break;
-            if (attempt === 24) throw new Error(`Published revision is ${buildInfo.sourceRevision}`);
-            await delay(5000);
-          }
-          const index = await (await get(root)).text();
-          if (!index.includes("Japan Learning Lab")) throw new Error("Expected title is missing");
-          const dataUrl = new URL("data/fe-official-past-questions.json", root);
-          const data = await (await get(dataUrl)).json();
-          const expected = new Map([
-            ["fe-ipa-2022sample-a-005", "assets/fe/a-2022-005-figure.svg"],
-            ["fe-ipa-2022sample-a-006", "assets/fe/a-2022-006-figure.svg"],
-            ["fe-ipa-2022sample-a-007", "assets/fe/a-2022-007-figure.svg"],
-          ]);
-          const resources = new Set([buildInfoUrl.href, dataUrl.href, new URL("favicon.svg", root).href]);
-          for (const [id, src] of expected) {
-            const question = data.questions?.find((item) => item.id === id);
-            const blocks = [
-              ...(question?.questionBlocks || []),
-              ...(question?.choices || []).flatMap((choice) => choice.contentBlocks || []),
-            ];
-            if (!blocks.some((block) => block?.type === "image" && block.src === src)) {
-              throw new Error(`${id} does not reference ${src}`);
-            }
-            resources.add(new URL(src, root).href);
-          }
-          for (const match of index.matchAll(/(?:src|href)="([^"]+)"/g)) {
-            const url = new URL(match[1], root);
-            if (url.origin === root.origin && url.pathname.startsWith(root.pathname)) resources.add(url.href);
-          }
-          for (const url of resources) {
-            const bytes = new Uint8Array(await (await get(url)).arrayBuffer());
-            if (bytes.length === 0) throw new Error(`Empty resource: ${url}`);
-          }
-          console.log(`Public smoke check passed at ${process.env.SOURCE_SHA}`);
-          NODE
-
-      - uses: actions/checkout@v4
-        with:
-          ref: work
-      - run: git pull --ff-only origin work
-      - uses: actions/download-artifact@v4
-        with:
-          name: generated-pages-source
-          path: .
-      - name: Record successful Pages deployment
-        env:
-          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-          SOURCE_SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
-          RUN_ATTEMPT: ${{ github.run_attempt }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFile, rm, writeFile } from "node:fs/promises";
-          const buildInfo = JSON.parse(await readFile("docs/build-info.json", "utf8"));
-          if (buildInfo.sourceRevision !== process.env.SOURCE_SHA) throw new Error("Repository build revision mismatch");
-          const html = await readFile("docs/index.html", "utf8");
-          const script = html.match(/<script[^>]+src="([^"]+)"/)?.[1] ?? null;
-          const stylesheet = html.match(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/)?.[1]
-            ?? html.match(/<link[^>]+href="([^"]+)"[^>]+rel="stylesheet"/)?.[1]
-            ?? null;
-          await writeFile("prototype/qa/pages-deployment.json", `${JSON.stringify({
-            status: "success",
-            publicSmokeCheck: "success",
-            pageUrl: process.env.PAGE_URL,
-            sourceBranch: "work",
-            sourceRevision: process.env.SOURCE_SHA,
-            publicBuildInfoSourceRevision: process.env.SOURCE_SHA,
-            repositoryBuildInfoSourceRevision: buildInfo.sourceRevision,
-            publishedAssets: { script, stylesheet },
-            checks: { index: "success", buildInfo: "success", generatedAssets: "success", questionData: "success", sampleFigures: "success" },
-            workflowRunId: Number(process.env.RUN_ID),
-            workflowRunNumber: Number(process.env.RUN_NUMBER),
-            workflowRunAttempt: Number(process.env.RUN_ATTEMPT),
-            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
-          }, null, 2)}\n`);
-          await rm("prototype/qa/pages-deployment-failure.json", { force: true });
-          await rm("prototype/qa/pages-recovery-attempt.json", { force: true });
-          NODE
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A docs prototype/public/data/fe-official-past-questions.json prototype/qa/pages-deployment.json prototype/qa/pages-deployment-failure.json prototype/qa/pages-recovery-attempt.json
+          git add -A docs
           git diff --cached --quiet && exit 0
-          git commit -m "docs: sync successful Pages deployment evidence [skip ci]"
-          git push origin HEAD:work
-
-      - uses: actions/checkout@v4
-        if: failure()
-        with:
-          ref: work
-      - name: Record failed Pages deployment
-        if: failure()
-        env:
-          SOURCE_SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
-          RUN_ATTEMPT: ${{ github.run_attempt }}
-          REPOSITORY: ${{ github.repository }}
-          STALE_DEPLOYMENT: 7ac17dd605546149649223e88dd67f22d32c70d3
-        run: |
-          node --input-type=module <<'NODE'
-          import { writeFile } from "node:fs/promises";
-          await writeFile("prototype/qa/pages-deployment-failure.json", `${JSON.stringify({
-            status: "failure",
-            failureClass: "pages_deploy_or_public_verification",
-            sourceBranch: "work",
-            sourceRevision: process.env.SOURCE_SHA,
-            staleDeployment: process.env.STALE_DEPLOYMENT,
-            workflowRunId: Number(process.env.RUN_ID),
-            workflowRunNumber: Number(process.env.RUN_NUMBER),
-            workflowRunAttempt: Number(process.env.RUN_ATTEMPT),
-            workflowRunUrl: `https://github.com/${process.env.REPOSITORY}/actions/runs/${process.env.RUN_ID}`,
-          }, null, 2)}\n`);
-          NODE
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prototype/qa/pages-deployment-failure.json
-          git diff --cached --quiet && exit 0
-          git commit -m "docs: record failed Pages deployment [skip ci]"
+          git commit -m "docs: synchronize fixed FE Pages output [skip ci]"
           git push origin HEAD:work
