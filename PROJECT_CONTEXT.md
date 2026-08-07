@@ -98,13 +98,14 @@ JLL-FE-003の確認証拠:
 - TypeScript、ESLint、normal build、Pages build: success
 - 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
 - Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final post-merge Pages workflow: `31157149416` / run `405` / success
-- Final post-merge build job: `92799024993` / success
-- Final post-merge deploy job: `92799145662` / success
+- Final Pages verification source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Final post-merge Pages workflow: `31157266500` / run `406` / success
+- Final post-merge build job: `92799385185` / success
+- Final post-merge deploy job: `92799508602` / success
 - Final public smoke check: success
-- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Repository `docs/build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Final Pages evidence synchronization commit: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 - `work`は`main`同期後、確認用管理文書とPages証拠だけが追加された状態で、アプリケーション差分はない
 
 `JLL-FE-004`完了後の優先順は次のとおり。
@@ -127,17 +128,17 @@ FE問題数は次の区分を正確に使う。
 
 最新の正常状態:
 
-- Final workflow: `31157149416` / run `405` / success
-- Build job: `92799024993` / success
-- Deploy job: `92799145662` / success
+- Final workflow: `31157266500` / run `406` / success
+- Build job: `92799385185` / success
+- Deploy job: `92799508602` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
 - Public smoke check: success
-- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Public `build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Public `build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Repository `docs/build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
 - Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
-- Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- Pages evidence synchronization commit: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 
 Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
