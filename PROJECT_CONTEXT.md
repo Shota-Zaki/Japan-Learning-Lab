@@ -47,18 +47,23 @@
 
 ## 4. Current priority
 
-`JLL-FE-LESSON-001`は確認担当の独立確認に合格し、PR #6をmerge commit方式で`main`へmerge済み。
+現在の優先タスクは`JLL-FE-QBANK-001`で、状態は`planned`。次の実装チャットでは`実装`で開始し、最新`work` HEADをStart HEADとして記録する。
+
+`JLL-FE-LESSON-001`は確認担当の独立確認に合格し、完了済み。
+
+### JLL-FE-LESSON-001 final state
 
 - Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
 - Final audited application / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
 - Independent confirmation pre-record work HEAD: `6c53a4da57d926cdc2abac62ef8d3a7b6932592b`
-- Confirmation task-list record: `85943bd4095e88912f8ddae10ad4cc84686f7396`
+- Confirmation record commit: `85943bd4095e88912f8ddae10ad4cc84686f7396`
 - Confirmation management PR HEAD: `dc8d93fece42082b18f187ff1b053949c6045cd5`
 - PR #6: merged
 - Merge method: merge commit
 - Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
-- `work`はmerge commitへforceなしでfast-forward同期済み
-- このcommitはpost-merge handoffとして`work`へ通常pushし、最終Pages build/deployを起動する
+- `work`はmerge直後にmerge commitへforceなしでfast-forward同期済み
+- Post-merge handoff commit: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
+- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
 
 JLL-FE-LESSON-001で確定した方針:
 
@@ -74,7 +79,6 @@ JLL-FE-LESSON-001で確定した方針:
 JLL-FE-LESSON-001 independent validation:
 
 - PR review threads: 0
-- Submitted reviews: 0
 - PR mergeable before merge: true
 - PR merge ref: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
 - Node.js: 22.23.1
@@ -92,10 +96,10 @@ JLL-FE-LESSON-001 independent validation:
 - 375px / 768pxは本文ナビを下段stack、1,280pxは右側配置
 - 日本語表示、文字切れ、重なりにBlocking findingなし
 - 公式問題データファイルはPR変更対象外
-- 確認環境の外向きDNS制約でlocal clone再実行は不可。固定PR merge ref CI、workflow log、browser artifact、Repository差分、Pages公開HTTP smoke checkを独立照合
-- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22とは別でNon-blocking
+- `.github/workflows/pages.yml`は`main` pushでは起動せず、PR (`main`) と`work` pushで検証する構成。standalone main push CIがないことを確認
+- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
 
-JLL-FE-004も確認合格・PR #5 merge済み。確定方針は以下を維持する。
+JLL-FE-004で確定した方針も維持する。
 
 1. 問題文は解説より明確に大きく・強く表示し、視覚階層を分離する
 2. 模擬試験残時間はサイトヘッダー内の専用ステータス行へ表示する
@@ -107,38 +111,43 @@ JLL-FE-004も確認合格・PR #5 merge済み。確定方針は以下を維持�
 
 ### 4.1 Work queue
 
-1. `JLL-FE-QBANK-001`: 次タスク。最終Pages確認完了後、`実装`で開始する
+1. `JLL-FE-QBANK-001`: `planned`。次の`実装`で開始
 2. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
 `JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`、`JLL-FE-LESSON-001`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
 
 ## 5. FE question-bank counts
 
-現行の区分は次のとおり。
+現行の区分は次のとおり。`JLL-FE-QBANK-001`着手時に実データから再計測する。
 
 - 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
 
-`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本は公式一次資料とする。
+`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本は公式一次資料とする。データモデルは`canonicalQuestion`と`sourceOccurrence`の分離を優先検討する。
 
 ## 6. GitHub Pages status
 
-JLL-FE-LESSON-001 pre-merge publication:
+JLL-FE-LESSON-001 final post-merge publication:
 
-- Workflow: `31188038465` / run `490` / success
-- Build job: `92897489459` / success
-- Deploy job: `92897691974` / success
-- `Verify FE implementation`: success
+- Workflow: `31189901419` / run `492`
+- Build job: `92903779534` / success
+- Deploy job: `92903963014` / GitHub job conclusion `cancelled`
+- `Deploy to GitHub Pages`: success
 - `Verify public Pages resources and revision`: success
 - Public smoke check: success
-- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Published sourceRevision: `2c3700f57f195199d365e009b7b9248746366eab`
 - Public / repository `build-info.json` sourceRevision一致
 - Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Pre-merge Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
+- deploy job全体が`cancelled`となったのは、公開とpublic smoke check成功後にworkflow自身が成功証拠commit `83a36279...`を`work`へpushし、`concurrency.cancel-in-progress: true`で旧runがキャンセルされたため。証拠commit pushは成功しており、公開失敗ではない
 
-Post-merge final publicationはこのhandoff commitをsourceRevisionとして`work` pushから再実行する。成功後、workflow run / build job / deploy job / public revision / asset名 / evidence synchronization HEADを`task-list.md`、`NEXT_WORK.md`、本ファイルへ最終記録する。
+Pre-merge publication:
+
+- Workflow: `31188038465` / run `490` / success
+- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Public smoke check: success
 
 ## 7. Technical stack
 
