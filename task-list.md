@@ -14,7 +14,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
@@ -24,12 +24,13 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 - `filterLayout=2`のパターンBを指定なし・無効値時の既定表示へ変更
 - 単元カードを全幅の主カードとして維持
-- PC・タブレットで「分野」と「回答・復習状態」を左側へ縦積みし、「開催回・公開区分」を右側で2段分使用して不要な空白を削減
+- PC・タブレットで「分野」と「回答・復習状態」を左側へ隙間なく縦積みし、「開催回・公開区分」を右側へ独立配置して不要な空白を削減
 - 375pxでは既存DOM順の1列を維持
 - 収録データのcanonical `unitId`と、実行時に日本語へ正規化された旧単元値の両方を完全な日本語表示名へ解決
 - 単元名の表示幅を優先し、可能な限り1行表示
 - 1行に収まらない名称は意味上自然な位置だけに任意改行
 - 未解決単元名と英語ID露出をブラウザ監査で失敗させる検証を追加
+- ブラウザ監査を問題データとフォントの最終描画完了後に実行する
 - 自動テスト、型検査、Lint、通常build、Pages build、Chromium監査を実行
 - `docs/`とRepository内の確認証拠を更新
 
@@ -47,11 +48,12 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 ### Completion criteria
 
 - 指定なし・無効な`filterLayout`でパターンBが表示される
-- PC・タブレットで短いカード下の大きな未使用空間が解消される
+- PC・タブレットで「分野」と「回答・復習状態」の間に、右側カードの高さに由来する大きな未使用空間が発生しない
 - カード高さを固定せず、条件群内部へ縦スクロールを追加しない
 - 現在収録中の単元と旧形式の実行時単元値が英語IDや「単元名未登録」ではなく完全な日本語名で表示される
 - 単元カードは表示幅を有効利用し、可能な限り1行表示となる
 - 改行が必要な名称は単語・意味のまとまりで折り返される
+- ブラウザ監査は問題データ読込完了後の最終件数・最終レイアウトを測定する
 - 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
 - キーボード操作とラベル関連付けが維持される
 - テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
@@ -73,7 +75,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Base: `main`
 - Head: `work`
 - State: open / draft
-- Review state: confirmation pending
+- Review state: changes required
 
 ### Start HEAD
 
@@ -83,54 +85,74 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `4e71a6b77a5903de5fa2eac7187f76619c631b4a`
 
-### Evidence HEAD
+### CI hardening HEAD
 
-`bdb5a1aceae4293c3add3911b1cb2a4867650382`
+`5c161669720f4a3f5508ff1d27722de50d7d76dd`
+
+### Confirmation review HEAD
+
+`8b624578f68b7ee59cc1de5515c1114316839f72`
 
 ### Current HEAD
 
-管理文書更新後の`work` HEADはGitHub実状態から確認担当が再固定する。レビュー対象アプリケーションHEADは`4e71a6b77a5903de5fa2eac7187f76619c631b4a`。
+確認不合格の管理文書更新後HEADはGitHub実状態から再取得する。修正対象アプリケーションの基準HEADは`4e71a6b77a5903de5fa2eac7187f76619c631b4a`。
 
 ### Validation result
 
+- Confirmation result: failed / Blocking findingsあり
 - Automated tests: 60 / 60 passed
 - TypeScript: success
 - ESLint: success
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
-- Standard workflow: `31142671218` / run `332` / success
-- Browser audit workflow: `31142671147` / run `20` / success
-- Browser audit: 3 layouts × 375px / 768px / 1,280px = 9 scenarios
-- Browser evidence artifact ID: `8980340883`
-- Browser evidence digest: `sha256:d6c813f0eec4d9226a03b81840709a41ad1e4b2e0295b1d1a38a132eb2fb9f86`
-- Unit labels captured: 144
-- Distinct unit labels captured: 24
-- Unresolved unit labels: 0
-- Raw English unit identifiers: 0
-- Horizontal overflow: 0
-- Card scrollbar or content clipping: 0
-- Console warnings/errors: 0
-- Failed network requests: 0
-- Repository evidence: `prototype/qa/jll-fe-003-browser/README.md`
-- Repository evidence summary: `prototype/qa/jll-fe-003-browser/audit.json`
-- Temporary diagnostic workflow: removed
-- Blocking findings: none
+- Standard workflow: `31143102204` / run `346` / success
+- Standard build job: `92756925888` / success
+- Browser audit workflow: `31143102205` / run `27` / success
+- Browser audit job: `92756925738` / success
+- Browser evidence artifact ID: `8980485643`
+- Browser evidence digest: `sha256:0b7e1b3e43f4135024d8abf8ef82eb0988a9edd252570ddc5977f53176aab55e`
+- Pull Request comments: none
+- Unresolved review threads: none
+
+#### Blocking finding 1: パターンBに大きな未使用空間が残る
+
+- 再現: `?screen=fe&tab=practice&filterLayout=2`を1,280pxで開き、問題データ読込完了後の絞り込みを確認する
+- 結果: 左側の「1. 分野」と「4. 回答・復習状態」の間に、右側の「3. 開催回・公開区分」の高さに引き延ばされた大きな空白が残る
+- 原因候補: 同一CSS Grid上で右側カードを`grid-row: 2 / span 2`にし、左側2カードを共有行2・3へ配置しているため、右側カードのintrinsic heightが共有行の配分へ影響する
+- 修正方針: 単元カードの下を、左側の独立した縦スタックと右側カードの2カラム構造にするなど、左右の高さ計算を分離する。DOM順、ラベル関連付け、375pxの1列順序を維持し、固定高や内部スクロールは使用しない
+
+#### Blocking finding 2: ブラウザ監査が最終描画前を測定する
+
+- 再現: artifact `8980485643`の`audit.json`と`layout-2-1280.png`を比較する
+- 結果: `audit.json`の1,280pxパターンBは単元15件・開催回カード高約116pxを記録する一方、同一シナリオのスクリーンショットは読込後の単元24件・開催回28件を表示する
+- 原因候補: `waitForApplication`がdocument complete、カード4件、受験科目表示だけで完了し、問題データ読込完了と最終件数の安定を待っていない。メトリクス取得後に非同期描画が進んでいる
+- 修正方針: `bankStatus`または画面上の収録数・選択肢件数が最終値へ到達し、連続観測で安定した後にメトリクスとスクリーンショットを取得する。フォント読込完了も待機し、最終状態の件数・余白・クリッピングを検証する
+
+### Required revalidation
+
+- `cd prototype && npm run verify:fe`
+- 3レイアウト × 375px / 768px / 1,280pxの最終描画監査
+- パターンBで左側2カード間の不要な空白がないこと
+- 監査メトリクスとスクリーンショットの件数・カード寸法が同一描画状態であること
+- 単元名未登録、英語ID、横はみ出し、カード内スクロール、内容切れ、Console error、Network failureが0件であること
+- キーボード操作とDOM順が維持されること
+- 修正後のCI artifactを固定し、管理文書へHEAD・run・artifact・digestを記録すること
 
 ### Merge commit
 
-未着手。実装担当はマージしない。
+未着手。確認不合格のためマージしない。
 
 ### GitHub Pages result
 
 - Pages build and artifact upload: success
 - Deployment and public revision verification: temporary skip policyにより判定対象外
 - Deploy job: skipped
-- Pages障害はこのタスクのBlocking条件にしない
+- Pages障害は今回の不合格理由ではない
 
 ### Next task
 
-`JLL-FE-004`
+`JLL-FE-004`。ただし`JLL-FE-003`が`completed`になるまで開始しない。
 
 ---
 
