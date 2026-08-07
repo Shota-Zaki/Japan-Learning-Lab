@@ -18,7 +18,7 @@
 
 Java Learning Labの現在状態をRepositoryから再構成し、目的、対象範囲、対象外、完了条件、検証方法を確定したうえで実装を再開する。
 
-`JLL-FE-001`と`JLL-FE-002`は確認合格済みである。FEの追加変更はこのタスクへ混在させない。
+`JLL-FE-001`と`JLL-FE-002`は確認合格・マージ済みである。FEの追加変更はこのタスクへ混在させない。
 
 ## Repository state
 
@@ -26,12 +26,14 @@ Java Learning Labの現在状態をRepositoryから再構成し、目的、対�
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
-- Previous Pull Request: `#3`
+- Previous Pull Request: `#3` / merged
 - Previous task: `JLL-FE-002` / completed
 - Previous fixed implementation HEAD: `ca5212d91b3b9792a53d0fac4bc7f69648682798`
 - Previous fixed review handoff HEAD: `0c40a622e4c42b2a61eb2410bd2a3aaf136c32de`
-- Previous final pre-review HEAD: `238579965c75b0e87a8ce98054e8d6eba8e1210e`
-- Current `work` HEAD: 確認担当がPR #3のmerge後に最新`main`へ同期する。実装開始時にGitHub実状態から再取得する
+- Previous final Pull Request HEAD: `aaac236ab887c7a55f0491cf40a9c88824e3507b`
+- Previous merge commit: `c01be523eb78d0a4ce9d7e6c8cf13eeb7868b3a8`
+- Current `main` management HEAD predecessor: `f96a54a9deb580491dbb7cad1ee3e06dc44f742c`
+- Current `work` HEAD: 確認担当が最新`main`へfast-forward同期する。実装開始時にGitHub実状態から再取得する
 
 ## Previous task result
 
@@ -40,16 +42,17 @@ Java Learning Labの現在状態をRepositoryから再構成し、目的、対�
 - 受験科目: 独立領域を維持
 - 対象: 既存4条件群だけ
 - Layouts: `filterLayout=1|2|3`
-- Standard CI: `31137755993` / run `294` / success
+- Standard CI: `31138309148` / run `298` / success
 - Tests: 56 / 56 passed
 - TypeScript: success
 - ESLint: success
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
-- Browser audit: `31137755953` / run `7` / success
+- Browser audit: `31138309139` / run `9` / success
 - Coverage: 3 patterns × 375px / 768px / 1280px
 - Blocking findings: none
+- Main push CI: `.github/workflows/pages.yml`とlayout audit workflowは`main` pushをtriggerに含まないため、merge後の新規runはなし
 
 ## Required startup work
 
