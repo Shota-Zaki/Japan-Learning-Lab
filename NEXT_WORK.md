@@ -6,17 +6,17 @@
 
 ## Current phase
 
-`planned`
+`review_ready`
 
 ## Next role
 
-実装担当。
+確認担当。
 
-`JLL-FE-004`は独立確認に合格し、PR #5をmerge commit方式で`main`へmerge済み。merge commitは`36641bb1c183ecd489d15280f3070aa98fd1868d`。`work`も同commitへfast-forward同期済みで、Pages成功証拠commitを含む管理状態からこの次タスク引継ぎを更新している。次の新規チャットではGitHub実状態を再確認してから`JLL-FE-LESSON-001`を開始する。
+実装担当は最初のFEレッスン実装、回帰テスト、375px / 768px / 1,280px browser audit、Draft PR、CI、Pages公開まで完了している。確認担当は実装説明を前提にせず、GitHub実状態と固定HEADから独立確認する。合格時のみ管理文書を更新してmerge commit方式で`main`へmergeし、`work`同期とPages再確認まで行う。不合格時はmergeせず`needs_fix`へ戻す。
 
 ## Objective
 
-FE Learning Labの既存レッスン画面を学習用途として具体化し、最初のレッスン作成範囲を単一タスクとして設計・実装する。Java Learning Labや問題バンク拡充へ先行せず、既存FEレッスンの構造・学習順序・本文・例・確認項目を実用レベルへ進める。
+FE Learning Labの最初のレッスン「代入と繰返しを追跡する」が、学習順序・到達目標・本文・例・確認項目を実用的に提供し、既存の演習・模試・絞り込み・履歴へ回帰を起こしていないことを固定HEADで独立確認する。
 
 ## Repository state
 
@@ -25,51 +25,62 @@ FE Learning Labの既存レッスン画面を学習用途として具体化し�
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-LESSON-001`
-- Task status: `planned`
-- Pull Request: 未作成
-- Predecessor PR: `#5` / merged
-- Predecessor merge commit: `36641bb1c183ecd489d15280f3070aa98fd1868d`
-- Start HEAD: 実装開始時の最新`work` HEADをGitHub実状態から固定する
-- Current HEAD: この管理文書更新以後の最新`work` HEADをGitHub実状態の正本とする
+- Task status: `review_ready`
+- Pull Request: `#6` / `work` → `main` / open Draft
+- Predecessor merge commit / current `main` base at implementation start: `36641bb1c183ecd489d15280f3070aa98fd1868d`
+- Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
+- Final audited implementation / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Pages evidence synchronization HEAD before review management updates: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- `task-list.md` review handoff commit: `0dee6ef67a8a473ca119af24419d0f23151b6c9f`
+- `PROJECT_CONTEXT.md` review handoff commit: `0e0450a94c256d0b3d3e0cec3ed6cafbc8137b5e`
+- Current HEAD: この`NEXT_WORK.md`更新以後の最新`work` HEADをGitHub実状態から取得する。`614827ca62be5b72885b7774dc4f621975a6482f`以後が管理文書・Pages証拠同期だけか必ず差分確認する
 
-## First implementation steps
+## Implemented scope to inspect
 
-1. `main` / `work` HEAD、差分、未マージPR、CI、Pages、`task-list.md`、`NEXT_WORK.md`を再確認する
-2. Root `DESIGN.md`と`prototype/DESIGN.md`、既存レッスン画面・関連コンポーネント・CSS・テストを確認する
-3. 既存設計方針だけで最初のレッスン範囲を決定できる場合はそのまま具体化する。UI構成に重大な複数案がある場合のみ候補を提示して確認する
-4. 必要なら実装前にRoot / prototype `DESIGN.md`を更新する
-5. `work`上で実装し、必須検証、`docs/`生成、PC / スマートフォン表示確認、Draft PR、CI、Pagesまで進める
+- `prototype/src/data/feLessons.js`
+  - Lesson 1 / 科目B / `プログラムの基本要素`
+  - 代入、繰返し、変数追跡
+  - 到達目標3件、学習順序4段階、本文、擬似言語例、追跡表、確認ポイント、4択確認問題
+- `prototype/src/FeLessonApp.jsx`
+  - レッスン概要と本文リーダー
+  - 演習・模試・履歴から独立した表示
+  - 回答後の解説・再確認導線
+  - 永続的な完了状態は保存しない
+- `prototype/src/fe-lesson.css`
+  - desktop / tablet / mobile responsive layout
+  - 本文ナビゲーション、確認問題、タップ領域
+- `prototype/src/AppV5.jsx` / `prototype/src/main.jsx`
+  - FE lesson routeとCSS読込
+  - practice / history / session route分離
+- `prototype/tests/fe-lessons.test.mjs`
+  - レッスン定義、内容要素、knowledge check、route分離の回帰
+- `prototype/scripts/audit-fe-lesson.mjs` / `.github/workflows/fe-lesson-audit.yml`
+  - 375px / 768px / 1,280px browser audit
+  - Pages buildの既存webfont除去仕様は変更せず、CI screenshot環境だけ日本語fallback fontを導入
 
-## Change scope
+## Change forbidden during confirmation
 
-- 既存レッスン画面・データ構造・学習導線の確認
-- 最初に提供するレッスン単元と学習順序の具体化
-- 到達目標、本文、例、確認ポイントの実装
-- レッスン表示に必要な最小限のUI / CSS変更
-- 必要なテスト、設計文書、管理文書、Pages成果物の更新
+- 原則アプリコードを修正しない
+- 問題本文、選択肢、正答、解説内容を改変しない
+- `JLL-FE-004`で確定した演習・模試UIを目的外に再変更しない
+- `JLL-FE-003`で確定した絞り込み順序・配置・単元名表示を変更しない
+- `JLL-FE-QBANK-001`を同時に開始しない
+- Java Learning Labを先行実装しない
+- squash / rebase / force push / `work`削除を行わない
+- 合格前にmergeしない
 
-## Change forbidden
+## Independent confirmation checklist
 
-- 問題本文、選択肢、正答、解説内容の改変
-- `JLL-FE-004`で確定した演習・模試UIを目的外に再変更すること
-- `JLL-FE-003`で確定した絞り込み順序・配置・単元名表示を再変更すること
-- `JLL-FE-QBANK-001`を同時に開始すること
-- Java Learning Labの先行実装
-- 実装担当による`main` merge
-- Ready for review化、squash merge、rebase merge、force push、`work`削除
-
-## Completion criteria
-
-- 最初のレッスン作成範囲がRepository管理文書に具体化されている
-- 学習順序、到達目標、本文、例、確認項目が実際の画面で利用できる
-- 必要なUI変更が`DESIGN.md`と整合する
-- FE演習・模試・絞り込み・履歴に意図しない回帰がない
-- test、typecheck、lint、normal build、Pages buildが成功する
-- `docs/`が最新buildから生成される
-- PC / スマートフォン表示を確認する
-- Draft PR `work` → `main`を作成または更新する
-- CIとPages公開Revisionを確認する
-- `task-list.md`と`NEXT_WORK.md`を`review_ready`向けに更新し、固定HEADと証拠を記録する
+1. GitHub実状態から`main` / `work`最新HEAD、PR #6、レビューthread、CI、Pagesを再取得する
+2. `main`との差分を確認し、`614827ca62be5b72885b7774dc4f621975a6482f`以後が管理文書・Pages証拠同期だけであることを確認する
+3. `AGENTS.md`、`PROJECT_CONTEXT.md`、`task-list.md`、`NEXT_WORK.md`、Root / `prototype/` `DESIGN.md`を再読する
+4. レッスン内容が既存設計と整合し、学習順序・到達目標・本文・例・確認項目を実画面で利用できるか確認する
+5. `FeLessonApp`へのrouteがpractice / history / sessionの既存挙動を破壊していないか確認する
+6. 公式問題本文、選択肢、正答、解説データに意図しない変更がないか確認する
+7. 永続保存を実装していないのに「完了済み」と誤認させる状態がないか確認する
+8. PC / tablet / mobileで文字切れ、横はみ出し、重なり、フォーカス、タップ領域、コード・表の可読性を確認する
+9. 既存filter auditとmock timer auditも成功していることを確認する
+10. 下記必須検証を独立実行または固定PR merge refのCI証拠から再検証する
 
 ## Required verification
 
@@ -82,19 +93,83 @@ npm run lint
 npm run build
 npm run build:pages
 npm run verify:fe
+npm run audit:fe-lesson
 ```
 
-UI変更がある場合は既存browser auditと対象レッスンのPC / スマートフォン表示を確認する。追加の自動browser auditが費用対効果に見合う場合はタスク内で追加する。
+既存回帰確認としてfilter browser auditとmock timer browser auditも確認する。
 
-## Dependencies and queued work
+## Implementation evidence to distrust and independently verify
 
-1. `JLL-FE-LESSON-001`: current / next implementation
-2. `JLL-FE-QBANK-001`: lesson task完了後。Google Driveの調査メモを着手時に参照し、公式一次資料を正本として問題バンクを拡充する
-3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
+- Node.js: 22.23.1
+- Tests: 67 / 67 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- PR Pages build workflow: `31188040484` / run `491` / success
+- Existing filter browser workflow: `31188040386` / run `102` / success
+- Existing mock timer browser workflow: `31188040635` / run `26` / success
+- FE lesson browser workflow: `31188040404` / run `3` / success
+- FE lesson browser artifact: `8997593877`
+- Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
+- Lesson audit PR merge-ref sourceRevision: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
+- 375px / 768px / 1,280px: overview / reader audited, horizontal overflowなし、console / runtime / network failureなし
+- 最小target: start 48px、knowledge check choice 54px
+- 375px / 768px: lesson section nav下段stack
+- 1,280px: body右側に260px section nav
+- 6枚の最終screenshotを実装担当が実画像確認し、日本語表示・文字切れ・重なりにBlocking issueなしと報告
+
+## Pages evidence to independently verify
+
+- Final pre-review publication workflow: `31188038465` / run `490` / success
+- Build job: `92897489459` / success
+- Deploy job: `92897691974` / success
+- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Public / repository `build-info.json`: sourceRevision一致
+- Public smoke check: success
+- Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
+- Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+
+## Known resolved findings
+
+- Lesson browser audit run #1はアプリ不具合ではなく、読込途中の`document.body`を監査スクリプトが参照したnull error。`31b20188b0d7111976d3c8d9590e16031bfa21a2`でstartup guardを追加しrun #2以後成功
+- Pagesは既存方針としてwebfontを除去しsystem font stackを使う。Ubuntu CIには日本語glyphがなかったため初回成功screenshotが豆腐表示になった。`614827ca62be5b72885b7774dc4f621975a6482f`でCI audit環境だけ`fonts-noto-cjk`を導入し、最終run #3のscreenshotで日本語表示を確認。アプリ配信仕様は変更していない
+- GitHub Actions側のNode.js 20 deprecated warningはactions runtimeに対する警告で、project検証runtimeはNode.js 22.23.1。Non-blocking
 
 ## Unresolved findings
 
-なし。`JLL-FE-004`のBlocking findingはすべてresolved。
+実装担当時点でBlocking findingなし。確認担当が独立確認で新規findingを判断する。
+
+## Pass procedure
+
+合格の場合:
+
+1. `task-list.md`を`completed`向け、`NEXT_WORK.md`を次タスク向けに更新する
+2. 管理文書更新を`work`へcommit / pushする
+3. 更新後HEADで必要な再検証を行う
+4. PR #6をmerge commit方式で`main`へmergeする
+5. main CIを確認する
+6. `work`を最新mainへfast-forward同期する
+7. Pages再公開・public revisionを確認する
+8. 最終記録とGitHub実状態を一致させる
+9. 次タスク`JLL-FE-QBANK-001`を最新優先順位に従って引き継ぐ
+
+## Fail procedure
+
+不合格の場合:
+
+1. Blocking / Non-blockingを分類する
+2. 再現方法、原因候補、対象ファイル、具体的修正、再検証項目を記録する
+3. `task-list.md`を`needs_fix`へ更新する
+4. `NEXT_WORK.md`を修正担当向けに更新する
+5. PR #6はDraft / unmergedのまま維持する
+
+## Dependencies and queued work
+
+1. `JLL-FE-LESSON-001`: `review_ready` / independent confirmation pending
+2. `JLL-FE-QBANK-001`: lesson確認・merge完了後。Google Drive調査メモを参照し、公式一次資料を正本として問題バンクを拡充する
+3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
 ## Latest user correction / memo
 
@@ -102,13 +177,13 @@ UI変更がある場合は既存browser auditと対象レッスンのPC / スマ
 
 ## Completion updates
 
-`JLL-FE-LESSON-001`を`review_ready`へ渡すときは最低限次を更新する。
+確認担当は合否に応じて最低限次を更新する。
 
-- `task-list.md`: status、目的、範囲、対象外、完了条件、依存、Branch、PR、Start HEAD、Current HEAD、検証、Pages、次タスク
-- `NEXT_WORK.md`: 確認担当が単独で開始できる固定HEAD・検証証拠・未解決事項
-- `PROJECT_CONTEXT.md`: 優先タスクや確定方針に変更がある場合
-- Root / prototype `DESIGN.md`: UI方針を変更した場合
+- `task-list.md`: status、確認固定HEAD、検証、merge commit、Pages、次タスク
+- `NEXT_WORK.md`: 次担当が単独で開始できる状態
+- `PROJECT_CONTEXT.md`: current priority、確定方針、最終Pages
+- PR #6 / `main` / `work`: GitHub実状態と記録を一致させる
 
 ## Next user command
 
-`実装`
+`確認`
