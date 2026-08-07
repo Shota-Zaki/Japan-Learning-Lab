@@ -218,7 +218,8 @@ function metricExpression() {
         }).map((label) => label.textContent?.trim() || '')
       },
       domOrder: cards.map((card) => card.querySelector('legend')?.textContent?.trim() || ''),
-      unitLabels: [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '')
+      unitLabels: [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || ''),
+      unitValues: [...cards[1].querySelectorAll('label input')].map((input) => input.value || '')
     };
   })()`;
 }
