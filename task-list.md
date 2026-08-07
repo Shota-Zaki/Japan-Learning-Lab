@@ -27,7 +27,8 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - 正規化したcontent fingerprintとsource occurrence fingerprintを分離
 - 同一問題が別開催回に掲載された場合、canonical問題を重複登録せず`sourceOccurrences`で開催履歴を保持
 - 2024〜2026の候補13ソース・660問をRepository管理下のsource inventoryへ固定
-- source inventory監査とcanonical統合件数監査を通常build経路へ組み込む
+- 2009年6月・7月の各80問をtext-extractable candidateとして別管理し、採用前監査条件を固定
+- source inventory / extraction candidate / canonical coverage監査を通常build経路へ組み込む
 - 同期・検証スクリプト、テスト、出典メタデータを更新
 - 最終収録数と追加不可範囲・理由を記録
 - 規模が大きいため、完了条件を維持したまま段階実装する
@@ -35,22 +36,31 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 ### Implemented / current findings
 
 - Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
-- Source inventory: 13ソース / 候補660問 / 公開60問 / 免除600問
-- Repository content-ready: 20問 / pending body acquisition: 640問
+- Latest audited application/data implementation HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
+- Source inventory: 13ソース / 候補660問 / Repository content-ready 20問 / pending 640問
+- Text-extractable candidate: 2009年6月・7月 / 2ソース / 160問 / Repository-ready 0問
+- Audited candidate universe: 820問 / ready 20問 / pending review 800問
 - `audit-fe-question-source-inventory.mjs`でID、URL、件数、公式PDF、ready件数、第三者著作物確認フラグを検証
+- `audit-fe-question-extraction-candidates.mjs`でOCR禁止、公式host、text layer、問1〜80連番確認、candidate-only、ready=0を検証
 - `feQuestionBank.js`でcontent fingerprintとsource occurrence fingerprintを分離
-- primary bankをcanonical優先とし、別開催回の同一問題を`sourceOccurrences`へ統合
-- 同一source occurrenceで本文が競合するレコードは二重採用しない
-- cross-occurrence deduplication / occurrence preservationを回帰テスト化
-- `audit-fe-question-bank-coverage.mjs`を追加し、primary / supplemental / canonical統合件数をbuild時に実測する
+- 既存primary 1,977問は互換性baselineとして一切削除しない
+- supplementalだけをprimaryへ照合し、unique一致は`sourceOccurrences`へ統合、ambiguous一致は自動統合しない
+- cross-occurrence deduplication / primary compatibility / ambiguous matchを回帰テスト化
+- `audit-fe-question-bank-coverage.mjs`でprimary / supplemental / canonical統合件数、科目別件数、source occurrence、primary重複group、候補Universeを実測
+- Runtime canonical実測: 1,996問（A 1,829 / B 167）
+- Runtime source occurrence: 1,997件
+- supplementalとprimaryのunique repeated occurrence: 1件
+- Existing primary duplicate-content groups: 80 / duplicate-source groups: 62。既存互換性のため削除せず監査値として扱う
 - 2020年6月、2022年6月、2026年7月の公式問題PDFは安定した本文テキストレイヤーがないことを確認
-- 2009年6月・7月は公式PDF本文と各80問の公式解答を機械抽出可能。ただし既存問題との重複、図表、第三者著作物、分類、解説品質を個別監査してから採用する
+- 2009年6月・7月は公式PDF本文をテキスト抽出可能で、それぞれ問1〜80の連番と公式解答を確認。ただし表・図・数式、第三者著作物、既存問題との重複、分類、解説品質を個別監査してから採用する
 - 画像主体PDFを大量OCRして件数を作る方法は品質保証上採用しない
 
 ### Out of scope
 
 - 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
 - OCR結果の無検証大量投入
+- placeholder解説で件数を増やすこと
+- primary 1,977問を互換性確認なく削除すること
 - 科目B問題バンクの意図しない増減
 - 問題演習・絞り込み・模擬試験UI変更
 - FEレッスン本文の変更
@@ -81,6 +91,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - Intent: 公式一次資料の所在、重複問題、著作権・出典要件、追加候補の優先順位を固定する調査ナビとして使う
 - Source authority: Driveは調査結果の参照資料であり、問題本文・選択肢・正答の正本ではない。採用時は公式一次資料を再確認する
 - Repository source inventory: `prototype/data/source/fe/question-source-inventory.json`
+- Repository extraction candidates: `prototype/data/source/fe/question-extraction-candidates.json`
 
 ### Branch
 
@@ -100,23 +111,28 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### Current HEAD
 
-- Latest application/data implementation HEAD: `37aa0e7e35745fb62d99645f15e8c834b775246e`
-- Management handoff HEAD before this `task-list.md` update: `c70d4065c11fc14c7897a493abada96c9c2872d9`
+- Latest audited application/data implementation HEAD: `31f53da8203ffdd451ef45a7d60173e19466fb45`
+- NEXT_WORK management update: `55d645495234233b25551eee24812483d855b0ae`
+- PROJECT_CONTEXT management update: `abfebb3bc1639179e5d9d54dc74cf2fd33d0836e`
 - この管理文書更新commit以後の最新`work` HEADはGitHub実状態を正本とする
 
 ### Validation result
 
-`in_progress`
+`in_progress / latest implementation validation passed`
 
-- Source inventory standalone audit: 13 sources / 660 candidates / 20 ready / 640 pendingをローカルNode実行で確認
-- Deduplication algorithmの代表ケースをローカルNode実行で確認
+- Source inventory audit: 13 sources / 660 candidates / 20 ready / 640 pending
+- Extraction candidate audit: 2 sources / 160 candidates / 0 ready / OCR disabled
+- Coverage audit: primary 1,977 / supplemental occurrence 20 / canonical 1,996 / source occurrence 1,997
+- Coverage audit: A 1,829 / B 167 / primary duplicate-content groups 80 / duplicate-source groups 62
+- Candidate universe: 820 / ready 20 / pending review 800
 - Draft PR #7作成済み
-- Implementation HEAD `37aa0e7e35745fb62d99645f15e8c834b775246e`に対するPR workflows起動済み
-- Pages build workflow: `31194371538` / run `505` / 文書更新時点 queued
-- Filter layout workflow: `31194369077` / run `105` / 文書更新時点 in_progress
-- Lesson layout workflow: `31194369156` / run `6` / 文書更新時点 queued
-- Mock timer workflow: `31194369155` / run `29` / 文書更新時点 queued
-- CI完了後にcanonical統合実測件数と全検証結果を追記する
+- Implementation HEAD `31f53da8203ffdd451ef45a7d60173e19466fb45`のPR workflowsは全4件success
+- Pages build / verify workflow: `31195732534` / run `523` / success
+- Build job: `92923438558` / success
+- Filter layout workflow: `31195732632` / run `114` / success
+- Mock timer workflow: `31195732251` / run `38` / success
+- Lesson layout workflow: `31195732735` / run `15` / success
+- `npm ci` / `verify:fe` / normal build / tests / typecheck / lint / Pages buildは成功したPages build jobで検証済み
 
 ### Merge commit
 
@@ -124,11 +140,13 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### GitHub Pages result
 
-進行中。最新application HEADのwork push Pages deploy / public revision結果をGitHub実状態から再確認する。
+- PR-context Pages build / verify: success
+- PR-context deploy job: skipped as expected
+- work-push側の公開sourceRevisionは次回開始時にもGitHub実状態から再確認する
 
 ### Next task
 
-`JLL-FE-QBANK-001`を継続。完了後の既定次タスクは`JLL-JAVA-001`。
+`JLL-FE-QBANK-001`を継続。2009年6月・7月160問の構造化・個別監査を進める。完了後の既定次タスクは`JLL-JAVA-001`。
 
 ---
 
