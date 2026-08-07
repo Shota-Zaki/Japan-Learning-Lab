@@ -186,8 +186,8 @@ function overviewStateExpression() {
       objectiveCount: objectives.length,
       stepCount: steps.length,
       modeCount: document.querySelectorAll('.fe-mode-nav button').length,
-      horizontalOverflow: root.scrollWidth > root.clientWidth + 1,
-      bodyWidth: document.body.getBoundingClientRect().width,
+      horizontalOverflow: Boolean(root && root.scrollWidth > root.clientWidth + 1),
+      bodyWidth: document.body?.getBoundingClientRect().width || 0,
       viewportWidth: window.innerWidth
     };
   })()`;
@@ -212,7 +212,7 @@ function readerStateExpression() {
       minimumChoiceHeight: choices.length ? Math.min(...choices.map((choice) => choice.getBoundingClientRect().height)) : 0,
       codePresent: Boolean(code),
       tablePresent: Boolean(table),
-      horizontalOverflow: root.scrollWidth > root.clientWidth + 1,
+      horizontalOverflow: Boolean(root && root.scrollWidth > root.clientWidth + 1),
       layoutColumns: layout ? getComputedStyle(layout).gridTemplateColumns : '',
       navBesideBody: Boolean(bodyRect && navRect && navRect.left >= bodyRect.right - 1),
       navBelowBody: Boolean(bodyRect && navRect && navRect.top >= bodyRect.bottom - 1),
