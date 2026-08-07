@@ -14,7 +14,7 @@ FE演習の絞り込みを、独立した受験科目ブロックを維持した
 
 ### Status
 
-`in_progress`
+`review_ready`
 
 ### Purpose
 
@@ -25,17 +25,17 @@ FE演習の既存絞り込み機能、文言、選択肢、操作を変更せず
 - 現在の受験科目ブロックをBento Gridへ含めず、独立した現在の状態を維持する
 - 受験科目以外の既存絞り込みブロックを対象に、カードの幅、高さ、列数、段組みが均一ではないモジュール不規則型レイアウトを3パターン作成する
 - 3パターンは、同一の既存要素、文言、選択肢、操作を使用し、配置とカード寸法だけを変える
-- 3パターンを比較できる実装または検証経路を用意する。ただし、利用者向けの新しい切替ボタン、説明文、カテゴリ、アイコン、選択肢は追加しない
+- 3パターンを比較できる検証経路を用意する。ただし、利用者向けの新しい切替ボタン、説明文、カテゴリ、アイコン、選択肢は追加しない
 - 既存の絞り込みロジック、条件群内OR、条件群間AND、全選択、全解除、選択中条件表示、個別解除を維持する
 - PC、タブレット、スマートフォンでレスポンシブに再配置する
-- 必要なRootおよび`prototype/`配下の`DESIGN.md`を実装前に更新する
-- 自動テスト、型検査、Lint、通常build、Pages build、artifact uploadを実施する
+- Rootおよび`prototype/`配下の`DESIGN.md`を実装前に更新する
+- 自動テスト、型検査、Lint、通常build、Pages build、artifact upload、固定Chromium監査を実施する
 
 ### Out of scope
 
 - 受験科目ブロックの位置、構造、文言、選択肢、操作の変更
 - 既存の絞り込み要素、カテゴリ、選択肢、ボタン、アイコン、説明文の追加、削除、名称変更
-- 生成イメージにだけ存在する「お気に入りのみ」「図表あり」「その他」など、現行画面に存在しない要素の追加
+- 生成イメージにだけ存在する仮要素の追加
 - 問題データ、問題本文、選択肢、正答、解説、図表の変更
 - 絞り込み条件またはセッション開始条件の仕様変更
 - Java Learning Labの実装
@@ -71,29 +71,64 @@ GitHub Pages公開成功は開始条件またはBlocking条件に含めない。
 
 ### Pull Request
 
-未作成。実装完了後に`work`から`main`へのDraft Pull Requestを作成する。
+- Number: `#3`
+- Base: `main`
+- Head: `work`
+- State: Draft / open
 
 ### Start HEAD
 
 `c58aa9455b1941055310c0dd82b65352530a6482`
 
+### Fixed implementation HEAD
+
+`ca5212d91b3b9792a53d0fac4bc7f69648682798`
+
+### Evidence HEAD
+
+`890c54477b633c86b09682c0684b9ced1ab865cb`
+
 ### Current HEAD
 
-`a36009424a8b4af2f5935e0d13ea9ebe337f27cb`（設計文書先行更新後。以後はGitHub実状態で更新する）
+管理文書更新後のGitHub実状態を確認担当が再取得する。レビュー対象のアプリケーションと証拠は上記固定HEADから変更しない。
 
 ### Validation result
 
-- Root `DESIGN.md`: 受験科目独立維持、3パターン、検証用query parameter、レスポンシブ方針を実装前に更新済み
-- `prototype/DESIGN.md`: 4条件群だけを対象にした3パターンの詳細配置方針を実装前に更新済み
-- アプリケーション実装・検証: 進行中
+- Root `DESIGN.md`: 受験科目独立維持、4条件群のみ対象、3パターン、検証用`filterLayout=1|2|3`、レスポンシブ方針を実装前に更新済み
+- `prototype/DESIGN.md`: 同一DOM・同一要素を共有する3パターンの詳細配置方針を実装前に更新済み
+- 通常画面への切替UI、説明、選択肢、アイコン追加: なし
+- 受験科目ブロック: 既存DOM順で絞り込みグリッドより前に独立維持
+- Automated tests: 56 / 56 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- Pages artifact upload: success
+- Pull Request workflow: `31137470015` / run `286` / success
+- Pages artifact ID: `8978516762`
+- Pages artifact digest: `sha256:17716de6eaeea2ff42687197b273952dc13fb53965292478e6055d5cf376d7d3`
+- Chromium audit workflow: `31137470033` / run `3` / success
+- Chromium audit coverage: 3 patterns × 375px / 768px / 1280px = 9 scenarios
+- Browser checks: independent subject block, four unchanged filter groups, stable DOM order, no page overflow, no card scrollbar or clipping, no clipped labels, keyboard checkbox operation, no console/network error, distinct layouts at 768px and 1280px
+- Browser evidence: `prototype/qa/jll-fe-002-browser/README.md`
+- Browser evidence summary: `prototype/qa/jll-fe-002-browser/audit-summary.json`
+- Browser evidence artifact ID: `8978513504`
+- Browser evidence artifact digest: `sha256:ff04460276151e4a2fc02d65296514d96e6bc3213504ca886b898129bb3b97b7`
 
 ### Merge commit
 
-未着手。
+未着手。実装担当はマージしない。
 
 ### GitHub Pages result
 
-一時スキップ方針を継続する。Pages deployment、公開Revision一致、公開画面確認、公開証拠同期はBlocking条件にしない。
+- Pages build and artifact upload: success
+- Pull Request deployment: skipped as expected
+- Public deployment、公開Revision一致、公開画面確認: ユーザー指示による一時スキップ方針を継続
+- Pages公開確認はBlocking条件にしない
+
+### Remaining review work
+
+確認担当が固定HEAD、PR差分、証拠、3パターンの表示、既存挙動、管理文書整合性を独立検証する。採用パターンがユーザーから明示されていないため、確認担当は合格判定後も3案を維持し、ユーザー判断が必要な場合はマージ前に扱う。
 
 ### Next task
 
