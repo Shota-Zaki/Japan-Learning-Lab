@@ -25,7 +25,17 @@ jobs:
       - name: Build Pages artifact
         run: npm run build:pages
       - name: Audit three filter layouts
-        run: npm run audit:fe-filter-layouts
+        run: |
+          for attempt in 1 2; do
+            if node scripts/audit-fe-filter-layouts.mjs; then
+              break
+            fi
+            if [ "$attempt" -eq 2 ]; then
+              exit 1
+            fi
+            echo "Browser startup failed; retrying the audit once after a short delay"
+            sleep 5
+          done
       - name: Verify complete Japanese unit labels
         run: |
           node --input-type=module <<'NODE'
