@@ -34,7 +34,7 @@
 | CI workflow | `.github/workflows/pages.yml` |
 
 `work`は継続利用する恒久Branchであり、タスク完了後も削除しない。
-GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。実際の検証、artifact upload、公開はGitHub Actions Workflowから実行する。
+GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。検証、artifact upload、公開はGitHub Actions Workflowから実行する。
 
 ## 2. Project
 
@@ -77,13 +77,17 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の進行中タスクは、FE Learning Labの演習機能を確認担当へ引き渡す`review_ready`工程にある。
+`JLL-FE-001`は確認担当の独立レビューに合格し、merge commit方式での`main`マージと`work`同期を行う完了工程にある。Pages依存項目を除く完了条件、自動検証、固定CI artifactによるブラウザ検証にBlocking問題はない。
 
-複合絞り込み、科目A・科目Bの分離、科目B演習、構造化コンテンツ表示、公式サンプル模擬試験、免除制度問題の補足収録、公式冊子に必要な補完図表、結果レビュー、履歴識別、問題番号移動、問題一覧スクロール、詳細解説は実装と自動検証が完了している。
+次のタスクは`JLL-JAVA-001`である。FEタスクのmerge commitと`work`同期をGitHub実状態で確認した後、Java Learning Labの現在設計、既存実装、テスト、未完了範囲を再確認して実装を開始する。
 
-GitHub Pages側の新規deployment timeoutは未解決である。ただし2026-08-07のユーザー指示により、Pages deployment、公開Revision一致、公開画面確認、`docs/`成功同期は今回の確認・マージに対するBlocking条件から除外し、延期項目として扱う。
+FE問題数は次の区分を正確に使う。
 
-最新状態、検証証拠、確認手順は`task-list.md`と`NEXT_WORK.md`を正本とする。FEタスクが確認合格、`main`へのmerge commit、`work`同期を経て`completed`になるまで、Java Learning Labの実装を同時進行させない。GitHub Pages公開成功はJavaタスク開始の前提条件に含めない。
+- 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
+- 補足問題バンク: 科目A 20問
+- 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
+
+最新状態、検証証拠、確認手順は`task-list.md`と`NEXT_WORK.md`を正本とする。GitHub Pages公開成功はJavaタスク開始の前提条件に含めない。
 
 ## 5.1 Temporary GitHub Pages skip policy
 
@@ -108,7 +112,7 @@ GitHub Pages側の新規deployment timeoutは未解決である。ただし2026-
 - `npm run build:pages`によるローカルまたはCI上のPages成果物生成
 - Pages artifact uploadまでの検証
 - ソースコード、生成物、固定HEAD、Pull Request差分の確認
-- Pages以外の完了条件に基づく確認、マージ、次タスク開始
+- Pages以外の完了条件に基づく実装、確認、マージ、次タスク開始
 
 自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用せず、build・テスト・型検査・Lint・Pages build・artifact uploadの結果だけを使用する。Pages deployの手動再実行は行わない。
 
@@ -215,7 +219,7 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 - 同一条件群はOR、条件群間はAND
 - 各条件群の全選択・全解除
 - 選択中条件の上部表示と個別解除
-- 折りたたみ型とコンパクトグリッド型の切替
+- コンパクトグリッド型の固定絞り込み表示
 - 科目Bの単一正答・複数正答
 - 問題本文、コード、表、リスト、注記、画像、解説の構造化表示
 - 通常演習
@@ -223,6 +227,9 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 - 2022年12月公開サンプルの固定模擬試験
 - 科目A免除制度問題の補足収録
 - 一時停止、再開、履歴、復習、再挑戦
+- 問題番号入力による直接移動
+- 問題一覧の内部スクロール
+- 通常演習と結果レビューで共通する詳細解説
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
 
