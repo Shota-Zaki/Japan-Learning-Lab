@@ -77,64 +77,39 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-FE-004`であり、状態は`review_ready`である。Draft PR #5は未mergeのまま維持し、別チャットの確認担当がGitHub実状態から最新HEADを再固定して独立確認する。
+現在の優先タスクは`JLL-FE-004`であり、状態は`needs_fix`である。Draft PR #5は未mergeのまま維持する。確認担当が固定HEAD、PR差分、CI、専用browser evidence、Pagesを独立確認した結果、模擬試験タイマーの開始直後表示にBlocking `B2`を確認したため、修正担当へ戻す。
 
-目的は次の4点をFE演習へ反映することである。
+JLL-FE-004の目的は次のとおり。
 
 1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付ける
-2. 模擬試験の残り時間をサイトヘッダー内の専用ステータス行へ固定し、スクロール中も常時表示する
+2. 模擬試験の残り時間をサイトヘッダー内の専用ステータス行へ固定し、スクロール中も常時表示し、開始直後を含め設定時間を超えないようにする
 3. 2022年科目Aサンプルを通常演習の出題対象から除外する
 4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-確認担当が検出したBlocking `B1`は修正担当が構造修正した。公開アプリのlive entry pointは`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`であり、模擬試験タイマーは本文側のfixed overlayから`PlatformHeader`内の専用ステータス行へ移した。専用行はブランド・グローバルナビゲーションと別行で通常フローの高さを確保し、sticky site headerと一緒に常時表示する。通常演習では専用行自体を生成しない。Root / prototype `DESIGN.md`もこの方針へ更新済みである。
+Blocking状態:
 
-旧確認ではlegacy `App.jsx`の`.header-actions`をlive headerとして扱っていたが、現在の公開経路は`AppV5.jsx`である。今後の確認は実entry pointを基準に行う。ただし旧タイマーに専用レイアウト領域がなく、将来のheader操作を含むUIと競合し得る設計問題は、今回の専用行への移動で構造的に解消した。
+- `B1`: resolved。公開アプリのlive entry pointは`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`であり、模擬試験タイマーは本文overlayではなく`PlatformHeader`内の専用ステータス行へ移動済み。375px / 768px / 1,280pxで非重複、sticky、通常topic非表示を確認済み
+- `B2`: unresolved。90分の科目A模試開始直後に専用browser evidenceで`残り 90:01`を記録。`FeLearningApp.jsx`のclock stateがmock開始時に即時更新されず、最初のinterval tickまで古いclock値で残時間を計算するため、設定durationを超える表示が発生する
+- 修正ではactive mock切替時の即時clock更新と、設定durationを上限とする防御的clampを行い、回帰テストとbrowser auditへ上限検証を追加する
 
-JLL-FE-004修正後の主要証拠:
+確認固定情報:
 
-- Blocking修正・専用browser audit固定HEAD: `4178cecde659c4501d04344ca115f3c70bd19663`
-- 修正後Pages evidence synchronization HEAD: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
-- PR #5: Draft / mergeable / `work` → `main`
-- PR build workflow: `31180417745` / run `451` / success
+- `main` HEAD at confirmation start: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Browser evidence PR merge ref: `991017aa63c87ccf511a474e4047c0803bd7dd49`
+- PR #5: Draft / mergeable / `work` → `main` / review threads 0 / unmerged
+- PR build workflow: `31181066806` / run `457` / success
 - `npm run verify:fe`: success / tests 63 passed / TypeScript・ESLint・normal build・Pages build success
-- PR filter browser workflow: `31180417961` / run `83` / success
-- JLL-FE-004専用browser workflow: `31180417818` / run `7` / job `92872090509` / success
-- 専用browser evidence artifact: `8994534328` / `fe-mock-timer-evidence`
-- browser widths: 375px / 768px / 1,280px
-- 375px initial: timer `y=80–116`、problem heading `y≈311`以降、problem body `y≈353`以降、answers `y≈408`以降、session actions `y≈821`以降。全overlap `false`
-- 768px initial: timer `y=96–136`、problem heading `y≈343`以降。全overlap `false`
-- 1,280px initial: timer `y=107–147`、problem heading `y≈360`以降。全overlap `false`
-- 180pxスクロール後も各幅でタイマーY座標不変
-- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの重なりなし
-- page horizontal overflowなし
-- 通常topic演習ではmock timer / status row / legacy inline timerはいずれも0件
-- browser audit中のconsole warning/error、failed requestなし
-- `work` Pages: `31180413956` / run `450` / success / public smoke check success / sourceRevision `4178cecde659c4501d04344ca115f3c70bd19663`
-- public/repository `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Published assets: `index-22-KQ0Ti.js` / `index-D0cQvWA9.css`
+- PR filter browser workflow: `31181066826` / run `86` / success
+- JLL-FE-004専用browser workflow: `31181066801` / run `10` / success
+- Browser evidence artifact: `8994787534` / digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
+- Browser layout checks: 375px / 768px / 1,280pxで全overlap false、180pxスクロール後もtimer Y不変、horizontal overflowなし、通常topicでtimer/status/legacy timer 0件、console message / failed requestなし
+- `B2` evidence: 3幅すべての初期timer textが`残り 90:01`
+- 2022年科目Aサンプルは通常`topic`のみ除外し、`mock`と科目B経路を維持
+- `2026-exemption-07`はlearner-facing helperのみで`令和8年度 免除試験`へ変換し、元問題データは非改変
+- JLL-FE-003の絞り込み順・レイアウト・受験科目独立性の既存browser auditはsuccess
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に反映済みのため追加タスク化不要
-
-`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格した。PR `#4`はmerge commit方式で`main`へマージ済みで、Final Pull Request HEADは`66ba0a45ba2cb963bb96fba144021073fb66e279`、merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。
-
-JLL-FE-003の確認証拠:
-
-- PR build workflow: `31155342510` / run `404` / success
-- Browser audit workflow: `31155342511` / run `63` / success
-- Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
-- Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
-- Tests: 60 / 60 success
-- TypeScript、ESLint、normal build、Pages build: success
-- 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
-- Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final Pages verification source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
-- Final post-merge Pages workflow: `31157266500` / run `406` / success
-- Final post-merge build job: `92799385185` / success
-- Final post-merge deploy job: `92799508602` / success
-- Final public smoke check: success
-- Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
-- Repository `docs/build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
-- Final Pages evidence synchronization commit: `207fb822434735d36bc0d240e6c440f7b67c7eee`
-- `work`は`main`同期後、確認用管理文書とPages証拠だけが追加された状態で、アプリケーション差分はない
 
 `JLL-FE-004`完了後の優先順は次のとおり。
 
@@ -142,7 +117,7 @@ JLL-FE-003の確認証拠:
 2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。既存の進行中作業と競合しない時点で着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済みである。
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済みである。詳細な完了証拠は`task-list.md`を正本とする。
 
 FE問題数は次の区分を正確に使う。
 
@@ -154,20 +129,21 @@ FE問題数は次の区分を正確に使う。
 
 2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-JLL-FE-004修正後の正常状態:
+JLL-FE-004確認時の最新正常公開:
 
-- Workflow: `31180413956` / run `450` / success
+- Workflow: `31181063294` / run `456` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
-- Published source Revision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Public `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Repository `docs/build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31180413956` / run `450`
+- Published source Revision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Public `build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Repository `docs/build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31181063294` / run `456`
 - Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
+- Pages evidence synchronization commit: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- `7979e7a`はPages成功証拠同期のみで、`c0f32f8`からアプリケーション差分はない
 
-管理文書handoff更新は`work` pushを発生させるため、確認担当は開始時に最新Pages workflowと公開`build-info.json`を再取得し、管理文書更新後の状態まで独立照合する。Pages successだけでタスク合格とはせず、固定HEADのUI・CI・browser evidence・管理文書を合わせて判定する。
+Pages successだけでタスク合格とはしない。JLL-FE-004は公開自体は正常だが、browser evidenceでBlocking `B2`を確認したため`needs_fix`である。修正担当はB2修正後に`docs/`をbuildで再生成し、PR CI、専用browser evidence、`work` Pages sourceRevisionを更新してから`review_ready`へ戻す。
 
 Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
