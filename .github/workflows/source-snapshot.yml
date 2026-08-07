@@ -6,13 +6,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/upload-artifact@v4
         with:
           name: source-snapshot
@@ -29,5 +31,16 @@ jobs:
             prototype/src/feFilterLayout.js
             prototype/tests/fe-filter-layout.test.mjs
             prototype/scripts/audit-fe-filter-layouts.mjs
+            .github/work-edit.py
           include-hidden-files: true
           retention-days: 1
+      - name: Record snapshot run
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '{"runId":%s,"sourceRevision":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > .source-snapshot-run.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .source-snapshot-run.json
+          git commit -m "chore: record source snapshot run [skip ci]"
+          git push origin HEAD:work
