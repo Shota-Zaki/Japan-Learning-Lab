@@ -34,6 +34,7 @@
 - Fixed application / test / browser audit HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
 - Pages output synchronization commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
 - Standard workflow restoration commit before handoff: `6cc846a4f5b5af97f836f845b96c1a94b8225474`
+- Review handoff baseline commit: `3de2d5750678b2cd783f23713e4c95a8a0c6e617`
 - Current `work` HEAD: 確認開始時にGitHub実状態から固定する
 
 ## Implemented fix
