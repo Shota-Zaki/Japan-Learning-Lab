@@ -3,9 +3,9 @@
   "publicSmokeCheck": "success",
   "pageUrl": "https://shota-zaki.github.io/Japan-Learning-Lab/",
   "sourceBranch": "work",
-  "sourceRevision": "cb0d0d0f19543442ec942df5958c8c3306644e6c",
-  "publicBuildInfoSourceRevision": "cb0d0d0f19543442ec942df5958c8c3306644e6c",
-  "repositoryBuildInfoSourceRevision": "cb0d0d0f19543442ec942df5958c8c3306644e6c",
+  "sourceRevision": "d74e1b43bd5a17b476ac24042c04e3933a2c067c",
+  "publicBuildInfoSourceRevision": "d74e1b43bd5a17b476ac24042c04e3933a2c067c",
+  "repositoryBuildInfoSourceRevision": "d74e1b43bd5a17b476ac24042c04e3933a2c067c",
   "publishedAssets": {
     "script": "/Japan-Learning-Lab/assets/index-22-KQ0Ti.js",
     "stylesheet": "/Japan-Learning-Lab/assets/index-D0cQvWA9.css"
@@ -17,8 +17,8 @@
     "questionData": "success",
     "sampleFigures": "success"
   },
-  "workflowRunId": 31180077129,
-  "workflowRunNumber": 442,
+  "workflowRunId": 31180236587,
+  "workflowRunNumber": 448,
   "workflowRunAttempt": 1,
-  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31180077129"
+  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31180236587"
 }
