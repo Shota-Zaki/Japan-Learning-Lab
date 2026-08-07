@@ -14,7 +14,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Status
 
-`review_ready`
+`needs_fix`
 
 ### Purpose
 
@@ -32,6 +32,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - 単元名を可能な限り1行表示し、必要時のみ自然な位置で折り返す
 - 問題データ、選択肢数、フォント、レイアウト測定が安定した後にブラウザ監査を実行
 - 3レイアウト × 375px・768px・1,280pxを自動監査
+- 固定アプリケーションHEADと一致する最新のPages成果物を`docs/`へ生成してコミット
 
 ### Out of scope
 
@@ -41,7 +42,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - `JLL-FE-004`の問題文・解説の視覚階層、固定タイマー、出題対象、開催回表記の変更
 - レッスン内容作成
 - Java Learning Labの実装
-- GitHub Pages障害の復旧またはdeployment再試行
+- GitHub Pages deployment障害の復旧または再試行
 - 実装担当による`main`へのマージ
 
 ### Completion criteria
@@ -56,6 +57,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
 - キーボード操作とDOM順、fieldset/legend、label/input関連付けが維持される
 - テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
+- Repository直下`docs/`が固定アプリケーションHEADの最新Pages buildと一致する
 - Draft Pull Requestと固定検証証拠が存在する
 
 ### Dependencies
@@ -74,7 +76,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Base: `main`
 - Head: `work`
 - State: open / draft / unmerged
-- Review state: confirmation requested
+- Review state: changes required
 
 ### Start HEAD
 
@@ -88,30 +90,20 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `66a03576b5b9ac2c86c35c63045f923137f08a0c`
 
-管理文書更新後も、アプリケーションコード・監査コード・テストの確認対象はこのHEADに固定する。
+アプリケーションコード、監査コード、テストの確認対象はこのHEADに固定する。以後の修正は原則として生成済み`docs/`と管理文書に限定する。
 
-### Validation result
+### Confirmation result
 
-- Implementation self-check: passed
-- Automated tests: 60 / 60 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Pages artifact upload: success
-- Standard workflow: `31144511506` / run `370` / success
-- Standard build job: `92761099227` / success
-- Pages artifact ID: `8980987977`
-- Pages artifact digest: `sha256:1560b786ba93b9c6d57be7f8723949538e8aee4022d8fce4eeb326ec2210242b`
-- Browser audit workflow: `31144511527` / run `39` / success
-- Browser audit job: `92761088942` / success
-- Browser evidence artifact ID: `8980991042`
-- Browser evidence digest: `sha256:c32e7c8aa55307a135da0e7539b152de6f214ad6d0f5582607aee82a4eb8e861`
-- Browser evidence: 3レイアウト × 375px・768px・1,280pxの9スクリーンショット
+`failed`
+
+#### Passed checks
+
+- Pattern B: 単元カード全幅、左側2カード縦積み、右側開催回カード配置を確認
+- 768px left-card gap: `8.8px` / computed row gap: `8.8px`
+- 1,280px left-card gap: `8.8px` / computed row gap: `8.8px`
+- 375px: DOM順の1列表示
 - Final rendered source count: `1997`
 - Final option counts: `[3, 24, 28, 4]`
-- Pattern B left-card gap at 768px: `8.8px` / computed row gap `8.8px`
-- Pattern B left-card gap at 1,280px: `8.8px` / computed row gap `8.8px`
 - Horizontal overflow: 0
 - Card internal scrollbar / content clipping: 0
 - Raw English unit identifier / unresolved unit label: 0
@@ -119,40 +111,72 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Failed network request: 0
 - Keyboard checkbox operation: success
 - DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
-- Pull Request comments: none
-- Unresolved review threads: none
+- Standard workflow: `31144511506` / run `370` / success
+- Standard build job: `92761099227` / success
+- Automated tests: 60 / 60 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- Pages artifact upload: success
+- Pages artifact: `8980987977`
+- Pages artifact digest: `sha256:1560b786ba93b9c6d57be7f8723949538e8aee4022d8fce4eeb326ec2210242b`
+- Browser workflow: `31144511527` / run `39` / success
+- Browser job: `92761088942` / success
+- Browser artifact: `8980991042`
+- Browser artifact digest: `sha256:c32e7c8aa55307a135da0e7539b152de6f214ad6d0f5582607aee82a4eb8e861`
+- Browser evidence: `audit.json`と9スクリーンショットを独立確認
+- Pull Request comments: 確認開始時点でなし
+- Unresolved review threads: 確認開始時点でなし
 
-### Resolved Blocking findings
+### Blocking finding
 
-1. Pattern Bの右側カードを共有行の高さ配分から分離し、左側2カードを通常gapで連続配置した。
-2. ブラウザ監査は最終収録数、最終option数、`document.fonts.ready`、連続した安定サンプルを待つ。キャプチャ前後の双方で全レイアウト要件を検証し、最終データ状態が変化した場合は失敗する。
-3. Chrome終了待機と一時ディレクトリ削除のretryを追加し、CI後処理競合を解消した。
+#### Repositoryの`docs/`が固定HEADの最新Pages buildではない
 
-### Required confirmation
+確認時のRepository実状態:
 
-確認担当は次を独立して実施する。
+- Fixed application HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Current committed `docs/build-info.json` sourceRevision: `32a8260703fcb3deb51253c90bb8506fad1bd325`
+- `66a0357...`は`32a8260...`より46 commits先
+- Current committed assets: `index-YqsZizrf.js` / `index-D7VeqPfk.css`
+- CI Pages artifact sourceRevision: `7768a769c3a1f5b08f59ea3a034ce65e16d8e18c`（PR merge ref）
+- CI Pages artifact assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
 
-- 固定HEAD `66a03576b5b9ac2c86c35c63045f923137f08a0c`と`main`の差分確認
-- artifact `8980991042`の`audit.json`と9スクリーンショット確認
-- Pattern Bの768px・1,280pxで左カード間隔が8.8pxであることの再確認
-- 最終件数・option数・overflow・clipping・DOM順・キーボード操作の再確認
-- Standard workflow `31144511506`とbrowser workflow `31144511527`の成功確認
-- Blocking問題がなければ管理文書更新、merge commit方式のマージ、`work`同期を実施
+CI内では最新Pages buildが成功しているが、その生成物はartifactへアップロードされただけでRepositoryの`docs/`へコミットされていない。固定HEAD以降の`work`差分にも`docs/`更新はない。
+
+Temporary Pages skip policyが除外するのはdeploymentと公開URLのrevision確認であり、`npm run build:pages`による成果物生成、Repositoryの`docs/`更新、artifact uploadは必須である。このため完了条件未達としてマージしない。
+
+### Required fix
+
+1. `work`の最新状態を取得し、アプリケーションコードを変更しない。
+2. `cd prototype`で依存関係を確認後、固定アプリケーションHEADを明示してPages buildを実行する。
+
+```bash
+GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages
+```
+
+3. Repository直下`docs/`の生成差分を確認し、`index.html`、`404.html`、`build-info.json`、新しいhash付きassetsを含む最新成果物をコミットする。
+4. 古いhash付きassetがbuildによって削除されていることを確認する。
+5. 同じ`GITHUB_SHA`でPages buildを再実行し、`docs/`が再現可能で追加差分を生まないことを確認する。
+6. テスト、型検査、Lint、通常build、Pages build、Chromium監査を再実行する。
+7. Standard workflowとbrowser workflowの新しいrun、artifact ID、digest、固定HEADを管理文書とPR本文へ記録する。
+8. Pull Request `#4`をopen / draft / unmergedのまま維持する。
 
 ### Merge commit
 
-未着手。実装担当のためマージしない。
+未着手。Blocking問題があるためマージしない。
 
 ### GitHub Pages result
 
-- Pages build and artifact upload: success
+- Latest Pages build in CI: success
+- Pages artifact upload: success
+- Repository `docs/` synchronization: failed / stale output
 - Deploy job: skipped
-- Deployment and public revision verification: ユーザー指定のtemporary skip policyにより判定対象外
-- Pages障害は今回の実装完了判定を妨げない
+- Deployment and public revision verification: temporary skip policyにより判定対象外
 
 ### Next task
 
-`JLL-FE-004`。ただし`JLL-FE-003`が確認合格・`completed`になるまで開始しない。
+`JLL-FE-003`の`docs/`同期修正と再確認。合格後に`JLL-FE-004`へ進む。
 
 ---
 
@@ -230,7 +254,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### GitHub Pages result
 
-一時スキップ方針を継続する。Pages buildとartifact uploadは必須。
+一時スキップ方針を継続する。Pages build、Repositoryの`docs/`更新、artifact uploadは必須。
 
 ### Next task
 
@@ -303,7 +327,7 @@ FE演習のUI修正完了後、Java実装へ進まず、学習用レッスンの
 
 ### GitHub Pages result
 
-一時スキップ方針を継続する。
+一時スキップ方針を継続する。Pages build、Repositoryの`docs/`更新、artifact uploadは必須。
 
 ### Next task
 
@@ -338,7 +362,7 @@ Repository内のJava Learning Labの設計、既存実装、テスト、未完�
 ### Out of scope
 
 - 未完了のFE修正とレッスン作成を飛ばして着手すること
-- GitHub Pages障害の復旧
+- GitHub Pages deployment障害の復旧
 - 実装担当による`main`へのマージ
 
 ### Completion criteria
@@ -375,7 +399,7 @@ FEレッスン内容作成の優先タスク完了後、最新のユーザー指
 
 ### GitHub Pages result
 
-一時スキップ方針を継続する。
+一時スキップ方針を継続する。Pages build、Repositoryの`docs/`更新、artifact uploadは必須。
 
 ### Next task
 
