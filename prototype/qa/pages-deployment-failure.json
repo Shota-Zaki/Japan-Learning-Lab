@@ -2,10 +2,10 @@
   "status": "failure",
   "failureClass": "pages_deploy_or_public_verification",
   "sourceBranch": "work",
-  "sourceRevision": "95918ca078b4d58414d5907bd9aeddba60d2a19a",
+  "sourceRevision": "b50ac5849ae25462a8d1ee974c81604cfdda621f",
   "staleDeployment": "7ac17dd605546149649223e88dd67f22d32c70d3",
-  "workflowRunId": 31136020349,
-  "workflowRunNumber": 268,
+  "workflowRunId": 31136441680,
+  "workflowRunNumber": 275,
   "workflowRunAttempt": 1,
-  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31136020349"
+  "workflowRunUrl": "https://github.com/Shota-Zaki/Japan-Learning-Lab/actions/runs/31136441680"
 }
