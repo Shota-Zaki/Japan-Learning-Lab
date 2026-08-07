@@ -18,7 +18,9 @@
 
 Java Learning Labの現在状態をRepositoryから再構成し、次の単一実装タスクとして具体化する。
 
-`JLL-FE-001`は確認合格済みで、Pull Request #1をmerge commit方式で`main`へマージし、`work`を同期する工程にある。次の実装担当は、GitHub実状態でmergeと同期の完了を確認してからJava作業を開始する。
+`JLL-FE-001`は確認合格し、Pull Request #1をmerge commit方式で`main`へマージ済みである。確認工程では、この文書の更新後に`work`を最新`main`へfast-forward同期する。
+
+次の実装担当は、GitHub実状態で`main`と`work`の同期を再確認してからJava作業を開始する。
 
 ## Repository state
 
@@ -26,12 +28,14 @@ Java Learning Labの現在状態をRepositoryから再構成し、次の単一�
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
-- Previous Pull Request: `#1`
+- Previous Pull Request: `#1` / merged
 - Previous task fixed review HEAD: `d4003fbc2b80a05402100d5bbe4e51a44c87d21f`
+- Previous task final PR HEAD: `4e1b719ad6b7d620c795914ecd28efa1660c9b6f`
+- Previous task merge commit: `afbbc24d375c699be0e7b0c5758d9318dc97c1d5`
 - Previous task confirmation evidence: `prototype/qa/fe-final-review-2026-08-07/audit.md`
-- Previous task automated validation: workflow run `31112859435`, run number `250`, success
-- Previous task merge commit: merge完了後に`task-list.md`へ記録する
-- Current `work` HEAD: GitHub実状態を開始時に再取得する
+- Previous task application validation: workflow run `31112859435`, run number `250`, success
+- Previous task final management validation: workflow run `31134642544`, run number `264`, success
+- Current `work` HEAD: この文書更新後の最新`main`へ同期し、実装開始時に再取得する
 
 ## Previous task result
 
