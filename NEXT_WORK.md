@@ -6,22 +6,17 @@
 
 ## Current phase
 
-`review_ready`
+`needs_fix`
 
 ## Next role
 
-確認担当。
+修正担当。
 
-修正担当がBlocking `B1`を修正し、Draft PR #5のアプリケーション実装、専用ブラウザ監査、PR CI、`work` Pages公開確認まで完了した。実装担当は`main`へmergeせず、PR #5をDraftのまま維持する。確認担当は実装説明を前提にせず、GitHub実状態から最新HEADを再固定して独立確認する。
+確認担当が固定HEADとPR CI、専用browser evidence、Pagesを独立確認した結果、模擬試験タイマーの開始直後表示にBlocking `B2`を確認した。PR #5はmergeせずDraftのまま維持する。
 
 ## Objective
 
-FE演習について、次の4点を確認する。
-
-1. 問題文と解説の文字サイズ・太さ・構造に明確な差がある
-2. 模擬試験の残り時間がサイトヘッダー内の専用ステータス行へ表示され、スクロール中も常時見え、ヘッダー・問題本文・回答操作を覆わない
-3. 2022年科目Aサンプルが通常演習の出題対象から除外されている
-4. `2026年7月科目A免除制度修了試験`が学習者向けに`令和8年度 免除試験`と表示される
+JLL-FE-004の既存修正を維持したまま、模擬試験開始直後の残り時間が設定時間を超えて表示されないように修正し、タイマーの正確性を自動検証する。
 
 ## Repository state
 
@@ -30,50 +25,56 @@ FE演習について、次の4点を確認する。
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-004`
-- Task status: `review_ready`
+- Task status: `needs_fix`
 - Draft Pull Request: `#5` / `work` → `main`
 - Start HEAD: `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`
-- Blocking修正・専用監査固定HEAD: `4178cecde659c4501d04344ca115f3c70bd19663`
-- 修正後Pages証拠同期を含むhandoff前`work` HEAD: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
-- 確認開始時は管理文書更新後の最新`work` / PR HEADをGitHubから再取得する
-- PR review threads: 確認開始時に再確認する
+- Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
+- Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- PR merge ref used by browser evidence: `991017aa63c87ccf511a474e4047c0803bd7dd49`
+- `main` HEAD at confirmation start: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- PR review threads: 0
+- PR remains unmerged
 
-## Resolved Blocking B1
+## Blocking B2: mock timer can start above configured duration
 
-### 状態
+### Severity
 
-`resolved by repair / confirmation pending`
+`Blocking`
 
-### 修正内容
+### Reproduction / evidence
 
-- live entry pointが`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`であることを再確認した
-- 模擬試験タイマーを本文側の`position: fixed`表示から外し、`PlatformHeader`へ`statusText`を渡す専用ステータス行を追加した
-- 専用ステータス行は通常のブランド・グローバルナビゲーションとは別行で通常フローの高さを確保し、stickyなサイトヘッダーと一緒に常時表示する
-- 旧`.session-topbar > span > strong`は表示しない
-- 通常演習では専用ステータス行とタイマーを生成しない
-- Root / prototype `DESIGN.md`を実装前に更新し、専用行・代表幅・非重複要件を設計方針へ反映した
-- 旧確認ではlegacy `App.jsx`の`.header-actions`をlive headerとして扱っていたが、現在の公開経路は`AppV5.jsx`である。確認担当はlegacy UIではなく実際のentry pointを基準に判定すること。ただし旧タイマーが専用レイアウト領域を持たなかった問題自体は構造修正済み
+1. Open the FE mock setup and start a new subject A mock session.
+2. Inspect the header timer immediately after entering the session.
+3. Dedicated browser evidence from workflow `31181066801` / run `10`, artifact `8994787534`, records `残り 90:01` for a 90-minute subject A mock at 375px / 768px / 1,280px.
+4. The audit otherwise confirms no overlap, no horizontal overflow, sticky positioning, normal-topic non-display, no console messages, and no failed requests.
 
-### 専用browser evidence
+Expected: a newly started 90-minute mock must never display more than `90:00`.
 
-Workflow: `Audit FE mock timer layout`
+Actual: the first rendered value can exceed the configured duration. The recorded evidence shows `90:01`; if the learner remains on setup longer before starting, the stale-clock delta can be larger until the first interval tick.
 
-- workflow run: `31180417818` / run `7` / success
-- job: `92872090509` / success
-- evidence artifact: `8994534328` / `fe-mock-timer-evidence`
-- widths: 375px / 768px / 1,280px
-- 375px initial: timer `y=80–116`, problem heading `y≈311`以降、problem body `y≈353`以降、answers `y≈408`以降、session actions `y≈821`以降、全overlap `false`
-- 768px initial: timer `y=96–136`, problem heading `y≈343`以降、全overlap `false`
-- 1,280px initial: timer `y=107–147`, problem heading `y≈360`以降、全overlap `false`
-- 180pxスクロール後も各幅でタイマーのY座標は不変
-- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの矩形重なりなし
-- page horizontal overflowなし
-- 通常topic演習では`.fe-mock-timer`、mock status row、legacy inline timerのいずれも0件
-- console warning/error、failed requestなし
+### Root cause
 
-## Validation already passed by repair role
+`prototype/src/FeLearningApp.jsx` initializes `headerClockMs` when the learning app mounts. When a new mock session becomes active later, remaining time is calculated once using that older clock value. The effect for the active mock schedules a 1-second interval but does not synchronously refresh the clock before the first displayed calculation. Therefore `startedAt - headerClockMs` can be positive and is added to the configured duration.
 
-- PR CI `Build and deploy GitHub Pages`: workflow `31180417745` / run `451` / success
+### Required correction
+
+- Ensure the initial remaining-time calculation for a newly active mock cannot exceed the configured duration.
+- Refresh the clock immediately when the active mock session changes; do not rely only on the first 1-second interval tick.
+- Clamp the displayed remaining seconds to the configured duration as a defensive invariant, while preserving the existing zero-floor behavior.
+- Preserve current header status-row layout, sticky behavior, normal-topic non-display, subject A/B durations, restored-session behavior, and existing session completion logic.
+- Do not change problem text, choices, answers, explanations, JLL-FE-003 filter ordering/layout, lesson content, question-bank scope, or Java work.
+
+## Required test/audit changes
+
+Update automated verification so this regression cannot pass again.
+
+- `prototype/tests/fe-004-regression.test.mjs`: add a deterministic assertion for the remaining-time calculation / initial mock activation so configured duration is an upper bound.
+- `prototype/scripts/audit-fe-mock-timer.mjs`: assert the initial timer value is not greater than the configured subject duration; preferably also verify it decreases after time advances.
+- Keep 375px / 768px / 1,280px geometry checks, scroll-position checks, normal-topic timer absence, horizontal-overflow check, console/failed-request checks.
+
+## Independent confirmation evidence already passed
+
+- PR CI `Build and deploy GitHub Pages`: workflow `31181066806` / run `457` / success
   - `npm ci`: success
   - `npm run verify:fe`: success
   - tests: 63 / 63 passed
@@ -81,43 +82,16 @@ Workflow: `Audit FE mock timer layout`
   - ESLint: success
   - normal build: success
   - Pages build: success
-- PR CI `Audit FE filter layout variants`: workflow `31180417961` / run `83` / success
-- PR CI `Audit FE mock timer layout`: workflow `31180417818` / run `7` / success
-- `work` Pages: workflow `31180413956` / run `450` / success
-- Pages public smoke check: success
-- Pages sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- public/repository `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
-- published script: `index-22-KQ0Ti.js`
-- published stylesheet: `index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
+- PR CI `Audit FE filter layout variants`: workflow `31181066826` / run `86` / success
+- PR CI `Audit FE mock timer layout`: workflow `31181066801` / run `10` / success, but the evidence itself exposed Blocking B2 because it did not assert the timer upper bound
+- Browser evidence artifact: `8994787534`, digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
+- Existing layout checks: 375px / 768px / 1,280px all non-overlap; timer Y remains fixed after 180px scroll; normal topic timer/status/legacy timer counts are 0; no horizontal overflow; console messages and failed requests are empty
+- Current public Pages workflow: `31181063294` / run `456` / success
+- Current published sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
+- Public smoke check: success
+- Pages evidence synchronization `work` HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
 
-## Confirmation scope
-
-固定HEADを基準に、実装担当の説明を信用せず次を独立確認する。
-
-- `main`との差分、禁止範囲、Task目的・完了条件
-- live entry pointとタイマーの実DOM / CSS構造
-- 375px / 768px / 1,280pxでブランド、グローバルナビゲーション、存在する場合のヘッダー操作、問題見出し、問題本文、回答、セッション操作とタイマーが重ならないこと
-- スクロール後もタイマーが常時表示されること
-- 通常演習にタイマーが出ないこと
-- 問題文/解説の視覚階層
-- 2022年科目Aサンプルの通常演習除外とmock経路維持
-- `令和8年度 免除試験`のlearner-facing表示と元データ非改変
-- 既存セッション、模擬試験、結果レビュー、履歴の回帰
-- test / typecheck / lint / normal build / Pages build / `verify:fe`
-- 専用browser evidence artifactとCIログ
-- `docs/`、公開Pages、`build-info.json`、管理文書の整合
-
-## Change forbidden for confirmation role
-
-- 原則としてアプリケーションコードを修正しない
-- 問題本文、選択肢、正答、解説内容そのものの改変
-- JLL-FE-003の絞り込み順・レイアウト・受験科目ブロックの再変更
-- `JLL-FE-LESSON-001`、`JLL-FE-QBANK-001`、Java Learning Labの先行実装
-- squash merge / rebase merge / force push
-- `work` Branchの削除
-
-## Required verification
+## Required verification after correction
 
 ```bash
 cd prototype
@@ -131,15 +105,21 @@ npm run verify:fe
 npm run audit:fe-mock-timer
 ```
 
-GitHub Actionsの固定HEAD evidenceを利用してもよいが、確認担当はPR差分・CI・artifact・Pagesを独立照合する。
+Also confirm the corrected browser evidence at 375px / 768px / 1,280px shows an initial timer not exceeding the configured duration and preserves all existing non-overlap / sticky / normal-topic checks.
 
-## Pass handling
+## Change forbidden for repair role
 
-合格なら、確認担当が管理文書を`completed`と次タスク向けに更新し、`work`へcommit/push後に更新後HEADを再検証する。その後PR #5をmerge commit方式で`main`へmergeし、`work`を最新`main`へfast-forward同期し、Pages再公開と最終Revisionを確認する。
+- `main`へのmerge
+- Ready for reviewへの変更
+- squash merge / rebase merge / force push
+- `work` Branch削除
+- 問題本文、選択肢、正答、解説内容そのものの変更
+- JLL-FE-003の絞り込み順・レイアウト・受験科目ブロックの再変更
+- `JLL-FE-LESSON-001`、`JLL-FE-QBANK-001`、`JLL-JAVA-001`の先行実装
 
-## Failure handling
+## Repair completion handling
 
-Blockingが残る場合はmergeしない。`task-list.md`を`needs_fix`、この`NEXT_WORK.md`を修正担当向けに更新し、再現方法、原因、修正対象、具体的修正、再検証項目を記録する。
+修正後は`docs/`をbuildで更新し、Draft PR #5を更新する。PR CIと`work` Pages公開を確認し、`task-list.md` / `NEXT_WORK.md` / 必要な`PROJECT_CONTEXT.md`を`review_ready`へ戻す。固定HEAD、専用browser evidence、Pages sourceRevisionを記録し、別チャットの`確認`へ戻す。
 
 ## Queued work after JLL-FE-004
 
@@ -147,15 +127,6 @@ Blockingが残る場合はmergeしない。`task-list.md`を`needs_fix`、この
 2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-## Work completion update targets
-
-- `task-list.md`
-- `NEXT_WORK.md`
-- `PROJECT_CONTEXT.md`
-- Draft Pull Request #5
-- merge後の`main` / `work`
-- CI / JLL-FE-004専用browser evidence / Pages公開結果
-
 ## Next user command
 
-`確認`
+`修正`
