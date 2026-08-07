@@ -34,6 +34,45 @@ test("runtime-prefixed unit identifiers resolve to the longest canonical unit ID
   assert.deepEqual(getFeUnitLabelParts("A/software-development-management"), ["ソフトウェア", "開発管理"]);
 });
 
+test("normalized Japanese unit values resolve without falling back to an unknown label", () => {
+  const runtimeLabels = [
+    "基礎理論",
+    "アルゴリズムとプログラミング",
+    "コンピュータ構成要素",
+    "システム構成要素",
+    "ソフトウェア",
+    "ハードウェア",
+    "ヒューマンインタフェース",
+    "マルチメディア",
+    "データベース",
+    "ネットワーク",
+    "情報セキュリティ",
+    "システム開発技術",
+    "ソフトウェア開発管理技術",
+    "プロジェクトマネジメント",
+    "サービスマネジメント",
+    "システム監査",
+    "システム戦略",
+    "システム企画",
+    "経営戦略",
+    "技術戦略マネジメント",
+    "ビジネスインダストリ",
+    "企業活動",
+    "法務",
+    "コンピュータシステム",
+    "企業と法務",
+    "未分類",
+  ];
+
+  for (const runtimeLabel of runtimeLabels) {
+    assert.notEqual(getFeUnitLabel(runtimeLabel), "単元名未登録", runtimeLabel);
+    assert.notDeepEqual(getFeUnitLabelParts(runtimeLabel), ["単元名未登録"], runtimeLabel);
+  }
+  assert.equal(getFeUnitLabel("システム開発技術"), "システム開発");
+  assert.equal(getFeUnitLabel("ソフトウェア開発管理技術"), "ソフトウェア開発管理");
+  assert.equal(getFeUnitLabel("A:情報セキュリティ"), "情報セキュリティ");
+});
+
 test("unknown unit identifiers never leak into learner-facing text", () => {
   assert.equal(getFeUnitLabel("future-unknown-unit"), "単元名未登録");
   assert.deepEqual(getFeUnitLabelParts("future-unknown-unit"), ["単元名未登録"]);
