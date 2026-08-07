@@ -22,7 +22,7 @@
 | Type validation | TypeScript 7系 `tsc --noEmit` |
 | Lint | ESLint 10系 |
 | Test runner | Node.js built-in test runner |
-| CI workflow | `.github/workflows/pages.yml` |
+| CI / Pages workflow | `.github/workflows/pages.yml` |
 
 `work`は恒久Branchであり削除しない。Pages成果物は`work` push時にGitHub Actionsから検証・build・deployする。`docs/`は手編集せずbuildで生成する。
 
@@ -47,30 +47,36 @@
 
 ## 4. Current priority
 
-現在の優先タスクは`JLL-FE-LESSON-001`で、状態は`review_ready`。次の新規チャットでは`確認`で独立確認を開始する。
+`JLL-FE-LESSON-001`は確認担当の独立確認に合格し、PR #6をmerge commit方式で`main`へmerge済み。
 
-JLL-FE-LESSON-001 implementation handoff:
-
-- Pull Request: `#6` / `work` → `main` / open Draft
 - Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
-- Final audited implementation / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
-- Successful Pages evidence synchronization HEAD before management handoff: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
-- `task-list.md` review handoff commit: `0dee6ef67a8a473ca119af24419d0f23151b6c9f`
-- 以後の`[skip ci]`管理commitを含む最新`work` HEADはGitHub実状態を正本とし、確認担当は`614827ca62be5b72885b7774dc4f621975a6482f`以後の差分が管理文書のみか独立確認する
+- Final audited application / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Independent confirmation pre-record work HEAD: `6c53a4da57d926cdc2abac62ef8d3a7b6932592b`
+- Confirmation task-list record: `85943bd4095e88912f8ddae10ad4cc84686f7396`
+- Confirmation management PR HEAD: `dc8d93fece42082b18f187ff1b053949c6045cd5`
+- PR #6: merged
+- Merge method: merge commit
+- Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
+- `work`はmerge commitへforceなしでfast-forward同期済み
+- このcommitはpost-merge handoffとして`work`へ通常pushし、最終Pages build/deployを起動する
 
-JLL-FE-LESSON-001で実装した方針:
+JLL-FE-LESSON-001で確定した方針:
 
 1. 最初のFEレッスンは科目B「代入と繰返しを追跡する」とし、擬似言語の代入、繰返し、変数追跡を1つの学習単位にまとめる
 2. 到達目標3件、学習順序4段階、本文、擬似言語例、変数追跡表、確認ポイント、4択確認問題を提供する
 3. レッスン概要・本文は`FeLessonApp`として演習・模試・履歴処理から分離し、既存の演習UIとフィルターを目的外に変更しない
 4. レッスン内容は`prototype/src/data/feLessons.js`へ構造化し、定義整合性を回帰テストで検証する
 5. 学習進捗やレッスン完了状態の永続保存は今回の範囲外とし、確認問題の回答だけを画面内状態として扱う
-6. Root / `prototype/`の既存`DESIGN.md`方針で実装可能だったため、新たなデザイン方針変更は行っていない
-7. 375px / 768px / 1,280pxのレッスン専用browser auditを追加し、概要・本文・コード・表・確認問題・responsive layout・horizontal overflow・browser errorを検査する
+6. Root / `prototype/`の既存`DESIGN.md`方針を維持する
+7. 375px / 768px / 1,280pxのレッスン専用browser auditで概要・本文・コード・表・確認問題・responsive layout・horizontal overflow・browser errorを検査する
 8. Pages buildの既存webfont除去仕様は維持し、Ubuntu CIのスクリーンショット確認だけ日本語fallback fontを導入する
 
-JLL-FE-LESSON-001 implementation validation:
+JLL-FE-LESSON-001 independent validation:
 
+- PR review threads: 0
+- Submitted reviews: 0
+- PR mergeable before merge: true
+- PR merge ref: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
 - Node.js: 22.23.1
 - Tests: 67 / 67 passed
 - TypeScript / ESLint / normal build / Pages build: success
@@ -80,55 +86,31 @@ JLL-FE-LESSON-001 implementation validation:
 - Lesson browser workflow: `31188040404` / run `3` / success
 - Lesson browser artifact: `8997593877`
 - Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
-- 375px / 768px / 1,280pxでhorizontal overflow、console error、runtime exception、failed requestなし
-- 最終6枚の概要・本文スクリーンショットを実画像確認し、日本語表示、文字切れ、重なりにBlocking issueなし
-- Blocking finding: なし
+- 375px / 768px / 1,280pxの概要・本文6枚を確認担当が独立実画像確認
+- horizontal overflow、console error、runtime exception、failed requestなし
+- 開始ボタン48px、確認問題選択肢最小54px
+- 375px / 768pxは本文ナビを下段stack、1,280pxは右側配置
+- 日本語表示、文字切れ、重なりにBlocking findingなし
+- 公式問題データファイルはPR変更対象外
+- 確認環境の外向きDNS制約でlocal clone再実行は不可。固定PR merge ref CI、workflow log、browser artifact、Repository差分、Pages公開HTTP smoke checkを独立照合
+- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22とは別でNon-blocking
 
-`JLL-FE-004`は確認担当の独立確認に合格し、PR #5をmerge commit方式で`main`へマージ済み。
+JLL-FE-004も確認合格・PR #5 merge済み。確定方針は以下を維持する。
 
-JLL-FE-004 final state:
-
-- Independent confirmation fixed HEAD: `07e50fa81197899c8b5f740ceceef72aa8d85fb5`
-- Latest audited CI / browser source: `518cd1e8a75ed4acad89c080e81673de6ef7279e`
-- Confirmation management PR HEAD: `30107a653f773df9bee00911fb657d55418129d6`
-- Merge commit: `36641bb1c183ecd489d15280f3070aa98fd1868d`
-- `work`はmerge commitへfast-forward同期済み
-- Post-merge handoff / final Pages source: `a958c782e0a0604f71028c81dcf8796bf8f30b2a`
-- Final Pages evidence synchronization HEAD: `77c5f2c0d84f72b32a4387e77e150047e6f97df3`
-- Final completion record commit以後の最新`work` HEADはGitHub実状態を正本とする
-
-JLL-FE-004で確定した方針:
-
-1. 問題文は解説より明確に大きく・強く表示し、見出し・余白を含め視覚階層を分離する
-2. 模擬試験残時間は本文overlayではなくサイトヘッダー内の専用ステータス行へ表示する
-3. 残時間は設定durationを超えず、active mock切替時にclockを即時更新し、その後1秒単位で減少する
+1. 問題文は解説より明確に大きく・強く表示し、視覚階層を分離する
+2. 模擬試験残時間はサイトヘッダー内の専用ステータス行へ表示する
+3. 残時間は設定durationを超えず、active mock切替時に即時更新し、その後1秒単位で減少する
 4. タイマーはスクロール中も可視で、通常topic演習には表示しない
-5. 2022年科目Aサンプルは通常topic演習から除外するが、公式サンプルmock経路は維持する
+5. 2022年科目Aサンプルは通常topic演習から除外し、公式サンプルmock経路は維持する
 6. `2026-exemption-07`のlearner-facing表示は`令和8年度 免除試験`とし、元問題データは変更しない
 7. `JLL-FE-003`で確定した絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」、受験科目ブロック独立、完全日本語単元名を維持する
 
-JLL-FE-004 independent validation:
+### 4.1 Work queue
 
-- PR build workflow: `31184205320` / run `475` / success
-- Tests: 64 / 64 passed
-- TypeScript / ESLint / normal build / Pages build: success
-- Filter browser workflow: `31184205833` / run `95` / success
-- Mock timer browser workflow: `31184205087` / run `19` / success
-- Browser evidence artifact: `8996046151`
-- Artifact digest: `sha256:3c357958f2e7042b2ca75948b80845c78873a33f9cf695824882baffe76ae184`
-- 375px / 768px / 1,280pxで開始直後`残り 90:00`、約1.2秒後`残り 89:59`
-- overlap / horizontal overflow / console error / failed requestなし
-- topic演習ではmock timer / status row / legacy inline timer 0件
-- Review threads: 0
-- Blocking finding: なし
+1. `JLL-FE-QBANK-001`: 次タスク。最終Pages確認完了後、`実装`で開始する
+2. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-## 4.1 Work queue
-
-1. `JLL-FE-LESSON-001`: `review_ready`。確認担当の独立確認・merge完了待ち
-2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。lesson完了後か、最新ユーザー指示で優先順位が変更された場合に着手
-3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
-
-`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`、`JLL-FE-LESSON-001`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
 
 ## 5. FE question-bank counts
 
@@ -138,11 +120,11 @@ JLL-FE-004 independent validation:
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
 
-`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。調査参照先と意図は`task-list.md`に記録する。
+`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本は公式一次資料とする。
 
 ## 6. GitHub Pages status
 
-JLL-FE-LESSON-001 final pre-review publication:
+JLL-FE-LESSON-001 pre-merge publication:
 
 - Workflow: `31188038465` / run `490` / success
 - Build job: `92897489459` / success
@@ -154,9 +136,9 @@ JLL-FE-LESSON-001 final pre-review publication:
 - Public / repository `build-info.json` sourceRevision一致
 - Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- Pre-merge Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
 
-Pages証拠同期や`review_ready`管理記録の`[skip ci]`commitが`work`へ追加されるため、最終`work` HEADは公開sourceRevisionより先行する。確認担当は公開されたアプリ成果物のsourceRevision `614827ca62be5b72885b7774dc4f621975a6482f`と管理文書HEADを区別して確認する。
+Post-merge final publicationはこのhandoff commitをsourceRevisionとして`work` pushから再実行する。成功後、workflow run / build job / deploy job / public revision / asset名 / evidence synchronization HEADを`task-list.md`、`NEXT_WORK.md`、本ファイルへ最終記録する。
 
 ## 7. Technical stack
 
