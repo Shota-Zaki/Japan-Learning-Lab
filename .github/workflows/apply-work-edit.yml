@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: temporary-jll-fe-003-edit
+  cancel-in-progress: true
+
 jobs:
   apply-edit:
     runs-on: ubuntu-latest
@@ -15,6 +19,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Record edit run
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '{"runId":%s,"sourceRevision":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > .work-edit-run.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .work-edit-run.json
+          git commit -m "chore: record JLL-FE-003 edit run [skip ci]"
+          git fetch origin work
+          git rebase origin/work
+          git push origin HEAD:work
       - name: Apply, verify, and publish prepared edit
         shell: bash
         run: |
@@ -54,6 +70,7 @@ jobs:
           rm -f .github/workflows/apply-work-edit.yml
           rm -f .github/workflows/source-snapshot.yml
           rm -f .source-snapshot-run.json
+          rm -f .work-edit-run.json
           rm -f .work-edit-failure.log
           git add -A
           git commit -m "feat: refine FE filter density and unit labels"
