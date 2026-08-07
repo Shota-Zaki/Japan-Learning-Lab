@@ -177,57 +177,79 @@ function metricsExpression() {
       return { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height), right: round(box.right), bottom: round(box.bottom) };
     };
     const intersects = (left, right) => Boolean(left && right && left.x < right.right && left.right > right.x && left.y < right.bottom && left.bottom > right.y);
-    const timerElement = document.querySelector('.fe-mock-timer');
-    const statusElement = document.querySelector('.header-session-status');
-    const headerInnerElement = document.querySelector('.header-inner');
-    const brandElement = document.querySelector('.brand');
-    const navElement = document.querySelector('.global-nav');
-    const headerActionsElement = document.querySelector('.header-actions');
-    const questionElement = document.querySelector('.fe-question-card > h1');
-    const answersElement = document.querySelector('.fe-answer-options');
-    const sessionActionsElement = document.querySelector('.session-actions');
-    const timer = rect(timerElement);
-    const status = rect(statusElement);
-    const headerInner = rect(headerInnerElement);
-    const brand = rect(brandElement);
-    const nav = rect(navElement);
-    const headerActions = rect(headerActionsElement);
-    const question = rect(questionElement);
-    const answers = rect(answersElement);
-    const sessionActions = rect(sessionActionsElement);
+    const elements = {
+      timer: document.querySelector('.fe-mock-timer'),
+      status: document.querySelector('.header-session-status'),
+      headerInner: document.querySelector('.header-inner'),
+      brand: document.querySelector('.brand'),
+      nav: document.querySelector('.global-nav'),
+      headerActions: document.querySelector('.header-actions'),
+      questionHeading: document.querySelector('.fe-question-card > h1'),
+      questionContent: document.querySelector('.fe-question-content'),
+      answers: document.querySelector('.fe-answer-options'),
+      sessionActions: document.querySelector('.session-actions'),
+    };
+    const boxes = Object.fromEntries(Object.entries(elements).map(([key, element]) => [key, rect(element)]));
     return {
-      timerText: timerElement?.textContent?.trim() || '',
-      timer, status, headerInner, brand, nav, headerActions, question, answers, sessionActions,
-      viewport: { width: innerWidth, height: innerHeight, scrollY: round(scrollY), clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth },
-      containedByStatus: Boolean(timer && status && timer.x >= status.x && timer.right <= status.right && timer.y >= status.y && timer.bottom <= status.bottom),
-      statusSeparatedFromHeaderInner: Boolean(status && headerInner && status.y >= headerInner.bottom - 1),
+      timerText: elements.timer?.textContent?.trim() || '',
+      ...boxes,
+      viewport: {
+        width: innerWidth,
+        height: innerHeight,
+        scrollY: round(scrollY),
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      },
+      containedByStatus: Boolean(boxes.timer && boxes.status && boxes.timer.x >= boxes.status.x && boxes.timer.right <= boxes.status.right && boxes.timer.y >= boxes.status.y && boxes.timer.bottom <= boxes.status.bottom),
+      statusSeparatedFromHeaderInner: Boolean(boxes.status && boxes.headerInner && boxes.status.y >= boxes.headerInner.bottom - 1),
       overlaps: {
-        brand: intersects(timer, brand),
-        nav: intersects(timer, nav),
-        headerActions: intersects(timer, headerActions),
-        question: intersects(timer, question),
-        answers: intersects(timer, answers),
-        sessionActions: intersects(timer, sessionActions),
+        brand: intersects(boxes.timer, boxes.brand),
+        nav: intersects(boxes.timer, boxes.nav),
+        headerActions: intersects(boxes.timer, boxes.headerActions),
+        questionHeading: intersects(boxes.timer, boxes.questionHeading),
+        questionContent: intersects(boxes.timer, boxes.questionContent),
+        answers: intersects(boxes.timer, boxes.answers),
+        sessionActions: intersects(boxes.timer, boxes.sessionActions),
       },
     };
   })()`;
 }
 
+function geometrySummary(metrics) {
+  return JSON.stringify({
+    viewport: metrics.viewport,
+    timer: metrics.timer,
+    status: metrics.status,
+    headerInner: metrics.headerInner,
+    brand: metrics.brand,
+    nav: metrics.nav,
+    headerActions: metrics.headerActions,
+    questionHeading: metrics.questionHeading,
+    questionContent: metrics.questionContent,
+    answers: metrics.answers,
+    sessionActions: metrics.sessionActions,
+    overlaps: metrics.overlaps,
+  });
+}
+
 function validateMockMetrics(metrics, width, phase) {
-  assert(metrics.timer && metrics.status, `Mock timer/status row missing at ${width}px (${phase})`);
+  const geometry = geometrySummary(metrics);
+  assert(metrics.timer && metrics.status, `Mock timer/status row missing at ${width}px (${phase}); ${geometry}`);
   assert(/^残り \d{2,3}:\d{2}$/.test(metrics.timerText), `Unexpected timer text at ${width}px: ${metrics.timerText}`);
-  assert(metrics.containedByStatus, `Timer escapes its reserved status row at ${width}px (${phase})`);
-  assert(metrics.statusSeparatedFromHeaderInner, `Timer status row is not separated from the primary header row at ${width}px (${phase})`);
-  assert(!metrics.overlaps.brand, `Timer overlaps brand at ${width}px (${phase})`);
-  assert(!metrics.overlaps.nav, `Timer overlaps global navigation at ${width}px (${phase})`);
-  assert(!metrics.overlaps.headerActions, `Timer overlaps header actions at ${width}px (${phase})`);
+  assert(metrics.containedByStatus, `Timer escapes its reserved status row at ${width}px (${phase}); ${geometry}`);
+  assert(metrics.statusSeparatedFromHeaderInner, `Timer status row is not separated from the primary header row at ${width}px (${phase}); ${geometry}`);
+  assert(!metrics.overlaps.brand, `Timer overlaps brand at ${width}px (${phase}); ${geometry}`);
+  assert(!metrics.overlaps.nav, `Timer overlaps global navigation at ${width}px (${phase}); ${geometry}`);
+  assert(!metrics.overlaps.headerActions, `Timer overlaps header actions at ${width}px (${phase}); ${geometry}`);
   if (phase === "initial") {
-    assert(!metrics.overlaps.question, `Timer overlaps problem heading at ${width}px`);
-    assert(!metrics.overlaps.answers, `Timer overlaps answer controls at ${width}px`);
-    assert(!metrics.overlaps.sessionActions, `Timer overlaps session actions at ${width}px`);
+    assert(metrics.viewport.scrollY === 0, `Initial session geometry was not measured at scrollY=0 for ${width}px; ${geometry}`);
+    assert(!metrics.overlaps.questionHeading, `Timer overlaps problem heading at ${width}px; ${geometry}`);
+    assert(!metrics.overlaps.questionContent, `Timer overlaps problem body at ${width}px; ${geometry}`);
+    assert(!metrics.overlaps.answers, `Timer overlaps answer controls at ${width}px; ${geometry}`);
+    assert(!metrics.overlaps.sessionActions, `Timer overlaps session actions at ${width}px; ${geometry}`);
   }
-  assert(metrics.viewport.scrollWidth <= metrics.viewport.clientWidth + 1, `Page overflows horizontally at ${width}px (${phase})`);
-  assert(metrics.timer.y >= -1 && metrics.timer.bottom <= metrics.viewport.height + 1, `Timer is outside the viewport at ${width}px (${phase})`);
+  assert(metrics.viewport.scrollWidth <= metrics.viewport.clientWidth + 1, `Page overflows horizontally at ${width}px (${phase}); ${geometry}`);
+  assert(metrics.timer.y >= -1 && metrics.timer.bottom <= metrics.viewport.height + 1, `Timer is outside the viewport at ${width}px (${phase}); ${geometry}`);
 }
 
 async function captureViewport(client, filePath) {
@@ -260,19 +282,23 @@ async function auditScenario(debugOrigin, siteOrigin, width) {
     await waitFor(client, `(() => { const button = document.querySelector('.fe-start-button'); return Boolean(button && !button.disabled && button.textContent.includes('模擬試験を開始')); })()`, "enabled mock start button");
     assert(await evaluate(client, `(() => { const button = document.querySelector('.fe-start-button'); button?.click(); return Boolean(button); })()`), `Could not start mock exam at ${width}px`);
     await waitFor(client, `Boolean(document.querySelector('.fe-exam-session') && document.querySelector('.fe-mock-timer'))`, "mock session with header timer");
-    await delay(250);
 
+    await evaluate(client, `window.scrollTo({ top: 0, behavior: 'instant' }); true`);
+    await waitFor(client, `window.scrollY === 0`, "mock session scroll origin");
+    await delay(150);
     const initial = await evaluate(client, metricsExpression());
+    console.log(`mock-timer ${width}px initial ${geometrySummary(initial)}`);
     validateMockMetrics(initial, width, "initial");
     const mockScreenshot = `mock-timer-${width}.png`;
     await captureViewport(client, join(outputDirectory, mockScreenshot));
 
     await evaluate(client, `window.scrollTo({ top: Math.min(180, Math.max(1, document.documentElement.scrollHeight - innerHeight)), behavior: 'instant' }); true`);
-    await delay(200);
+    await waitFor(client, `window.scrollY > 0`, "scrolled mock session");
+    await delay(100);
     const scrolled = await evaluate(client, metricsExpression());
+    console.log(`mock-timer ${width}px scrolled ${geometrySummary(scrolled)}`);
     validateMockMetrics(scrolled, width, "scrolled");
-    assert(scrolled.viewport.scrollY > 0, `Page did not scroll at ${width}px`);
-    assert(Math.abs(scrolled.timer.y - initial.timer.y) <= 1.5, `Timer moved vertically after scroll at ${width}px`);
+    assert(Math.abs(scrolled.timer.y - initial.timer.y) <= 1.5, `Timer moved vertically after scroll at ${width}px; initial=${initial.timer.y}, scrolled=${scrolled.timer.y}`);
 
     assert(await evaluate(client, clickTextExpression(".global-nav button", "演習・模試")), `Could not return to practice setup at ${width}px`);
     await waitFor(client, `Boolean(document.querySelector('.fe-session-type')) && !document.querySelector('.fe-mock-timer')`, "practice setup without timer");
@@ -280,10 +306,11 @@ async function auditScenario(debugOrigin, siteOrigin, width) {
     await evaluate(client, `document.querySelector('.fe-start-button')?.click(); true`);
     await waitFor(client, `Boolean(document.querySelector('.fe-exam-session'))`, "topic session");
     await delay(150);
-    const topicTimerState = await evaluate(client, `({ timerCount: document.querySelectorAll('.fe-mock-timer').length, statusCount: document.querySelectorAll('[data-fe-session-status="mock"]').length, inlineTimerCount: document.querySelectorAll('.session-topbar > span > strong').length })`);
+    const topicTimerState = await evaluate(client, `({ timerCount: document.querySelectorAll('.fe-mock-timer').length, statusCount: document.querySelectorAll('[data-fe-session-status="mock"]').length, inlineTimerCount: document.querySelectorAll('.session-topbar > span > strong').length, scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth })`);
     assert(topicTimerState.timerCount === 0, `Normal exercise shows the header timer at ${width}px`);
     assert(topicTimerState.statusCount === 0, `Normal exercise reserves a mock status row at ${width}px`);
     assert(topicTimerState.inlineTimerCount === 0, `Normal exercise renders the legacy inline timer at ${width}px`);
+    assert(topicTimerState.scrollWidth <= topicTimerState.clientWidth + 1, `Normal exercise overflows horizontally at ${width}px`);
     const topicScreenshot = `topic-no-timer-${width}.png`;
     await captureViewport(client, join(outputDirectory, topicScreenshot));
 
@@ -350,8 +377,9 @@ async function main() {
       browser: chromePath,
       viewports,
       checks: [
+        "initial geometry is measured at scrollY=0 after route transition settles",
         "timer is contained by a dedicated header status row",
-        "timer does not overlap brand, global navigation, optional header actions, initial problem heading, answer controls, or session actions",
+        "timer does not overlap brand, global navigation, optional header actions, initial problem heading, problem body, answer controls, or session actions",
         "timer remains in the viewport at the same vertical position after scrolling",
         "normal topic exercise does not render the mock timer or status row",
         "page has no horizontal overflow",
@@ -360,7 +388,7 @@ async function main() {
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-004 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: dedicated header status row containment; no collision with header or initial session controls; sticky visibility after scroll; no mock timer during normal topic exercise; no page horizontal overflow.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-004 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: dedicated header status row containment; no collision with live header or initial session content and controls; sticky visibility after scroll; no mock timer during normal topic exercise; no page horizontal overflow.\n`);
     console.log(`FE mock timer browser audit passed for ${scenarios.length} viewports`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
