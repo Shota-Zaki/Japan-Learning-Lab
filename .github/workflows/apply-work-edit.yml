@@ -1,0 +1,52 @@
+name: Temporary repository edit runner
+
+on:
+  push:
+    branches: [work]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-edit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply prepared repository edit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -f .github/work-edit.py ]]; then
+            echo "No prepared edit; nothing to do."
+            exit 0
+          fi
+          python .github/work-edit.py
+          rm -f .github/work-edit.py
+          rm -f .github/workflows/apply-work-edit.yml
+          rm -f .github/workflows/source-snapshot.yml
+      - name: Install dependencies
+        if: hashFiles('.github/work-edit.py') == ''
+        working-directory: prototype
+        run: npm ci
+      - name: Verify and build
+        if: hashFiles('.github/work-edit.py') == ''
+        working-directory: prototype
+        run: |
+          npm run verify:fe
+          npm run audit:fe-filter-layouts
+      - name: Commit generated implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "feat: refine FE filter density and unit labels"
+          git push origin HEAD:work
