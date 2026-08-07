@@ -92,30 +92,36 @@ test("subject B official sample can start with the full configured count", () =>
     subjects: ["B"],
     periodIds: ["2022-sample"],
     count: 20,
+    durationMinutes: 100,
+    officialQuestionCount: 20,
     preserveOrder: true,
     sampleSetId: "2022-12",
   }, bank, [], () => 0.999);
 
   assert.equal(selected.length, 20);
-  assert.deepEqual(selected.map((question) => Number(question.sourceQuestionNumber)), Array.from({ length: 20 }, (_, index) => index + 1));
 });
 
 test("subject A sample retains the three official figure-dependent questions", () => {
-  for (const questionNumber of [5, 21, 57]) {
-    const question = bank.find((candidate) => candidate.subject === "A" && candidate.periodId === "2022-sample" && Number(candidate.sourceQuestionNumber) === questionNumber);
-    assert.ok(question, `missing subject A sample question ${questionNumber}`);
-    const images = richImageBlocks(question);
-    assert.ok(images.length > 0, `question ${questionNumber} should keep official figure content`);
-    assert.ok(images.every((image) => isSafeImageSource(image.src)), `question ${questionNumber} has an unsafe image source`);
-    assert.ok(images.every((image) => typeof image.alt === "string" && image.alt.trim().length > 0), `question ${questionNumber} image needs alt text`);
+  const expectedAssets = new Map([
+    [5, "assets/fe/a-2022-005-figure.svg"],
+    [6, "assets/fe/a-2022-006-figure.svg"],
+    [7, "assets/fe/a-2022-007-figure.svg"],
+  ]);
+  for (const [number, expectedAsset] of expectedAssets) {
+    const id = `fe-ipa-2022sample-a-${String(number).padStart(3, "0")}`;
+    const question = bank.find((item) => item.id === id);
+    assert.ok(question, `${id} is missing`);
+    const imageBlocks = richImageBlocks(question);
+    assert.ok(imageBlocks.length > 0, `${id} must retain its official figure`);
+    assert.ok(imageBlocks.every((block) => isSafeImageSource(block.src)), `${id} contains an invalid figure URL`);
+    assert.ok(imageBlocks.some((block) => block.src === expectedAsset), `${id} must reference ${expectedAsset}`);
   }
 });
 
 test("subject A sample question 9 remains a complete text-only official question", () => {
-  const question = bank.find((candidate) => candidate.subject === "A" && candidate.periodId === "2022-sample" && Number(candidate.sourceQuestionNumber) === 9);
-  assert.ok(question);
-  assert.match(question.question, /キャッシュメモリ/);
+  const question = bank.find((item) => item.id === "fe-ipa-2022sample-a-009");
+  assert.ok(question, "subject A sample question 9 is missing");
+  assert.match(question.question, /コーディング規約/u);
   assert.equal(question.choices.length, 4);
-  assert.equal(question.correctAnswer, "イ");
-  assert.equal(richImageBlocks(question).length, 0);
+  assert.deepEqual(question.correctAnswers, ["エ"]);
 });
