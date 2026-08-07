@@ -1,5 +1,6 @@
 export const FE_UNIT_LABELS = {
   "algorithm-design": { label: "アルゴリズム設計", parts: ["アルゴリズム", "設計"] },
+  "algorithm-programming": { label: "アルゴリズムとプログラミング", parts: ["アルゴリズムと", "プログラミング"] },
   "algorithm-programming-basics": { label: "アルゴリズム・プログラミング基礎", parts: ["アルゴリズム・", "プログラミング基礎"] },
   arrays: { label: "配列", parts: ["配列"] },
   "basic-theory": { label: "基礎理論", parts: ["基礎理論"] },
@@ -39,16 +40,40 @@ export const FE_UNIT_LABELS = {
   "technology-strategy": { label: "技術戦略マネジメント", parts: ["技術戦略", "マネジメント"] },
   trees: { label: "木構造", parts: ["木構造"] },
   "two-dimensional-arrays": { label: "二次元配列", parts: ["二次元", "配列"] },
+  unclassified: { label: "未分類", parts: ["未分類"] },
   "variables-data-types": { label: "変数・データ型", parts: ["変数・", "データ型"] },
 };
 
 const UNKNOWN_UNIT_LABEL = "単元名未登録";
+const FE_UNIT_LABEL_ALIASES = {
+  "アルゴリズムとプログラミング": "algorithm-programming",
+  "システム開発技術": "system-development",
+  "ソフトウェア開発管理技術": "software-development-management",
+};
+
+function normalizeLookupValue(value) {
+  return String(value ?? "").normalize("NFKC").trim().toLowerCase();
+}
+
 const FE_UNIT_IDS_BY_LENGTH = Object.keys(FE_UNIT_LABELS).sort((left, right) => right.length - left.length);
+const FE_UNIT_IDS_BY_LABEL = new Map(
+  Object.entries(FE_UNIT_LABELS).map(([unitId, entry]) => [normalizeLookupValue(entry.label), unitId]),
+);
+for (const [label, unitId] of Object.entries(FE_UNIT_LABEL_ALIASES)) {
+  FE_UNIT_IDS_BY_LABEL.set(normalizeLookupValue(label), unitId);
+}
+const FE_UNIT_LABELS_BY_LENGTH = [...FE_UNIT_IDS_BY_LABEL.keys()].sort((left, right) => right.length - left.length);
 
 export function resolveFeUnitLabelId(unitId) {
-  const normalized = String(unitId ?? "").normalize("NFKC").trim().toLowerCase();
+  const normalized = normalizeLookupValue(unitId);
   if (FE_UNIT_LABELS[normalized]) return normalized;
-  return FE_UNIT_IDS_BY_LENGTH.find((candidate) => normalized.endsWith(candidate)) || null;
+  if (FE_UNIT_IDS_BY_LABEL.has(normalized)) return FE_UNIT_IDS_BY_LABEL.get(normalized);
+
+  const canonicalSuffix = FE_UNIT_IDS_BY_LENGTH.find((candidate) => normalized.endsWith(candidate));
+  if (canonicalSuffix) return canonicalSuffix;
+
+  const labelSuffix = FE_UNIT_LABELS_BY_LENGTH.find((label) => normalized.endsWith(label));
+  return labelSuffix ? FE_UNIT_IDS_BY_LABEL.get(labelSuffix) : null;
 }
 
 export function getFeUnitLabel(unitId) {
