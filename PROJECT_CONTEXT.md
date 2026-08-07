@@ -98,14 +98,19 @@ Blocking状態:
 - Confirmation input `work` / PR HEAD: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
 - Independently verified implementation/CI source HEAD: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
 - Browser evidence PR merge ref: `991017aa63c87ccf511a474e4047c0803bd7dd49`
-- PR #5: Draft / mergeable / `work` → `main` / review threads 0 / unmerged
-- PR build workflow: `31181066806` / run `457` / success
+- Confirmation management source published by Pages: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Pages evidence synchronization HEAD: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
+- このfinal confirmation evidence同期以後の最新`work` / PR HEADはGitHub実状態を正本とする
+- PR #5: Draft / mergeable / `work` → `main` / unmerged
+- Confirmation開始時のPR review threads: 0
+- PR build workflow at implementation source: `31181066806` / run `457` / success
 - `npm run verify:fe`: success / tests 63 passed / TypeScript・ESLint・normal build・Pages build success
 - PR filter browser workflow: `31181066826` / run `86` / success
 - JLL-FE-004専用browser workflow: `31181066801` / run `10` / success
 - Browser evidence artifact: `8994787534` / digest `bc5edd17b8b2c434c7d9b16a7bb83e4717a966a0a7ba2e8f77fd0e9b76fe7575`
 - Browser layout checks: 375px / 768px / 1,280pxで全overlap false、180pxスクロール後もtimer Y不変、horizontal overflowなし、通常topicでtimer/status/legacy timer 0件、console message / failed requestなし
 - `B2` evidence: 3幅すべての初期timer textが`残り 90:01`
+- Confirmation management source `b3a74e1`のPR CI: Build run `463`、filter audit run `89`、mock timer audit run `13`、すべてsuccess
 - 2022年科目Aサンプルは通常`topic`のみ除外し、`mock`と科目B経路を維持
 - `2026-exemption-07`はlearner-facing helperのみで`令和8年度 免除試験`へ変換し、元問題データは非改変
 - JLL-FE-003の絞り込み順・レイアウト・受験科目独立性の既存browser auditはsuccess
@@ -129,19 +134,19 @@ FE問題数は次の区分を正確に使う。
 
 2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-JLL-FE-004確認時の最新正常公開:
+JLL-FE-004確認後の最新正常公開:
 
-- Workflow: `31181063294` / run `456` / success
+- Workflow: `31182227798` / run `462` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
-- Published source Revision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Public `build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Repository `docs/build-info.json` sourceRevision: `c0f32f8e1ac01fea0a56db668a0090eaf3931705`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31181063294` / run `456`
+- Published source Revision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Public `build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Repository `docs/build-info.json` sourceRevision: `b3a74e17898af4cda5e0933098fa0566bc234280`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31182227798` / run `462`
 - Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Pages evidence synchronization commit: `7979e7ad5b42757e6a1045cbf9a6976c7e5189fa`
-- `7979e7a`はPages成功証拠同期のみで、`c0f32f8`からアプリケーション差分はない
+- Pages evidence synchronization commit: `7b0c7d1594d7f4c017c09360f5f61d2a1432ee74`
+- `7b0c7d1`はPages成功証拠同期のみで、`b3a74e1`からアプリケーション差分はない
 
 Pages successだけでタスク合格とはしない。JLL-FE-004は公開自体は正常だが、browser evidenceでBlocking `B2`を確認したため`needs_fix`である。修正担当はB2修正後に`docs/`をbuildで再生成し、PR CI、専用browser evidence、`work` Pages sourceRevisionを更新してから`review_ready`へ戻す。
 
