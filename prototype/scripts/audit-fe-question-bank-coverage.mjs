@@ -15,11 +15,13 @@ const prototypeRoot = path.resolve(scriptDir, "..");
 const primaryPath = path.join(prototypeRoot, "public", "data", "fe-official-past-questions.json");
 const supplementalPath = path.join(prototypeRoot, "public", "data", "fe-official-supplemental-questions.json");
 const inventoryPath = path.join(prototypeRoot, "data", "source", "fe", "question-source-inventory.json");
+const extractionCandidatesPath = path.join(prototypeRoot, "data", "source", "fe", "question-extraction-candidates.json");
 
-const [primaryPayload, supplementalPayload, inventory] = await Promise.all([
+const [primaryPayload, supplementalPayload, inventory, extractionCandidates] = await Promise.all([
   readFile(primaryPath, "utf8").then(JSON.parse),
   readFile(supplementalPath, "utf8").then(JSON.parse),
   readFile(inventoryPath, "utf8").then(JSON.parse),
+  readFile(extractionCandidatesPath, "utf8").then(JSON.parse),
 ]);
 
 const primaryQuestions = Array.isArray(primaryPayload.questions) ? primaryPayload.questions : [];
@@ -49,6 +51,7 @@ ensure(merged.length >= primaryQuestions.length, "Canonical merge unexpectedly r
 ensure(merged.length <= primaryQuestions.length + supplementalQuestions.length, "Canonical merge unexpectedly added FE questions");
 ensure(merged.every(validQuestion), "Canonical FE question bank contains an invalid question");
 ensure(inventory.contentReadyCount === supplementalQuestions.length, "Source inventory content-ready count must match the supplemental repository bank");
+ensure(extractionCandidates.repositoryReadyCount === 0, "Unreviewed extraction candidates must not be counted as repository-ready");
 
 const countsBySubject = Object.fromEntries(
   ["A", "B"].map((subject) => [subject, merged.filter((question) => question.subject === subject).length]),
@@ -60,6 +63,8 @@ const sourceOccurrenceCount = merged.reduce(
 const repeatedOccurrenceCount = primaryQuestions.length + supplementalQuestions.length - merged.length;
 const primaryDuplicateContentGroups = duplicateGroupCount(primaryQuestions, normalizedFingerprint);
 const primaryDuplicateSourceGroups = duplicateGroupCount(primaryQuestions, normalizedSourceFingerprint, "||");
+const candidateUniverseQuestionCount = inventory.candidateQuestionCount + extractionCandidates.candidateQuestionCount;
+const repositoryReadyCandidateCount = inventory.contentReadyCount + extractionCandidates.repositoryReadyCount;
 
 console.log(JSON.stringify({
   primaryQuestionCount: primaryQuestions.length,
@@ -73,4 +78,9 @@ console.log(JSON.stringify({
   stagedCandidateQuestionCount: inventory.candidateQuestionCount,
   stagedContentReadyCount: inventory.contentReadyCount,
   stagedPendingContentCount: inventory.candidateQuestionCount - inventory.contentReadyCount,
+  extractionCandidateQuestionCount: extractionCandidates.candidateQuestionCount,
+  extractionCandidateReadyCount: extractionCandidates.repositoryReadyCount,
+  candidateUniverseQuestionCount,
+  repositoryReadyCandidateCount,
+  candidateUniversePendingReviewCount: candidateUniverseQuestionCount - repositoryReadyCandidateCount,
 }, null, 2));
