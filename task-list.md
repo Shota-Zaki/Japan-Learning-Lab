@@ -14,7 +14,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Status
 
-`needs_fix`
+`review_ready`
 
 ### Purpose
 
@@ -22,23 +22,22 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Scope
 
-- `filterLayout=2`のパターンBを指定なし・無効値時の既定表示へ変更
+- `filterLayout=2`を指定なし・無効値時の既定表示として維持
 - 単元カードを全幅の主カードとして維持
-- PC・タブレットで「分野」と「回答・復習状態」を左側へ隙間なく縦積みし、「開催回・公開区分」を右側へ独立配置して不要な空白を削減
+- PC・タブレットで「分野」と「回答・復習状態」を左側へ通常のGrid gapで縦積み
+- 「開催回・公開区分」を右側へ配置し、左右の高さ計算を分離
 - 375pxでは既存DOM順の1列を維持
-- 収録データのcanonical `unitId`と、実行時に日本語へ正規化された旧単元値の両方を完全な日本語表示名へ解決
-- 単元名の表示幅を優先し、可能な限り1行表示
-- 1行に収まらない名称は意味上自然な位置だけに任意改行
-- 未解決単元名と英語ID露出をブラウザ監査で失敗させる検証を追加
-- ブラウザ監査を問題データとフォントの最終描画完了後に実行する
-- 自動テスト、型検査、Lint、通常build、Pages build、Chromium監査を実行
-- `docs/`とRepository内の確認証拠を更新
+- 受験科目ブロックの独立状態を維持
+- canonical `unitId`と旧形式の実行時単元値を完全な日本語表示名へ解決
+- 単元名を可能な限り1行表示し、必要時のみ自然な位置で折り返す
+- 問題データ、選択肢数、フォント、レイアウト測定が安定した後にブラウザ監査を実行
+- 3レイアウト × 375px・768px・1,280pxを自動監査
 
 ### Out of scope
 
 - 受験科目ブロックの位置、構造、文言、選択肢、操作変更
 - 絞り込み条件、OR/AND評価、件数、開始条件の変更
-- 問題データ、問題本文、選択肢、正答、解説、図表の変更
+- 問題本文、選択肢、正答、解説、図表の変更
 - `JLL-FE-004`の問題文・解説の視覚階層、固定タイマー、出題対象、開催回表記の変更
 - レッスン内容作成
 - Java Learning Labの実装
@@ -48,14 +47,14 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 ### Completion criteria
 
 - 指定なし・無効な`filterLayout`でパターンBが表示される
-- PC・タブレットで「分野」と「回答・復習状態」の間に、右側カードの高さに由来する大きな未使用空間が発生しない
+- 768px・1,280pxで「分野」と「回答・復習状態」の間隔が通常のGrid gap相当となる
+- 右側カードの高さに由来する大きな未使用空間が発生しない
 - カード高さを固定せず、条件群内部へ縦スクロールを追加しない
-- 現在収録中の単元と旧形式の実行時単元値が英語IDや「単元名未登録」ではなく完全な日本語名で表示される
-- 単元カードは表示幅を有効利用し、可能な限り1行表示となる
-- 改行が必要な名称は単語・意味のまとまりで折り返される
-- ブラウザ監査は問題データ読込完了後の最終件数・最終レイアウトを測定する
+- 単元名が英語IDや「単元名未登録」ではなく完全な日本語名で表示される
+- 単元カードは表示幅を有効利用し、必要時のみ自然に折り返す
+- ブラウザ監査が問題データ・選択肢・フォントの最終描画後を測定する
 - 375px、768px、1,280pxで横はみ出し、重なり、内容切れ、操作不能がない
-- キーボード操作とラベル関連付けが維持される
+- キーボード操作とDOM順、fieldset/legend、label/input関連付けが維持される
 - テスト、型検査、Lint、通常build、Pages build、Chromium監査が成功する
 - Draft Pull Requestと固定検証証拠が存在する
 
@@ -74,85 +73,86 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Number: `#4`
 - Base: `main`
 - Head: `work`
-- State: open / draft
-- Review state: changes required
+- State: open / draft / unmerged
+- Review state: confirmation requested
 
 ### Start HEAD
 
 `1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
 
-### Fixed implementation HEAD
-
-`4e71a6b77a5903de5fa2eac7187f76619c631b4a`
-
-### CI hardening HEAD
-
-`5c161669720f4a3f5508ff1d27722de50d7d76dd`
-
-### Confirmation review HEAD
+### Prior confirmation review HEAD
 
 `8b624578f68b7ee59cc1de5515c1114316839f72`
 
-### Current HEAD
+### Fixed implementation and verification HEAD
 
-確認不合格の管理文書更新後HEADはGitHub実状態から再取得する。修正対象アプリケーションの基準HEADは`4e71a6b77a5903de5fa2eac7187f76619c631b4a`。
+`66a03576b5b9ac2c86c35c63045f923137f08a0c`
+
+管理文書更新後も、アプリケーションコード・監査コード・テストの確認対象はこのHEADに固定する。
 
 ### Validation result
 
-- Confirmation result: failed / Blocking findingsあり
+- Implementation self-check: passed
 - Automated tests: 60 / 60 passed
 - TypeScript: success
 - ESLint: success
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
-- Standard workflow: `31143102204` / run `346` / success
-- Standard build job: `92756925888` / success
-- Browser audit workflow: `31143102205` / run `27` / success
-- Browser audit job: `92756925738` / success
-- Browser evidence artifact ID: `8980485643`
-- Browser evidence digest: `sha256:0b7e1b3e43f4135024d8abf8ef82eb0988a9edd252570ddc5977f53176aab55e`
+- Standard workflow: `31144511506` / run `370` / success
+- Standard build job: `92761099227` / success
+- Pages artifact ID: `8980987977`
+- Pages artifact digest: `sha256:1560b786ba93b9c6d57be7f8723949538e8aee4022d8fce4eeb326ec2210242b`
+- Browser audit workflow: `31144511527` / run `39` / success
+- Browser audit job: `92761088942` / success
+- Browser evidence artifact ID: `8980991042`
+- Browser evidence digest: `sha256:c32e7c8aa55307a135da0e7539b152de6f214ad6d0f5582607aee82a4eb8e861`
+- Browser evidence: 3レイアウト × 375px・768px・1,280pxの9スクリーンショット
+- Final rendered source count: `1997`
+- Final option counts: `[3, 24, 28, 4]`
+- Pattern B left-card gap at 768px: `8.8px` / computed row gap `8.8px`
+- Pattern B left-card gap at 1,280px: `8.8px` / computed row gap `8.8px`
+- Horizontal overflow: 0
+- Card internal scrollbar / content clipping: 0
+- Raw English unit identifier / unresolved unit label: 0
+- Console warning/error: 0
+- Failed network request: 0
+- Keyboard checkbox operation: success
+- DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
 - Pull Request comments: none
 - Unresolved review threads: none
 
-#### Blocking finding 1: パターンBに大きな未使用空間が残る
+### Resolved Blocking findings
 
-- 再現: `?screen=fe&tab=practice&filterLayout=2`を1,280pxで開き、問題データ読込完了後の絞り込みを確認する
-- 結果: 左側の「1. 分野」と「4. 回答・復習状態」の間に、右側の「3. 開催回・公開区分」の高さに引き延ばされた大きな空白が残る
-- 原因候補: 同一CSS Grid上で右側カードを`grid-row: 2 / span 2`にし、左側2カードを共有行2・3へ配置しているため、右側カードのintrinsic heightが共有行の配分へ影響する
-- 修正方針: 単元カードの下を、左側の独立した縦スタックと右側カードの2カラム構造にするなど、左右の高さ計算を分離する。DOM順、ラベル関連付け、375pxの1列順序を維持し、固定高や内部スクロールは使用しない
+1. Pattern Bの右側カードを共有行の高さ配分から分離し、左側2カードを通常gapで連続配置した。
+2. ブラウザ監査は最終収録数、最終option数、`document.fonts.ready`、連続した安定サンプルを待つ。キャプチャ前後の双方で全レイアウト要件を検証し、最終データ状態が変化した場合は失敗する。
+3. Chrome終了待機と一時ディレクトリ削除のretryを追加し、CI後処理競合を解消した。
 
-#### Blocking finding 2: ブラウザ監査が最終描画前を測定する
+### Required confirmation
 
-- 再現: artifact `8980485643`の`audit.json`と`layout-2-1280.png`を比較する
-- 結果: `audit.json`の1,280pxパターンBは単元15件・開催回カード高約116pxを記録する一方、同一シナリオのスクリーンショットは読込後の単元24件・開催回28件を表示する
-- 原因候補: `waitForApplication`がdocument complete、カード4件、受験科目表示だけで完了し、問題データ読込完了と最終件数の安定を待っていない。メトリクス取得後に非同期描画が進んでいる
-- 修正方針: `bankStatus`または画面上の収録数・選択肢件数が最終値へ到達し、連続観測で安定した後にメトリクスとスクリーンショットを取得する。フォント読込完了も待機し、最終状態の件数・余白・クリッピングを検証する
+確認担当は次を独立して実施する。
 
-### Required revalidation
-
-- `cd prototype && npm run verify:fe`
-- 3レイアウト × 375px / 768px / 1,280pxの最終描画監査
-- パターンBで左側2カード間の不要な空白がないこと
-- 監査メトリクスとスクリーンショットの件数・カード寸法が同一描画状態であること
-- 単元名未登録、英語ID、横はみ出し、カード内スクロール、内容切れ、Console error、Network failureが0件であること
-- キーボード操作とDOM順が維持されること
-- 修正後のCI artifactを固定し、管理文書へHEAD・run・artifact・digestを記録すること
+- 固定HEAD `66a03576b5b9ac2c86c35c63045f923137f08a0c`と`main`の差分確認
+- artifact `8980991042`の`audit.json`と9スクリーンショット確認
+- Pattern Bの768px・1,280pxで左カード間隔が8.8pxであることの再確認
+- 最終件数・option数・overflow・clipping・DOM順・キーボード操作の再確認
+- Standard workflow `31144511506`とbrowser workflow `31144511527`の成功確認
+- Blocking問題がなければ管理文書更新、merge commit方式のマージ、`work`同期を実施
 
 ### Merge commit
 
-未着手。確認不合格のためマージしない。
+未着手。実装担当のためマージしない。
 
 ### GitHub Pages result
 
 - Pages build and artifact upload: success
-- Deployment and public revision verification: temporary skip policyにより判定対象外
 - Deploy job: skipped
-- Pages障害は今回の不合格理由ではない
+- Deployment and public revision verification: ユーザー指定のtemporary skip policyにより判定対象外
+- Pages障害は今回の実装完了判定を妨げない
 
 ### Next task
 
-`JLL-FE-004`。ただし`JLL-FE-003`が`completed`になるまで開始しない。
+`JLL-FE-004`。ただし`JLL-FE-003`が確認合格・`completed`になるまで開始しない。
 
 ---
 
@@ -179,10 +179,9 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 - 問題文と解説で文字サイズ、太さ、見出し、余白に明確な差を付ける
 - 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
 - 2022年科目Aサンプルを通常の演習出題対象から除外する
-- `2026年7月科目A免除制度修了試験`の利用者向け表示を`令和8年度 免除試験`へ変更する
+- `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 - 必要に応じて`DESIGN.md`を実装前に更新する
 - 自動テスト、型検査、Lint、通常build、Pages build、PC・スマートフォン表示を検証する
-- `docs/`、Draft Pull Request、管理文書を更新する
 
 ### Out of scope
 
@@ -389,37 +388,19 @@ FEレッスン内容作成の優先タスク完了後、最新のユーザー指
 ### JLL-FE-002
 
 - Status: `completed`
-- Title: FE演習の絞り込みを、独立した受験科目ブロックを維持したモジュール不規則型Gridの3パターンへ変更する
-- Purpose: 受験科目を独立配置のまま維持し、その下の4条件群だけを3レイアウトへ変更する
-- Scope: `filterLayout=1|2|3`、375px・768px・1,280px、同一DOM、キーボード操作、Chromium監査
-- Out of scope: 問題データ変更、Java、Pages障害復旧
-- Completion criteria: Pages公開依存項目を除き合格
-- Dependencies: `JLL-FE-001`
-- Branch: `work`
 - Pull Request: `#3` / merged
-- Start HEAD: `c58aa9455b1941055310c0dd82b65352530a6482`
-- Fixed implementation HEAD: `ca5212d91b3b9792a53d0fac4bc7f69648682798`
 - Final Pull Request HEAD: `aaac236ab887c7a55f0491cf40a9c88824e3507b`
-- Validation: tests 56 / 56、TypeScript、ESLint、build、Pages build、9 browser scenarios success
 - Merge commit: `c01be523eb78d0a4ce9d7e6c8cf13eeb7868b3a8`
+- Validation: tests 56 / 56、TypeScript、ESLint、build、Pages build、9 browser scenarios success
 - GitHub Pages: build/artifact success、deployment/public verificationはtemporary skip
 - Next task: `JLL-FE-003`
 
 ### JLL-FE-001
 
 - Status: `completed`
-- Title: FE演習の公開構成、複合絞り込み、科目B、公式サンプル模試、演習ナビゲーション、詳細解説を完成させる
-- Purpose: FE演習を公式問題、科目A・B、模擬試験、履歴、結果レビュー、問題移動、詳細解説まで完成させる
-- Scope: FE演習全般、自動テスト、build、固定CI artifactによるブラウザ確認
-- Out of scope: Java、問題データにない根拠生成、Pages障害回避workflow
-- Completion criteria: Pages公開依存項目を除き合格
-- Dependencies: 既存FE基盤
-- Branch: `work`
 - Pull Request: `#1` / merged
-- Start HEAD: `d151cbfb71cdb00af52d3ec50afea74f3035b230`
-- Fixed implementation HEAD: `5a62c156ec07e93d1bb5108bab858d1f314f2592`
 - Final Pull Request HEAD: `b50b5b2f301e135d7140aee015a41c12e8b62ab8`
-- Validation: tests 52 / 52、TypeScript、ESLint、build、Pages build、PC/tablet/mobile browser review success
 - Merge commit: `82b7a01c042f339b5eae019f851905ce7505b39a`
+- Validation: tests 52 / 52、TypeScript、ESLint、build、Pages build、PC/tablet/mobile browser review success
 - GitHub Pages: build/artifact success、deployment/public verificationはtemporary skip
 - Next task: `JLL-FE-002`
