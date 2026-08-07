@@ -1,0 +1,7 @@
+{
+  "status": "success",
+  "implementationRevision": "5e6036980195108ed9f9429be53ebdba01e9ddcb",
+  "verifyFe": "success",
+  "responsiveBrowserAudit": "success",
+  "representativeWidths": [375, 768, 1280]
+}

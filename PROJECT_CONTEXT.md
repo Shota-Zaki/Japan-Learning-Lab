@@ -1,9 +1,8 @@
 # Project Context
 
-このファイルは、Japan Learning Labで使用するプロジェクト固有情報の正本とする。
-チャットや作業指示内にプレースホルダーがある場合は、以下の値へ置き換える。
+このファイルはJapan Learning Labで使用するプロジェクト固有情報の正本とする。進行中タスク、固定HEAD、PR、CI、Pagesの最終状態は`task-list.md`、`NEXT_WORK.md`とGitHub実状態を優先する。
 
-## 1. Chat project context values
+## 1. Project values
 
 | 項目 | プロジェクト固有値 |
 |---|---|
@@ -13,144 +12,121 @@
 | Repository default Branch | `work` |
 | Pull Request direction | `work` → `main` |
 | Application directory | `prototype/` |
-| GitHub Pages output | `work` BranchのRepository直下`docs/` |
+| GitHub Pages output | Repository root `docs/` |
 | GitHub Pages URL | `https://shota-zaki.github.io/Japan-Learning-Lab/` |
 | CI runtime | Node.js 22 |
 | Package manager | npm |
 | Frontend | React 19.2 |
-| Build tool | Vite 6.4 |
+| Build tool | Vite 6.4.2 |
 | Main language | JavaScript / JSX |
-| Type validation | TypeScript compiler 7による`tsc --noEmit` |
-| Lint | ESLint 10 |
+| Type validation | TypeScript 7系 `tsc --noEmit` |
+| Lint | ESLint 10系 |
 | Test runner | Node.js built-in test runner |
-| Install command | `cd prototype && npm ci` |
-| Development command | `cd prototype && npm run dev` |
-| Build command | `cd prototype && npm run build` |
-| Test command | `cd prototype && npm test` |
-| Typecheck command | `cd prototype && npm run typecheck` |
-| Lint command | `cd prototype && npm run lint` |
-| Pages build command | `cd prototype && npm run build:pages` |
-| Full FE verification | `cd prototype && npm run verify:fe` |
 | CI workflow | `.github/workflows/pages.yml` |
 
-`work`は継続利用する恒久Branchであり、タスク完了後も削除しない。
-GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ生成する。検証、artifact upload、公開はGitHub Actions Workflowから実行する。
+`work`は恒久Branchであり削除しない。Pages成果物は`work` push時にGitHub Actionsから検証・build・deployする。`docs/`は手編集せずbuildで生成する。
 
-## 2. Project
+## 2. Service purpose
 
-- Project name: `Japan Learning Lab`
-- Repository: `Shota-Zaki/Japan-Learning-Lab`
-- Public preview: `https://shota-zaki.github.io/Japan-Learning-Lab/`
-- Base Branch: `main`
-- Permanent working Branch: `work`
-- Repository default Branch: `work`
-- Pull Request direction: `work` → `main`
-- GitHub Pages artifact: Repository root `docs/`
+日本語で学習できる複数の学習サイトを共通プラットフォーム上で提供する。現在の主要領域は情報技術者試験向け学習サイトとJava学習サイトであり、各サイトは共通プラットフォームからの導線と固有URLからの入口を持つ。
 
-## 3. Service purpose
+## 3. Information priority
 
-日本語で学習できる複数の学習サイトを、共通プラットフォーム上で提供する。
-
-現在の主要領域は次のとおり。
-
-1. 情報技術者試験向け学習サイト
-2. Java学習サイト
-
-各学習サイトは、共通プラットフォームから遷移できるだけでなく、固有URLから直接利用できる独立した入口を持つ。
-
-## 4. Information priority
-
-情報が競合する場合は、次の順番で判断する。
+情報が競合する場合は次の順で判断する。
 
 1. 最新のユーザー指示
-2. 現在のRepository内容とGitHub設定
+2. 現在のRepository内容とGitHub実状態
 3. `task-list.md`
 4. `NEXT_WORK.md`
 5. `AGENTS.md`
-6. この`PROJECT_CONTEXT.md`
+6. `PROJECT_CONTEXT.md`
 7. `DESIGN.md`
-8. Pull Request、Issue、CI、GitHub Pagesの実状態
+8. PR・Issue・CI・Pages
 9. 過去チャット
-10. 推測または一般的慣習
+10. 推測
 
-進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの詳細な最新状態は、`task-list.md`、`NEXT_WORK.md`、GitHub実状態を確認する。
+## 4. Current priority
 
-## 5. Current priority
+次の実装タスクは`JLL-FE-LESSON-001`で、状態は`planned`。
 
-現在の優先タスクは`JLL-FE-004`であり、状態は`planned`である。
+`JLL-FE-004`は確認担当の独立確認でBlocking findingなしと判定済み。確認固定HEADは`07e50fa81197899c8b5f740ceceef72aa8d85fb5`、最新CI / browser evidence sourceは`518cd1e8a75ed4acad89c080e81673de6ef7279e`。固定HEADとの差はPages成功証拠同期のみだった。PR #5はmerge commit方式でのmerge、`work`同期、最終Pages再確認を確認担当がこの確認工程内で完了させる。
 
-目的は次の4点をFE演習へ反映することである。
+JLL-FE-004で確定した方針:
 
-1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付ける
-2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
-3. 2022年科目Aサンプルを通常演習の出題対象から除外する
-4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
+1. 問題文は解説より明確に大きく・強く表示し、見出し・余白を含め視覚階層を分離する
+2. 模擬試験残時間は本文overlayではなくサイトヘッダー内の専用ステータス行へ表示する
+3. 残時間は設定durationを超えず、active mock切替時にclockを即時更新し、その後1秒単位で減少する
+4. タイマーはスクロール中も可視で、通常topic演習には表示しない
+5. 2022年科目Aサンプルは通常topic演習から除外するが、公式サンプルmock経路は維持する
+6. `2026-exemption-07`のlearner-facing表示は`令和8年度 免除試験`とし、元問題データは変更しない
+7. `JLL-FE-003`で確定した絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」、受験科目ブロック独立、完全日本語単元名を維持する
 
-`JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格した。PR `#4`はmerge commit方式で`main`へマージ済みで、Final Pull Request HEADは`66ba0a45ba2cb963bb96fba144021073fb66e279`、merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。
+JLL-FE-004独立確認証拠:
 
-JLL-FE-003の確認証拠:
+- PR build workflow: `31184205320` / run `475` / success
+- Tests: 64 / 64 passed
+- TypeScript / ESLint / normal build / Pages build: success
+- Filter browser workflow: `31184205833` / run `95` / success
+- Mock timer browser workflow: `31184205087` / run `19` / success
+- Browser evidence artifact: `8996046151`
+- Artifact digest: `sha256:3c357958f2e7042b2ca75948b80845c78873a33f9cf695824882baffe76ae184`
+- 375px / 768px / 1,280pxで開始直後`残り 90:00`、約1.2秒後`残り 89:59`
+- timer overlap / horizontal overflow / console error / failed requestなし
+- topic演習ではmock timer / status row / legacy inline timer 0件
 
-- PR build workflow: `31155342510` / run `404` / success
-- Browser audit workflow: `31155342511` / run `63` / success
-- Browser evidence artifact: `8984932272` / `sha256:e504fafd4f823c65d7ae0f222c1e2aa3869568ed3d2bda2c7a908e1a748aca8c`
-- Browser scenarios: 3 layouts × 375px / 768px / 1,280px = 9 / 9 success
-- Pages deployment before merge: workflow `31155340547` / run `403` / success
-- Pre-merge public Pages source Revision: `afa550a41d2776543445a3cb727731f6fb902608`
-- Tests: 60 / 60 success
-- TypeScript、ESLint、normal build、Pages build: success
-- 受験科目の独立、4条件群のDOM・キーボード順、内部スクロールなし、完全な日本語単元名を確認済み
-- merge後の`main` pushでは新規CI runなし。`.github/workflows/pages.yml`の`push`対象は`work`のみで、最終`work`同期時に再検証する
-
-`JLL-FE-004`完了後の優先順は次のとおり。
+## 4.1 Work queue
 
 1. `JLL-FE-LESSON-001`: FEレッスン内容作成
-2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。既存の進行中作業と競合しない時点で着手
+2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。lesson完了後か、最新ユーザー指示で優先順位が変更された場合に着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済みである。
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`は確認合格し、merge commit方式で`main`へマージ済み。詳細な完了証拠は`task-list.md`を正本とする。
 
-FE問題数は次の区分を正確に使う。
+## 5. FE question-bank counts
+
+現行の区分は次のとおり。
 
 - 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
 
-## 5.1 GitHub Pages status
+`JLL-FE-QBANK-001`では外部サイトの2,960問相当をユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。調査参照先と意図は`task-list.md`に記録する。
 
-2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
+## 6. GitHub Pages status
 
-解除根拠:
+JLL-FE-004 pre-merge確認時の最新正常公開:
 
-- workflow `31155340547` / run `403` のbuildがsuccess
-- GitHub Pages deployがsuccess
-- 公開URLの`build-info.json` Revision一致確認がsuccess
-- index、生成アセット、問題データ、サンプル図表のpublic smoke checkがsuccess
-- Repository `docs/`と公開証拠の同期commit `4cd677854fda9f4a4f204df5519e86f5600fc595`が作成済み
-- `prototype/qa/pages-deployment.json`は`status: success`、`publicSmokeCheck: success`を記録済み
+- Workflow: `31184200357` / run `474` / success
+- Build job: success
+- Deploy job: success
+- Public smoke check: success
+- Published sourceRevision: `518cd1e8a75ed4acad89c080e81673de6ef7279e`
+- Public / repository `build-info.json` sourceRevision一致
+- Published script: `/Japan-Learning-Lab/assets/index-CYNhSz4W.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
+- Pages evidence synchronization HEAD: `07e50fa81197899c8b5f740ceceef72aa8d85fb5`
 
-Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
+PR #5 merge後は`work`を最新`main`へfast-forward同期し、Pages再公開と公開Revision一致を再確認して最終記録を更新する。
 
-## 6. Technical stack
+## 7. Technical stack
 
 アプリケーション本体は`prototype/`配下にある。
 
 - Runtime used by CI: Node.js 22
 - Package manager: npm
 - Frontend: React 19.2
-- Build tool: Vite 6.4
+- Build tool: Vite 6.4.2
 - Language: JavaScript / JSX
-- Type validation: TypeScript compiler 7による`tsc --noEmit`
-- Lint: ESLint 10
+- Type validation: TypeScript 7系 `tsc --noEmit`
+- Lint: ESLint 10系
 - Test runner: Node.js built-in test runner
 - Hosting: GitHub Pages
 - Static artifact: Repository root `docs/`
-- Additional builds: worker and server build
+- Additional builds: worker / server build
 
-依存パッケージの正確なversionは`prototype/package.json`とlockfileを正本とする。
+依存versionとscriptは`prototype/package.json`とlockfileを正本とする。
 
-## 7. Commands
-
-Repository rootから実行する場合は`prototype/`へ移動する。
+## 8. Commands
 
 ```bash
 cd prototype
@@ -170,20 +146,15 @@ npm run verify:fe
 - `npm test`: 全自動テスト
 - `npm run typecheck`: 型検査
 - `npm run lint`: 静的解析
-- `npm run build:pages`: GitHub Pages用成果物をRepository直下`docs/`へ生成
-- `npm run verify:fe`: FE同期、通常build、テスト、型検査、Lint、Pages buildを一括実行
+- `npm run build:pages`: Pages成果物をRepository root `docs/`へ生成
+- `npm run verify:fe`: FE同期、通常build、test、typecheck、lint、Pages buildを一括実行
 
-## 8. Repository structure
+## 9. Repository structure
 
 ```text
 /
-├─ .github/
-│  └─ workflows/
+├─ .github/workflows/
 ├─ docs/
-│  ├─ index.html
-│  ├─ 404.html
-│  ├─ .nojekyll
-│  └─ 公開用ビルド成果物
 ├─ prototype/
 │  ├─ src/
 │  ├─ tests/
@@ -200,82 +171,11 @@ npm run verify:fe
 └─ README.md
 ```
 
-`prototype/AGENTS.md`と`prototype/DESIGN.md`は、`prototype/`固有の補足規則として扱う。Repository全体の正本はRoot文書である。
+## 10. Management documents
 
-## 9. Product hierarchy
-
-```text
-Japan Learning Lab
-└─ Engineer Learning Lab
-   ├─ FE Learning Lab
-   └─ Java Learning Lab
-```
-
-確定済み方針:
-
-- 各階層でパンくずと戻り先を提供する
-- 各コースサイトは独立した入口、ローカルナビゲーション、URLを持つ
-- 各コースに「レッスンで学ぶ」と「演習・模試で試す」を用意する
-- 学習時間、推定時間、経過時間は表示しない
-- 保存値や進捗値を捏造しない
-
-## 10. FE Learning Lab scope
-
-FE演習は、公式に出典を確認できる問題だけを使用する。
-
-主な機能:
-
-- 科目Aと科目Bを別セッションとして開始
-- 科目、分野、単元、開催回、回答状態による絞り込み
-- 同一条件群はOR、条件群間はAND
-- 各条件群の全選択・全解除
-- 選択中条件の上部表示と個別解除
-- 項目名の全文表示
-- 条件群の内容量に応じた可変高さ
-- 条件群内スクロールの不使用
-- 科目Bの単一正答・複数正答
-- 問題本文、コード、表、リスト、注記、画像、解説の構造化表示
-- 通常演習
-- ランダム模擬試験
-- 2022年12月公開サンプルの固定模擬試験
-- 科目A免除制度問題の補足収録
-- 一時停止、再開、履歴、復習、再挑戦
-- 問題番号入力による直接移動
-- 問題一覧の内部スクロール
-- 通常演習と結果レビューで共通する詳細解説
-
-問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
-
-絞り込みレイアウトの3案化は`JLL-FE-002`で完了済みであり、パターンBの既定化、余白削減、単元名表示改善、最新の絞り込み順修正は`JLL-FE-003`で確認合格・merge済みである。以後の追加変更は別Task IDとして管理する。
-
-## 11. Source data policy
-
-FE問題データの同期元は、Repository内の管理文書と同期スクリプトで固定された別Repositoryの特定commitとblobを使用する。
-
-- 問題文、選択肢、正答を意図せず変更しない
-- 出典識別情報を内部データに保持する
-- 公式サンプルと実試験過去問題を区別する
-- 重複は、科目、問題文、選択肢、正答を正規化した指紋で扱う
-- 図表付き問題は、本文、選択肢、正答、必要図表が揃うまで公開セットとして完成扱いにしない
-- 固定同期元に公式冊子の図表が存在しない場合は、公式冊子と照合した補完資産をRepository管理下へ置き、対象問題IDを明示して付与する
-- 補完資産には意味のある代替テキストを付け、通常buildとPages buildの双方へ含める
-- 図表要件は公式冊子の実構成を根拠とし、引継ぎ文書の誤った前提を優先しない
-
-## 12. Chat startup rule
-
-新しいチャットでは、過去チャットの説明だけで作業を開始しない。
-
-最初に次を確認する。
-
-1. Repositoryとアクセス権
-2. `main`と`work`
-3. Open Pull Request
-4. Root `AGENTS.md`
-5. Root `PROJECT_CONTEXT.md`
-6. Root `task-list.md`
-7. Root `NEXT_WORK.md`
-8. 必要に応じてRootおよび`prototype/`の`DESIGN.md`
-9. 最新CI
-10. `docs/`とGitHub Pagesの公開状態
-
-新しいチャットでユーザーが送る起動コマンドは、原則として`実装`、`修正`、`確認`のいずれかとする。
+- `AGENTS.md`: 恒久ルール、禁止事項、検証規則
+- `PROJECT_CONTEXT.md`: サービス目的、技術構成、URL、Branch、確定方針
+- `DESIGN.md`: UI、レスポンシブ、アクセシビリティ方針
+- `task-list.md`: タスク状態の唯一の正本
+- `NEXT_WORK.md`: 次担当が単独で開始できる具体的指示書
+- `prototype/AGENTS.md` / `prototype/DESIGN.md`: application固有補足

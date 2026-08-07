@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, BookmarkSimple, CheckCircle, Pause, Play, Shield
 import { FeRichContent } from "./FeRichContent.jsx";
 import { buildChoiceJudgments, correctAnswerLabel, relatedKnowledgeLabels } from "./feExplanation.js";
 import { buildSessionReviewItems, choiceLabels } from "./fePresentation.js";
+import { fePeriodLabel, feQuestionTitle, feSourceDisplayLabel } from "./feLearnerLabels.js";
 import {
   answerSessionQuestion,
   calculateSessionSummary,
@@ -196,9 +197,9 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
             <span>{subjectLabels[question.subject || "A"]}</span>
             <span>{domainLabels[question.domain] || question.domain}</span>
             {question.unitId && <span>{unitLabels[question.unitId] || question.unitId}</span>}
-            <span>{question.periodLabel}</span>
+            <span>{fePeriodLabel(question.periodId, question.periodLabel)}</span>
           </div>
-          <p className="question-source-title">{question.title || question.sourceRef}</p>
+          <p className="question-source-title">{feQuestionTitle(question)}</p>
           <h1 id="fe-question-heading">問題文</h1>
           <FeRichContent blocks={question.questionBlocks} fallback={question.question} className="fe-question-content" />
 
@@ -256,7 +257,7 @@ export function FeSessionView({ session, questionBank, persistSession, pauseSess
             <div><dt>試験</dt><dd>基本情報技術者試験</dd></div>
             <div><dt>科目</dt><dd>{subjectLabels[question.subject || "A"]}</dd></div>
             <div><dt>単元</dt><dd>{unitLabels[question.unitId] || question.unitId || "未分類"}</dd></div>
-            <div><dt>識別</dt><dd>{question.sourceRef || question.sourceQuestionNumber || question.id}</dd></div>
+            <div><dt>識別</dt><dd>{feSourceDisplayLabel(question)}</dd></div>
           </dl>
           <span className="official-badge"><ShieldCheck size={18} weight="fill" /> 出典情報を記録</span>
           <div className="question-navigator">
@@ -326,7 +327,7 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
               <details key={questionId} className={`result-question-review is-${status}`}>
                 <summary>
                   <span>{index + 1}</span>
-                  <strong>{subjectLabels[question?.subject || "A"]}・{question?.title || questionId}</strong>
+                  <strong>{subjectLabels[question?.subject || "A"]}・{question ? feQuestionTitle(question) : questionId}</strong>
                   <small>{statusLabel}</small>
                 </summary>
                 {question ? (
@@ -335,7 +336,7 @@ export function FeResultView({ session, questionBank, retrySession, reviewSessio
                       <span>{subjectLabels[question.subject || "A"]}</span>
                       {question.domain && <span>{domainLabels[question.domain] || question.domain}</span>}
                       {question.unitId && <span>{unitLabels[question.unitId] || question.unitId}</span>}
-                      {question.periodLabel && <span>{question.periodLabel}</span>}
+                      {question.periodLabel && <span>{fePeriodLabel(question.periodId, question.periodLabel)}</span>}
                     </div>
                     <h3>問題文</h3>
                     <FeRichContent blocks={question.questionBlocks} fallback={question.question} className="fe-question-content" />

@@ -57,6 +57,7 @@ function routeUrl(screen, tab = "home", view = "home") {
 
 export function AppV5() {
   const [route, setRoute] = useState(readRoute);
+  const [feHeaderStatus, setFeHeaderStatus] = useState(null);
   const navigate = (screen, tab = "home", view = "home") => {
     const next = { screen, tab, view };
     setRoute(next);
@@ -73,12 +74,13 @@ export function AppV5() {
   }, []);
 
   const brand = route.screen === "fe" ? "FE Learning Lab" : route.screen === "engineer" ? "Engineer Learning Lab" : "Japan Learning Lab";
+  const headerStatus = route.screen === "fe" && route.view === "session" ? feHeaderStatus : null;
   return (
     <div className={`app-shell theme-${route.screen === "fe" ? "exam" : route.screen}`}>
-      <PlatformHeader screen={route.screen} tab={route.tab} navigate={navigate} />
+      <PlatformHeader screen={route.screen} tab={route.tab} navigate={navigate} statusText={headerStatus} />
       {route.screen === "japan" && <JapanHome navigate={navigate} />}
       {route.screen === "engineer" && <EngineerHome navigate={navigate} />}
-      {route.screen === "fe" && <FeLearningApp tab={route.tab} view={route.view} navigate={(tab, view) => navigate("fe", tab, view)} goEngineer={() => navigate("engineer")} />}
+      {route.screen === "fe" && <FeLearningApp tab={route.tab} view={route.view} navigate={(tab, view) => navigate("fe", tab, view)} goEngineer={() => navigate("engineer")} setHeaderStatus={setFeHeaderStatus} />}
       <footer className="site-footer"><span>{brand}</span><button onClick={() => navigate("japan")}><span>Japan Learning Lab Network</span><ArrowUpRight size={17} /></button></footer>
     </div>
   );

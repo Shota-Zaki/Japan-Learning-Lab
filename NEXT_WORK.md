@@ -2,7 +2,7 @@
 
 ## Current Task ID
 
-`JLL-FE-004`
+`JLL-FE-LESSON-001`
 
 ## Current phase
 
@@ -12,16 +12,11 @@
 
 実装担当。
 
-`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。確認フローでは、この管理文書を含む最新`main`を`work`へfast-forwardし、通常CIとPages再公開を確認してから引き渡す。
+`JLL-FE-004`は確認担当の独立確認でBlocking findingなしと判定済み。PR #5のmerge commit方式での`main` merge、`work`同期、最終Pages確認はこの確認チャット内で完了させる。次の新規チャットではRepositoryの最終実状態を再確認してから`JLL-FE-LESSON-001`を開始する。
 
 ## Objective
 
-FE演習について、次の4点をユーザー指定どおり修正する。
-
-1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付け、読み分けやすくする
-2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時確認できるようにする
-3. 2022年科目Aサンプルを通常演習の出題対象から除外する
-4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
+FE Learning Labの既存レッスン画面を学習用途として具体化し、最初のレッスン作成範囲を単一タスクとして設計・実装する。Java Learning Labや問題バンク拡充へ先行せず、既存FEレッスンの構造・学習順序・本文・例・確認項目を実用レベルへ進める。
 
 ## Repository state
 
@@ -29,98 +24,55 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Base Branch: `main`
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
-- Current Task: `JLL-FE-004`
+- Current Task: `JLL-FE-LESSON-001`
 - Task status: `planned`
-- Previous Task: `JLL-FE-003` / completed
-- Previous Pull Request: `#4` / merged
-- Previous Final Pull Request HEAD: `66ba0a45ba2cb963bb96fba144021073fb66e279`
-- Previous merge commit: `90f33bbcb01792e22426123f90f454bf3a7e4134`
-- Previous confirmation input HEAD: `31332628e5ad412c685c1e19f0c31eda99c51d43`
-- Previous audited application / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
-- Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
-- Previous Pages deployment: `31155340547` / run `403` / success
-- Main push CI after merge: no new run by design; `.github/workflows/pages.yml` triggers `push` only on `work`
-- JLL-FE-004 Start HEAD: 実装開始時に、確認完了後の最新`work` HEADをGitHub実状態から固定する
+- Pull Request: 未作成
+- Start HEAD: 実装開始時の最新`work` HEADをGitHub実状態から固定する
+- Current HEAD: この管理文書更新以後の最新`work` HEADをGitHub実状態の正本とする
+- Predecessor: `JLL-FE-004` / confirmation passed / PR #5 finalization in progress in the confirmation chat
 
-## Required startup checks
+## Purpose and first implementation step
 
-実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。
+実装開始時は次を順に行う。
 
-1. `main`と`work`の最新HEADおよび、確認完了後にPages証拠同期commitが`work`へ追加されている場合はその関係
-2. PR #4がmergedであること
-3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること
-4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`
-5. 最新CIとPages公開状態
-6. JLL-FE-004の実装開始HEAD
+1. `main` / `work` HEAD、差分、未マージPR、CI、Pages、`task-list.md`、`NEXT_WORK.md`を再確認する
+2. Root `DESIGN.md`と`prototype/DESIGN.md`、既存`FeLessonHome`および関連コンポーネント・CSS・テストを確認する
+3. 既存設計方針だけで最初のレッスン範囲を決定できる場合はそのまま具体化する。UI構成に重大な複数案がある場合のみ候補を提示して確認する
+4. 必要なら実装前にRoot / prototype `DESIGN.md`を更新する
+5. `work`上で単一タスク範囲として実装し、必須検証、`docs/`生成、PC / スマートフォン表示確認、Draft PR、CI、Pagesまで進める
 
-## Implementation scope
+## Change scope
 
-### 1. 問題文と解説の視覚階層
-
-- 現在の問題画面・結果レビュー画面で問題文と解説が同じ視覚ウェイトになっている箇所を特定する
-- 文字サイズ、font-weight、見出し、余白の差で情報階層を明確にする
-- 問題本文・選択肢・正答・解説の内容そのものは変更しない
-- 通常演習と結果レビューの両方で一貫させる
-
-### 2. 模擬試験の残り時間
-
-- 模擬試験中だけ残り時間を右上へ固定する
-- スクロールしても常時見えること
-- 375pxを含むスマートフォン幅で問題本文、ナビゲーション、操作要素を隠さないこと
-- 通常演習へ不要なタイマー表示を追加しないこと
-
-### 3. 2022年科目Aサンプルの通常演習除外
-
-- 通常演習の候補生成経路を確認し、2022年科目Aサンプルを除外する
-- 固定模擬試験など、サンプルを明示的に使用する既存経路を壊さない
-- 問題データ自体を削除・改変しない
-
-### 4. 開催回表示
-
-- learner-facing表示だけを`令和8年度 免除試験`へ変更する
-- 内部ID、出典識別情報、正答・問題データは変更しない
-- 絞り込み、履歴、結果レビュー等の関連表示で表記が不整合にならないよう確認する
-
-## Design requirement
-
-UI変更を含むため、実装前にRoot / prototypeの`DESIGN.md`を確認する。既存方針だけで決定できないUI判断がある場合は複数候補を提示してユーザー確認を取る。それ以外は既存デザイン方針へ沿って自走する。
-
-JLL-FE-003で確定した次の仕様は変更しない。
-
-- 受験科目ブロックは独立
-- 絞り込み順: 分野 → 回答・復習状態 → 開催回・公開区分 → 単元
-- pattern Bが既定
-- 条件群内部へ縦スクロールを追加しない
-- 単元名は完全な日本語表示
+- 既存レッスン画面・データ構造・学習導線の確認
+- 最初に提供するレッスン単元と学習順序の具体化
+- 到達目標、本文、例、確認ポイントの実装
+- レッスン表示に必要な最小限のUI / CSS変更
+- 必要なテスト、設計文書、管理文書、Pages成果物の更新
 
 ## Change forbidden
 
-- JLL-FE-003の絞り込みレイアウト・順序を再変更すること
-- 問題本文、選択肢、正答、解説内容そのものの改変
-- 公式問題の出典情報を失う変更
-- `JLL-FE-LESSON-001`、`JLL-FE-QBANK-001`、Java Learning Labの先行実装
-- 実装担当による`main`へのマージ
-- Pull Requestを勝手にReady for reviewへ変更すること
-- Squash merge / rebase merge / force push
-- `work` Branchの削除
+- 問題本文、選択肢、正答、解説内容の改変
+- `JLL-FE-004`で確定した演習・模試UIを目的外に再変更すること
+- `JLL-FE-003`で確定した絞り込み順序・配置・単元名表示を再変更すること
+- `JLL-FE-QBANK-001`を同時に開始すること
+- Java Learning Labの先行実装
+- 実装担当による`main` merge
+- Ready for review化、squash merge、rebase merge、force push、`work`削除
 
 ## Completion criteria
 
-- 問題文と解説が文字サイズ・太さ・構造で明確に区別できる
-- 模擬試験の残り時間が右上へ固定され、対象viewportで本文や操作を妨げない
-- 2022年科目Aサンプルが通常演習の候補へ入らない
-- 対象開催回が`令和8年度 免除試験`と表示される
-- 既存セッション、模擬試験、結果レビュー、履歴に回帰がない
-- PC・スマートフォン表示を検証する
-- Tests、TypeScript、ESLint、normal build、Pages buildが成功する
-- Repository `docs/`が最新build成果物へ更新される
-- Draft Pull Requestが存在する
-- CIとPages公開Revision確認が完了する
-- `task-list.md`と`NEXT_WORK.md`を確認担当向け`review_ready`へ更新する
+- 最初のレッスン作成範囲がRepository管理文書に具体化されている
+- 学習順序、到達目標、本文、例、確認項目が実際の画面で利用できる
+- 必要なUI変更が`DESIGN.md`と整合する
+- FE演習・模試・絞り込み・履歴に意図しない回帰がない
+- test、typecheck、lint、normal build、Pages buildが成功する
+- `docs/`が最新buildから生成される
+- PC / スマートフォン表示を確認する
+- Draft PR `work` → `main`を作成または更新する
+- CIとPages公開Revisionを確認する
+- `task-list.md`と`NEXT_WORK.md`を`review_ready`向けに更新し、固定HEADと証拠を記録する
 
 ## Required verification
-
-Repository実状態から利用可能なscriptを確認したうえで、最低限次を実行する。
 
 ```bash
 cd prototype
@@ -130,26 +82,33 @@ npm run typecheck
 npm run lint
 npm run build
 npm run build:pages
+npm run verify:fe
 ```
 
-既存の`npm run verify:fe`が上記を包含する場合は併用する。UI変更はブラウザ監査または同等の固定証拠を残す。
+UI変更がある場合は既存browser auditと、対象レッスンのPC / スマートフォン表示を確認する。追加の自動browser auditが費用対効果に見合う場合はタスク内で追加する。
 
-## Queued work after JLL-FE-004
+## Dependencies and queued work
 
-1. `JLL-FE-LESSON-001`: FEレッスン内容作成
-2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充（既存作業と競合しない時点で着手）
+1. `JLL-FE-LESSON-001`: current / next implementation
+2. `JLL-FE-QBANK-001`: lesson task完了後。Google Driveの調査メモを着手時に参照し、公式一次資料を正本として問題バンクを拡充する
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
-## Work completion update targets
+## Unresolved findings
 
-- `DESIGN.md` / `prototype/DESIGN.md`（必要なUI方針変更がある場合）
-- `task-list.md`
-- `NEXT_WORK.md`
-- `PROJECT_CONTEXT.md`
-- `docs/`
-- Draft Pull Request
-- CI / browser evidence / Pages公開結果
-- 固定HEAD
+なし。`JLL-FE-004`の確認Blockingは解消済み。
+
+## Latest user correction / memo
+
+保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は`JLL-FE-003`で実装済みのため追加対応不要。
+
+## Completion updates
+
+`JLL-FE-LESSON-001`を`review_ready`へ渡すときは最低限次を更新する。
+
+- `task-list.md`: status、目的、範囲、対象外、完了条件、依存、Branch、PR、Start HEAD、Current HEAD、検証、Pages、次タスク
+- `NEXT_WORK.md`: 確認担当が単独で開始できる固定HEAD・検証証拠・未解決事項
+- `PROJECT_CONTEXT.md`: 優先タスクや確定方針に変更がある場合
+- Root / prototype `DESIGN.md`: UI方針を変更した場合
 
 ## Next user command
 
