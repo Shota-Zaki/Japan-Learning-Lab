@@ -6,13 +6,13 @@
 
 ## Current phase
 
-`planned`
+`review_ready`
 
 ## Next role
 
-実装担当。
+確認担当。
 
-`JLL-FE-003`は独立確認でBlockingなしと判定し、PR `#4`をmerge commit方式で`main`へマージ済み。merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。`work`同期後の最終Pages再検証も成功しており、JLL-FE-003は`completed`として確定している。
+`JLL-FE-004`の実装、自己検証、Draft PR #5、PR CI、`work` Pages再公開、public smoke checkまで完了した。実装担当による`main`マージは行っていない。確認担当は固定HEADと実差分を独立検証し、Blockingなしの場合のみ管理文書更新とmerge commit方式のマージへ進む。
 
 ## Objective
 
@@ -30,7 +30,7 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-004`
-- Task status: `planned`
+- Task status: `review_ready`
 - Previous Task: `JLL-FE-003` / completed
 - Previous Pull Request: `#4` / merged
 - Previous Final Pull Request HEAD: `66ba0a45ba2cb963bb96fba144021073fb66e279`
@@ -47,18 +47,39 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
 - Final Pages evidence synchronization HEAD: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 - Final public smoke check: success
-- JLL-FE-004 Start HEAD: 実装開始時に、この確認完了後の最新`work` HEADをGitHub実状態から固定する
+- JLL-FE-004 Start HEAD: `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`
+- Fixed implementation HEAD: `5e6036980195108ed9f9429be53ebdba01e9ddcb`
+- Implementation verification evidence HEAD: `bc15bda46b2923200ec3042ecae6e380bff67177`
+- Draft Pull Request: `#5` / `work` → `main`
+- PR CI Pages build: workflow `31159735333` / run `413` / success / build job `92807114332`
+- PR CI browser audit: workflow `31159735305` / run `64` / success / job `92807114034`
+- Final work Pages source revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Final work Pages workflow: `31159729019` / run `412` / success
+- Final Pages evidence synchronization HEAD before handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
+- Public smoke check: success
 
 ## Required startup checks
 
-実装開始時に、会話履歴ではなくGitHub実状態から次を再確認する。
+確認担当は会話履歴ではなくGitHub実状態から次を独立確認する。
 
-1. `main`と`work`の最新HEAD、および`work`がJLL-FE-003完了後の管理・Pages証拠commitだけ`main`より進んでいること
-2. PR #4がmergedであること
-3. `task-list.md`でJLL-FE-004がCurrent task / plannedであること
-4. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`
-5. 最新CIとPages公開状態
-6. JLL-FE-004の実装開始HEAD
+1. `main`、`work`、Draft PR #5の最新HEADとmergeability
+2. JLL-FE-004 Start HEAD `10ba7d3a1d8a08c7294fb1d361221533314ca9d5`からの実差分
+3. Fixed implementation HEAD `5e6036980195108ed9f9429be53ebdba01e9ddcb`の変更内容
+4. `task-list.md`でJLL-FE-004がCurrent task / review_readyであること
+5. Root `AGENTS.md`、`PROJECT_CONTEXT.md`、Root / prototype `DESIGN.md`との整合
+6. PR CI run `413`とbrowser audit run `64`の実結果
+7. Pages source revision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`とpublic smoke check
+8. PC・スマートフォン相当幅で問題本文/解説の階層、固定タイマー、通常演習除外、learner-facing表記を独立確認
+
+## Implementation result
+
+- 問題本文を解説本文より大きく・太くし、問題見出しと解説見出しも別階層へ調整済み
+- 模擬試験の残り時間をサイトヘッダー右上の空き領域へfixed表示し、520px以下向け縮小規則を追加済み
+- 2022年科目Aサンプルは通常演習`topic`セットアップ候補から除外し、`mock`経路は維持
+- `2026-exemption-07`のlearner-facing表示を`令和8年度 免除試験`へ正規化し、元データは変更していない
+- 新規回帰テスト`prototype/tests/fe-004-regression.test.mjs`を追加
+- Root / prototype `DESIGN.md`へ今回のUI方針を先行反映済み
+- `npm run verify:fe`、レスポンシブ監査、PR CI、Pages公開確認はすべてsuccess
 
 ## Implementation scope
 
@@ -160,4 +181,4 @@ npm run build:pages
 
 ## Next user command
 
-`実装`
+`確認`

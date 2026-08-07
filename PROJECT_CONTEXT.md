@@ -77,7 +77,7 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-FE-004`であり、状態は`planned`である。
+現在の優先タスクは`JLL-FE-004`であり、状態は`review_ready`である。Draft PR #5で確認待ち。Fixed implementation HEADは`5e6036980195108ed9f9429be53ebdba01e9ddcb`、Pages公開sourceRevisionは`a1851e21ab0192c3577a03b67f4f79e0b99ce08f`である。
 
 目的は次の4点をFE演習へ反映することである。
 

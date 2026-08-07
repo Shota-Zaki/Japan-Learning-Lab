@@ -14,7 +14,7 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Status
 
-`planned`
+`review_ready`
 
 ### Purpose
 
@@ -58,27 +58,49 @@ FE演習の可読性、模擬試験タイマー、出題対象、開催回表記
 
 ### Pull Request
 
-未作成。実装開始時のGitHub実状態から作成または更新する。
+`#5` / Draft / `work` → `main`
+
+https://github.com/Shota-Zaki/Japan-Learning-Lab/pull/5
 
 ### Start HEAD
 
-実装開始時に、JLL-FE-003完了後の最新`work` HEADをGitHub実状態から固定する。
+`10ba7d3a1d8a08c7294fb1d361221533314ca9d5`
 
 ### Current HEAD
 
-未着手。JLL-FE-003完了証拠の管理commitを含む最新`work` HEADを開始点とする。
+- Fixed implementation HEAD: `5e6036980195108ed9f9429be53ebdba01e9ddcb`
+- Implementation verification evidence HEAD: `bc15bda46b2923200ec3042ecae6e380bff67177`
+- Final verified Pages evidence HEAD before handoff metadata: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
+- この`review_ready`管理更新commitはアプリケーションコードを変更しない。確認担当はGitHub実状態から最新`work` HEADを再固定する。
 
 ### Validation result
 
-未着手。
+- `npm run verify:fe`: success
+- 実装workflow内レスポンシブブラウザ監査: success / 375px・768px・1280px
+- Task-specific regression tests: success
+- PR CI `Build and deploy GitHub Pages`: workflow `31159735333` / run `413` / success
+- PR CI build job: `92807114332` / success
+- PR CI deploy job: `92807249153` / skipped by design on pull_request
+- PR CI `Audit FE filter layout variants`: workflow `31159735305` / run `64` / success
+- Browser audit job: `92807114034` / success
+- 2022年科目Aサンプルは通常演習セットアップから除外し、模擬試験経路は維持
+- 免除試験の表記変更はlearner-facing helperで行い、元の`periodLabel`・`sourceRef`等の問題データは変更していない
+- JLL-FE-003で確定した絞り込み配置・順序・独立した受験科目ブロックには変更なし
 
 ### Merge commit
 
-未着手。
+未マージ。実装担当は`main`へマージしない。確認担当が合格時にmerge commit方式で処理する。
 
 ### GitHub Pages result
 
-未着手。通常のPages build、deployment、公開Revision確認を必須とする。
+- work push Pages workflow: `31159729019` / run `412` / success
+- Published source Revision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Public `build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Repository `docs/build-info.json` sourceRevision: `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
+- Public smoke check: success
+- Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`
+- Pages evidence synchronization HEAD: `9df96fb094d3f9f2e4bddd3e4dc33ef687592ef7`
 
 ### Next task
 
