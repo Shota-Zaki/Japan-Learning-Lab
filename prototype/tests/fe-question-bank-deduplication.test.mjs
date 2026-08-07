@@ -60,7 +60,43 @@ test("merge keeps the primary canonical question and preserves all source occurr
   assert.deepEqual(merged[0].sourceOccurrences.map((occurrence) => occurrence.periodId), ["2020-spring", "2024-exemption-06"]);
 });
 
-test("merge also rejects conflicting duplicate records for the same source occurrence", () => {
+test("primary records are never removed when historical occurrences repeat the same content", () => {
+  const firstPrimary = makeQuestion();
+  const secondPrimary = makeQuestion({
+    id: "second-primary",
+    periodId: "2021-autumn",
+    periodLabel: "2021年秋期",
+    sourceQuestionNumber: 17,
+  });
+
+  const merged = mergeQuestionBanks([firstPrimary, secondPrimary], []);
+  assert.equal(merged.length, 2);
+  assert.deepEqual(merged.map((question) => question.id), [firstPrimary.id, secondPrimary.id]);
+});
+
+test("ambiguous primary content does not cause a supplemental occurrence to be attached arbitrarily", () => {
+  const firstPrimary = makeQuestion();
+  const secondPrimary = makeQuestion({
+    id: "second-primary",
+    periodId: "2021-autumn",
+    periodLabel: "2021年秋期",
+    sourceQuestionNumber: 17,
+  });
+  const supplemental = makeQuestion({
+    id: "supplemental-question",
+    sourceCategory: "exemption-completion",
+    sourceType: "official-exemption-question",
+    periodId: "2024-exemption-06",
+    periodLabel: "2024年6月 科目A免除制度修了試験",
+    sourceQuestionNumber: 42,
+  });
+
+  const merged = mergeQuestionBanks([firstPrimary, secondPrimary], [supplemental]);
+  assert.equal(merged.length, 3);
+  assert.equal(merged[2].id, supplemental.id);
+});
+
+test("merge rejects a conflicting supplemental record for the same unique primary source occurrence", () => {
   const primary = makeQuestion();
   const conflictingOccurrence = makeQuestion({
     id: "conflicting-question",
