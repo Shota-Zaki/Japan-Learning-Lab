@@ -29,7 +29,7 @@ jobs:
       - name: Upload browser evidence
         uses: actions/upload-artifact@v4
         with:
-          name: fe-filter-layout-evidence
-          path: prototype/qa/jll-fe-002-browser
+          name: fe-filter-density-evidence
+          path: prototype/qa/jll-fe-003-browser
           include-hidden-files: true
           retention-days: 7
