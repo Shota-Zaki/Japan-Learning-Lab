@@ -6,17 +6,19 @@
 
 ## Current phase
 
-`review_ready`
+`needs_fix`
 
 ## Next role
 
-確認担当。
+実装担当。
 
-実装担当の修正と自己検証は完了している。Pull Request `#4`はopen / draft / unmergedのまま維持し、固定された実装・検証HEAD、実差分、CI、browser artifactを独立して確認する。Blocking問題がなければ、管理文書更新、merge commit方式のマージ、`work`同期まで行う。
+確認担当はアプリケーション実装、ブラウザ監査、CI証拠を独立確認し、レイアウトと単元名処理自体は合格と判定した。ただしRepository直下`docs/`が固定アプリケーションHEADの最新Pages buildではないため、Pull Request `#4`はマージしていない。
+
+新しいチャットで`修正`と送られたら、この文書のBlocking修正だけを実施する。`JLL-FE-004`、レッスン内容作成、Java Learning Labへは進まない。
 
 ## Objective
 
-採用済みのパターンBで、単元カードを全幅、分野と回答・復習状態を左側へ通常gapで縦積み、開催回・公開区分を右側へ配置する。右側カードの高さが左側カード間へ大きな空白を発生させないことを確認する。単元名は完全な日本語で表示し、ブラウザ監査が問題データ・選択肢・フォントの最終描画後を測定していることを確認する。
+固定アプリケーションHEAD `66a03576b5b9ac2c86c35c63045f923137f08a0c`の最新Pages成果物をRepository直下`docs/`へ生成・コミットし、再現性、CI、ブラウザ監査、管理文書、Pull Requestの整合性を回復する。
 
 ## Repository state
 
@@ -25,153 +27,179 @@
 - Permanent working Branch: `work`
 - Application directory: `prototype/`
 - Current Task: `JLL-FE-003`
-- Task status: `review_ready`
+- Task status: `needs_fix`
 - Pull Request: `#4`
 - Pull Request state: open / draft / unmerged
 - Start HEAD: `1d0eaebf73a4e9567ccb91017edf5b2d470caafe`
-- Prior confirmation review HEAD: `8b624578f68b7ee59cc1de5515c1114316839f72`
-- Fixed implementation and verification HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Review target: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Latest task-list management commit: `7bb28c84c4023ef001e6e25530dbfa7d51ecaa64`
-- Current `work` HEAD: この文書更新コミット以降の管理文書HEAD。アプリケーション確認対象は上記Review targetへ固定する
+- Fixed application and verification HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Confirmation management commit 1: `6b944663b6d4e3a3531d8c857c7655916f59d747`
+- Current `work` HEAD: この文書更新コミット。作業開始時にGitHub実状態から再取得する
 
-## Implemented fixes
+## Confirmation result
 
-### Pattern B spacing
+`failed`
 
-- `prototype/src/fe-filter-variants.css`で右側の開催回カードを共有Grid行の高さ配分から分離した
-- `prototype/src/main.jsx`で左スタック高と右カード高を実測し、Grid全体の下端だけを補う
-- 左側の「分野」と「回答・復習状態」は通常のGrid gapで連続配置する
-- 固定カード高、条件群内部スクロール、項目省略は追加していない
-- 375pxではabsolute配置と補正を解除し、既存DOM順の1列へ戻す
-- 受験科目ブロックは独立状態を維持する
+## Passed review evidence
 
-### Browser audit final-state validation
+次の項目は確認合格済みであり、修正対象ではない。
 
-- 最終収録数が最低期待値へ到達するまで待機する
-- 各条件群の最終option数を待機・記録する
-- `document.fonts.ready`を待機する
-- 5回連続で同一状態となるまで測定を開始しない
-- キャプチャ前後の双方でoverflow、clipping、DOM順、単元名、Pattern B gapを検証する
-- キャプチャ前後で最終件数、option数、DOM順、単元ラベルが変化した場合は失敗する
-- Chrome終了待機と一時ディレクトリ削除retryを追加し、CI後処理競合を解消した
-
-## Fixed verification evidence
-
-### Standard workflow
-
-- Workflow: `31144511506`
-- Run number: `370`
-- Build job: `92761099227`
-- Result: success
-- Automated tests: 60 / 60 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- Pages artifact upload: success
-- Pages artifact ID: `8980987977`
-- Pages artifact digest: `sha256:1560b786ba93b9c6d57be7f8723949538e8aee4022d8fce4eeb326ec2210242b`
-
-### Browser workflow
-
-- Workflow: `31144511527`
-- Run number: `39`
-- Browser audit job: `92761088942`
-- Result: success
-- Browser evidence artifact ID: `8980991042`
-- Browser evidence digest: `sha256:c32e7c8aa55307a135da0e7539b152de6f214ad6d0f5582607aee82a4eb8e861`
-- Evidence files: `audit.json`, `README.md`, 9 screenshots
-- Scenarios: 3 layouts × 375px / 768px / 1,280px
-- Final rendered source count: `1997`
+- Pattern Bは単元カード全幅、左側に分野と回答・復習状態を縦積み、右側に開催回・公開区分を配置
+- 768px left-card gap: `8.8px` / row gap: `8.8px`
+- 1,280px left-card gap: `8.8px` / row gap: `8.8px`
+- 375pxは既存DOM順の1列
+- Final source count: `1997`
 - Final option counts: `[3, 24, 28, 4]`
-- Pattern B left-card gap at 768px: `8.8px`
-- Pattern B computed row gap at 768px: `8.8px`
-- Pattern B left-card gap at 1,280px: `8.8px`
-- Pattern B computed row gap at 1,280px: `8.8px`
 - Horizontal overflow: 0
-- Card internal scrollbar / content clipping: 0
+- Internal scrollbar / clipping: 0
 - Raw English unit identifier / unresolved unit label: 0
 - Console warning/error: 0
 - Failed network request: 0
 - Keyboard checkbox operation: success
 - DOM order: `分野 → 単元 → 開催回・公開区分 → 回答・復習状態`
+- Standard workflow: `31144511506` / run `370` / success
+- Browser workflow: `31144511527` / run `39` / success
+- Browser artifact: `8980991042` / digest `sha256:c32e7c8aa55307a135da0e7539b152de6f214ad6d0f5582607aee82a4eb8e861`
+- Pages artifact: `8980987977` / digest `sha256:1560b786ba93b9c6d57be7f8723949538e8aee4022d8fce4eeb326ec2210242b`
 
-## Review scope
+## Blocking finding
 
-確認担当は次を独立して確認する。
+### Repositoryの`docs/`が固定HEADの最新Pages buildではない
 
-1. Repository、Branch、Pull Requestの実状態
-2. Review target `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-3. `main`との差分
-4. `task-list.md`の目的、範囲、対象外、完了条件
-5. 受験科目ブロックが独立状態を維持していること
-6. Pattern Bの単元全幅、左側縦積み、右側開催回配置
-7. 768px・1,280pxで左側2カード間が8.8px相当であること
-8. 375pxでDOM順の1列となること
-9. 固定高、内部スクロール、ラベル省略がないこと
-10. 単元名が完全な日本語で、可能な限り1行、必要時のみ自然に折り返すこと
-11. artifact `8980991042`の`audit.json`と9スクリーンショット
-12. 最終収録数・option数・フォント完了・安定サンプル待機の実装
-13. 横はみ出し、重なり、内容切れ、Console error、Network failureが0件であること
-14. キーボード操作、fieldset/legend、label/input関連付け、DOM順
-15. Standard workflowとbrowser workflowの成功
-16. Pages buildとartifact uploadの成功
-17. `task-list.md`、`NEXT_WORK.md`、PR本文の整合性
+確認時の実状態:
 
-## Change allowed for confirmation role
+- Repositoryの`docs/build-info.json` sourceRevision: `32a8260703fcb3deb51253c90bb8506fad1bd325`
+- Fixed application HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Fixed HEADはcommitted Pages sourceRevisionより46 commits先
+- Repository committed assets: `index-YqsZizrf.js` / `index-D7VeqPfk.css`
+- CI Pages artifact sourceRevision: `7768a769c3a1f5b08f59ea3a034ce65e16d8e18c`（Pull Request merge ref）
+- CI Pages artifact assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
 
+CIでは最新Pages buildが成功しているが、生成物はartifactへアップロードされただけで、Repositoryの`docs/`へ反映されていない。
+
+Temporary Pages skip policyはdeploymentと公開URLのrevision確認だけを除外する。Pages build、Repositoryの`docs/`更新、artifact uploadは必須である。
+
+## Reproduction
+
+1. `work`の`docs/build-info.json`を確認する。
+2. `sourceRevision`が`32a8260703fcb3deb51253c90bb8506fad1bd325`であることを確認する。
+3. 固定アプリケーションHEAD `66a03576b5b9ac2c86c35c63045f923137f08a0c`と比較する。
+4. Standard workflow `31144511506`のPages artifact `8980987977`を展開する。
+5. artifact内の`build-info.json`とhash付きassetsがRepository committed `docs/`と異なることを確認する。
+
+## Cause
+
+`npm run build:pages`はCIの作業ツリー内で最新`docs/`を生成しているが、その生成物を`work`へcommitする工程が完了していない。固定HEAD以降の`work`差分は管理文書とPages障害記録のみで、`docs/`は更新されていない。
+
+## Required fix
+
+1. `work`の最新HEADを取得する。
+2. アプリケーションコード、CSS、テスト、workflowを変更しない。
+3. `prototype/`で依存関係を確認する。
+4. 固定アプリケーションHEADを明示してPages buildを実行する。
+
+```bash
+cd prototype
+npm ci
+GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages
+```
+
+5. Repository直下`docs/`の差分を確認する。
+6. 最低限、次が最新生成物へ置換されていることを確認する。
+
+- `docs/index.html`
+- `docs/404.html`
+- `docs/build-info.json`
+- `docs/assets/`のhash付きJavaScript/CSS
+- buildで生成・削除されるその他の公開成果物
+
+7. 古いhash付きassetが残っていないことを確認する。
+8. 同じ`GITHUB_SHA`で`npm run build:pages`を再実行し、生成結果が再現可能で追加差分を生まないことを確認する。
+9. `docs/build-info.json`の`sourceRevision`が`66a03576b5b9ac2c86c35c63045f923137f08a0c`であることを確認する。
+10. `docs/`をcommitして`work`へpushする。
+11. 次の必須検証を実行する。
+12. `task-list.md`を`review_ready`へ戻し、この文書を確認担当向けへ更新する。
+13. Pull Request `#4`本文へ新しい固定HEAD、workflow、artifact、digestを反映する。
+14. Pull Requestはopen / draft / unmergedのまま維持する。
+
+## Required verification
+
+```bash
+cd prototype
+npm test
+npm run typecheck
+npm run lint
+npm run build
+GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages
+npm run audit:fe-filter-layouts
+```
+
+追加確認:
+
+- Tests: 60 / 60以上で全件成功
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- Browser audit: 3 layouts × 375px / 768px / 1,280px success
+- Final source count: `1997`
+- Final option counts: `[3, 24, 28, 4]`
+- Pattern B left-card gap at 768px / 1,280px: row gap相当
+- Horizontal overflow / clipping / internal scrollbar: 0
+- Console warning/error / failed request: 0
+- Keyboard checkbox operation: success
+- Repository committed `docs/`と固定HEAD指定の再build結果: 差分なし
+- Standard workflow: success
+- Browser workflow: success
+- Pages artifact upload: success
+
+## Change allowed
+
+- Repository直下`docs/`のbuild生成物
 - `task-list.md`
 - `NEXT_WORK.md`
-- レビュー結果と検証証拠を記録する管理文書
-- 明白な管理メタデータ不一致
+- Pull Request `#4`本文
+- 検証証拠の管理メタデータ
 
-## Change forbidden for confirmation role
+## Change forbidden
 
-- アプリケーションコード、CSS、テスト、workflowの修正
-- 受験科目ブロックの構造・文言・操作変更
-- 絞り込み条件、OR/AND評価、対象件数、開始条件変更
-- 問題本文、選択肢、正答、解説、図表の変更
+- `prototype/src/`のアプリケーションコード
+- レイアウトCSS
+- テストとbrowser audit実装
+- GitHub Actions workflow
+- 問題データ、問題本文、選択肢、正答、解説、図表
+- 受験科目ブロック
+- 絞り込み条件、件数、開始条件
 - `JLL-FE-004`の先行実装
 - レッスン内容作成の先行実装
 - Java Learning Labの実装
+- Pull Requestのマージ
+- Ready for reviewへの変更
 - Squash merge、rebase merge、force push
 - `work` Branchの削除
+- Pages deploymentの手動retry
 
-問題がある場合は自身でコードを修正せず、`task-list.md`を`needs_fix`へ戻し、再現方法・原因候補・対象ファイル・修正内容・再検証項目をこの文書へ記録する。
+## Pages policy
 
-## Confirmation pass procedure
+- Pages build: 必須
+- Repositoryの`docs/`更新: 必須
+- Pages artifact upload: 必須
+- Pages deployment: temporary skip
+- 公開URLのrevision確認: temporary skip
+- Pages障害だけを理由に追加の復旧作業や連続retryを行わない
 
-Blocking問題がない場合は、1回の作業で次を行う。
+## Completion condition for this fix
 
-1. Review targetを固定して必須検証を実行
-2. browser artifactを独立確認
-3. `task-list.md`を`completed`へ更新
-4. `NEXT_WORK.md`を`JLL-FE-004`向けへ更新
-5. 管理文書変更を`work`へcommit・push
-6. 管理文書更新後HEADを再確認
-7. Pull Request `#4`をmerge commit方式で`main`へマージ
-8. マージコミットと`main` CIを確認
-9. `work`を最新`main`へ同期し、削除しない
-10. GitHub実状態と管理文書の一致を確認
-
-## GitHub Pages policy
-
-- Pages buildとartifact uploadは必須で、今回成功済み
-- Deployment jobと公開URLのrevision確認はユーザー指定のtemporary skip policyにより判定対象外
-- Pages障害だけを理由にBlockingとしない
-- Pages復旧作業や連続retryをこの確認へ混在させない
-
-## Pull Request policy
-
-- Pull Request `#4`はopen / draftのまま確認する
-- 実装担当はマージしていない
-- 確認合格時のみmerge commit方式でマージする
-- `work`を削除しない
+- Repository committed `docs/`が固定アプリケーションHEAD指定のPages buildと一致する
+- 生成物が再現可能で、同じ条件の再build後に差分がない
+- 必須検証と2つのworkflowが成功する
+- 新しいartifact IDとdigestが記録される
+- `task-list.md`が`review_ready`になる
+- `NEXT_WORK.md`が固定HEADと証拠を含む確認担当向け指示になる
+- Pull Request `#4`がopen / draft / unmergedで確認可能になる
 
 ## Latest user requests queued after this task
 
-`JLL-FE-003`確認合格後、次タスク`JLL-FE-004`として次を実装する。
+`JLL-FE-003`確認合格後、`JLL-FE-004`として次を実装する。
 
 - 問題文と解説の文字サイズ・太さ・構造に差を付ける
 - 模擬試験の残り時間を右上へ固定する
@@ -182,13 +210,12 @@ Blocking問題がない場合は、1回の作業で次を行う。
 
 ## Work completion update targets
 
-確認担当は合格時に最低限、次を更新する。
-
-- `task-list.md`: `completed`、最終Pull Request HEAD、マージコミット、最終CI、Pages方針、次タスク
-- `NEXT_WORK.md`: `JLL-FE-004`の具体的な実装指示
-- PR `#4`: 確認結果とマージ状態
-- `work`: 最新`main`へ同期
+- `docs/`
+- `task-list.md`
+- `NEXT_WORK.md`
+- Pull Request `#4`本文
+- Standard workflowとbrowser workflowの証拠
 
 ## Next user command
 
-`確認`
+`修正`
