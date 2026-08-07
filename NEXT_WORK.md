@@ -27,8 +27,9 @@ FE科目A問題バンクの現行収録範囲を年度・開催回・公開区�
 - Pull Request: 未作成
 - Predecessor: `JLL-FE-LESSON-001` completed / PR #6 merged
 - Predecessor merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
-- Predecessor final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
-- `task-list.md` handoff commit: `dba34c4f2a35a014124493c7ef17c2b6617f261a`
+- Predecessor post-merge Pages source: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
+- Predecessor final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
+- Final lesson record commit before this handoff correction: `fcdc6d2b20c9b15b501599dd2cff0470375cc66f`
 - Current `work` HEAD: この`NEXT_WORK.md`更新以後の最新HEADをGitHub実状態から再取得し、Task Start HEADとして`task-list.md`へ記録する
 
 ## Required startup checks
@@ -110,14 +111,15 @@ npm run verify:fe
 
 - PR #6: merged
 - Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
-- Final post-merge Pages workflow: `31189901419` / run `492`
-- Build job `92903779534`: success
+- Intermediate Pages workflow: `31189901419` / run `492`; 公開・public revision検証成功後、後続pushのconcurrencyでjob全体はcancelled
+- Final post-merge Pages workflow: `31190078701` / run `493` / success
+- Final build job: `92904398023` / success
+- Final deploy job: `92904601920` / success
 - Pages deployment: success
 - Public revision verification: success
 - Public smoke check: success
-- Published sourceRevision: `2c3700f57f195199d365e009b7b9248746366eab`
-- Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
-- deploy job全体が`cancelled`表示なのは、公開・public smoke成功後に証拠commitをpushし、concurrency cancellationが発生したため。公開結果は成功
+- Published sourceRevision: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
+- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
 
 ## Latest user memo
 
