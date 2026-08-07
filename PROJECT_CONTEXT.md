@@ -47,7 +47,42 @@
 
 ## 4. Current priority
 
-現在の優先タスクは`JLL-FE-LESSON-001`で、状態は`planned`。次の新規チャットでは`実装`で開始する。
+現在の優先タスクは`JLL-FE-LESSON-001`で、状態は`review_ready`。次の新規チャットでは`確認`で独立確認を開始する。
+
+JLL-FE-LESSON-001 implementation handoff:
+
+- Pull Request: `#6` / `work` → `main` / open Draft
+- Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
+- Final audited implementation / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
+- Successful Pages evidence synchronization HEAD before management handoff: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- `task-list.md` review handoff commit: `0dee6ef67a8a473ca119af24419d0f23151b6c9f`
+- 以後の`[skip ci]`管理commitを含む最新`work` HEADはGitHub実状態を正本とし、確認担当は`614827ca62be5b72885b7774dc4f621975a6482f`以後の差分が管理文書のみか独立確認する
+
+JLL-FE-LESSON-001で実装した方針:
+
+1. 最初のFEレッスンは科目B「代入と繰返しを追跡する」とし、擬似言語の代入、繰返し、変数追跡を1つの学習単位にまとめる
+2. 到達目標3件、学習順序4段階、本文、擬似言語例、変数追跡表、確認ポイント、4択確認問題を提供する
+3. レッスン概要・本文は`FeLessonApp`として演習・模試・履歴処理から分離し、既存の演習UIとフィルターを目的外に変更しない
+4. レッスン内容は`prototype/src/data/feLessons.js`へ構造化し、定義整合性を回帰テストで検証する
+5. 学習進捗やレッスン完了状態の永続保存は今回の範囲外とし、確認問題の回答だけを画面内状態として扱う
+6. Root / `prototype/`の既存`DESIGN.md`方針で実装可能だったため、新たなデザイン方針変更は行っていない
+7. 375px / 768px / 1,280pxのレッスン専用browser auditを追加し、概要・本文・コード・表・確認問題・responsive layout・horizontal overflow・browser errorを検査する
+8. Pages buildの既存webfont除去仕様は維持し、Ubuntu CIのスクリーンショット確認だけ日本語fallback fontを導入する
+
+JLL-FE-LESSON-001 implementation validation:
+
+- Node.js: 22.23.1
+- Tests: 67 / 67 passed
+- TypeScript / ESLint / normal build / Pages build: success
+- PR Pages build workflow: `31188040484` / run `491` / success
+- Filter browser workflow: `31188040386` / run `102` / success
+- Mock timer browser workflow: `31188040635` / run `26` / success
+- Lesson browser workflow: `31188040404` / run `3` / success
+- Lesson browser artifact: `8997593877`
+- Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
+- 375px / 768px / 1,280pxでhorizontal overflow、console error、runtime exception、failed requestなし
+- 最終6枚の概要・本文スクリーンショットを実画像確認し、日本語表示、文字切れ、重なりにBlocking issueなし
+- Blocking finding: なし
 
 `JLL-FE-004`は確認担当の独立確認に合格し、PR #5をmerge commit方式で`main`へマージ済み。
 
@@ -89,7 +124,7 @@ JLL-FE-004 independent validation:
 
 ## 4.1 Work queue
 
-1. `JLL-FE-LESSON-001`: FEレッスン内容作成
+1. `JLL-FE-LESSON-001`: `review_ready`。確認担当の独立確認・merge完了待ち
 2. `JLL-FE-QBANK-001`: 公式一次資料ベースの問題バンク拡充。lesson完了後か、最新ユーザー指示で優先順位が変更された場合に着手
 3. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
 
@@ -107,21 +142,21 @@ JLL-FE-004 independent validation:
 
 ## 6. GitHub Pages status
 
-JLL-FE-004 final post-merge publication:
+JLL-FE-LESSON-001 final pre-review publication:
 
-- Workflow: `31185585362` / run `483` / success
-- Build job: `92889182863` / success
-- Deploy job: `92889369591` / success
+- Workflow: `31188038465` / run `490` / success
+- Build job: `92897489459` / success
+- Deploy job: `92897691974` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
 - Public smoke check: success
-- Published sourceRevision: `a958c782e0a0604f71028c81dcf8796bf8f30b2a`
+- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
 - Public / repository `build-info.json` sourceRevision一致
-- Published script: `/Japan-Learning-Lab/assets/index-CYNhSz4W.js`
-- Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
-- Final Pages evidence synchronization HEAD: `77c5f2c0d84f72b32a4387e77e150047e6f97df3`
+- Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
+- Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
 
-Pages証拠同期や完了記録の`[skip ci]`管理commitが`work`へ追加される場合、最終`work` HEADが公開sourceRevisionより先行することは許容する。アプリケーション成果物の公開Revisionと管理文書の最終HEADを混同しない。
+Pages証拠同期や`review_ready`管理記録の`[skip ci]`commitが`work`へ追加されるため、最終`work` HEADは公開sourceRevisionより先行する。確認担当は公開されたアプリ成果物のsourceRevision `614827ca62be5b72885b7774dc4f621975a6482f`と管理文書HEADを区別して確認する。
 
 ## 7. Technical stack
 
