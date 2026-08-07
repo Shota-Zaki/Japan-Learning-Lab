@@ -19,7 +19,9 @@ function makeQuestion(overrides = {}) {
     ],
     correctAnswer: "ア",
     sourceCategory: "past-exam",
+    sourceType: "official-past-question",
     periodId: "2020-spring",
+    periodLabel: "2020年春期",
     sourceQuestionNumber: 1,
     ...overrides,
   };
@@ -30,7 +32,9 @@ test("content fingerprint ignores occurrence metadata", () => {
   const repeated = makeQuestion({
     id: "repeated-question",
     sourceCategory: "exemption-completion",
+    sourceType: "official-exemption-question",
     periodId: "2024-exemption-06",
+    periodLabel: "2024年6月 科目A免除制度修了試験",
     sourceQuestionNumber: 42,
   });
 
@@ -38,18 +42,22 @@ test("content fingerprint ignores occurrence metadata", () => {
   assert.notEqual(normalizedSourceFingerprint(primary), normalizedSourceFingerprint(repeated));
 });
 
-test("merge keeps the primary canonical question when the same content appears in another occurrence", () => {
+test("merge keeps the primary canonical question and preserves all source occurrences", () => {
   const primary = makeQuestion();
   const repeated = makeQuestion({
     id: "repeated-question",
     sourceCategory: "exemption-completion",
+    sourceType: "official-exemption-question",
     periodId: "2024-exemption-06",
+    periodLabel: "2024年6月 科目A免除制度修了試験",
     sourceQuestionNumber: 42,
   });
 
   const merged = mergeQuestionBanks([primary], [repeated]);
   assert.equal(merged.length, 1);
   assert.equal(merged[0].id, primary.id);
+  assert.equal(merged[0].sourceOccurrences.length, 2);
+  assert.deepEqual(merged[0].sourceOccurrences.map((occurrence) => occurrence.periodId), ["2020-spring", "2024-exemption-06"]);
 });
 
 test("merge also rejects conflicting duplicate records for the same source occurrence", () => {
@@ -62,6 +70,7 @@ test("merge also rejects conflicting duplicate records for the same source occur
   const merged = mergeQuestionBanks([primary], [conflictingOccurrence]);
   assert.equal(merged.length, 1);
   assert.equal(merged[0].id, primary.id);
+  assert.equal(merged[0].sourceOccurrences.length, 1);
 });
 
 test("different content from a different source occurrence remains available", () => {
@@ -70,7 +79,9 @@ test("different content from a different source occurrence remains available", (
     id: "distinct-question",
     question: "別の問題",
     sourceCategory: "exemption-completion",
+    sourceType: "official-exemption-question",
     periodId: "2024-exemption-06",
+    periodLabel: "2024年6月 科目A免除制度修了試験",
     sourceQuestionNumber: 43,
   });
 
