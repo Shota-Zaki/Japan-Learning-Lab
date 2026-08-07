@@ -31,10 +31,11 @@ function mockDurationMinutes(session) {
 
 function calculateMockRemainingSeconds(session, nowMs) {
   if (!session || session.config?.type !== "mock" || session.status !== "in_progress") return null;
-  const durationMs = mockDurationMinutes(session) * 60 * 1000;
+  const durationSeconds = mockDurationMinutes(session) * 60;
+  const durationMs = durationSeconds * 1000;
   const startedAtMs = Date.parse(session.startedAt);
   const deadlineMs = Number.isFinite(startedAtMs) ? startedAtMs + durationMs : nowMs + durationMs;
-  return Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000));
+  return Math.min(durationSeconds, Math.max(0, Math.ceil((deadlineMs - nowMs) / 1000)));
 }
 
 function formatMockRemaining(totalSeconds) {
@@ -193,6 +194,7 @@ export function FeLearningApp({ tab, view, navigate, goEngineer, setHeaderStatus
 
   useEffect(() => {
     if (!activeMockSessionId) return undefined;
+    setHeaderClockMs(Date.now());
     const timerId = window.setInterval(() => setHeaderClockMs(Date.now()), 1000);
     return () => window.clearInterval(timerId);
   }, [activeMockSessionId]);
