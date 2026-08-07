@@ -57,7 +57,7 @@ Repository内のJava Learning Labの設計、既存実装、テスト、未完�
 
 ### Current HEAD
 
-`work`を`JLL-FE-002`のmerge後の`main`へ同期した状態を、実装開始時に再取得して記録する。
+`work`を最新`main`へ同期した状態を、実装開始時に再取得して記録する。
 
 ### Validation result
 
@@ -125,6 +125,7 @@ Pages公開依存項目を除く全完了条件に合格した。3案は既存�
 - Number: `#3`
 - Base: `main`
 - Head: `work`
+- State: merged
 - Merge method: merge commit
 - Review result: pass
 
@@ -144,9 +145,13 @@ Pages公開依存項目を除く全完了条件に合格した。3案は既存�
 
 `0c40a622e4c42b2a61eb2410bd2a3aaf136c32de`
 
-### Final pre-review HEAD
+### Confirmation management HEAD
 
-`238579965c75b0e87a8ce98054e8d6eba8e1210e`
+`eae32d3fead59505e5c6d38f346ea3750b272e4d`
+
+### Final Pull Request HEAD
+
+`aaac236ab887c7a55f0491cf40a9c88824e3507b`
 
 ### Validation result
 
@@ -159,21 +164,22 @@ Pages公開依存項目を除く全完了条件に合格した。3案は既存�
 - Normal build: success
 - Pages build: success
 - Pages artifact upload: success
-- Standard workflow: `31137755993` / run `294` / success
-- Pages artifact ID: `8978626351`
-- Pages artifact digest: `sha256:9078615fbc21cf4ff5199afdaee4fa8770ab2d96f010ae14be86518ddd082f81`
-- Browser audit workflow: `31137755953` / run `7` / success
+- Standard workflow: `31138309148` / run `298` / success
+- Browser audit workflow: `31138309139` / run `9` / success
 - Browser audit: 3 patterns × 375px / 768px / 1280px = 9 scenarios
+- Fixed application artifact ID: `8978626351`
+- Fixed application artifact digest: `sha256:9078615fbc21cf4ff5199afdaee4fa8770ab2d96f010ae14be86518ddd082f81`
 - Browser evidence artifact ID: `8978626972`
 - Browser evidence digest: `sha256:a2a1e445d0dff2b3f5dfb38239298fd354ba51fe4c7860f328d764d1e5644679`
 - Browser checks: independent subject selector, four common filter groups, stable DOM order, no horizontal overflow, no card scrollbar or clipping, no clipped labels, keyboard checkbox operation, no console/network error, distinct layouts at 768px and 1280px
 - Repository evidence: `prototype/qa/jll-fe-002-browser/README.md`
 - Repository evidence summary: `prototype/qa/jll-fe-002-browser/audit-summary.json`
 - Blocking findings: none
+- Main Branch CI: workflowは`work` pushと`main`向けPull Requestだけをtriggerとするため、merge後の`main` pushでは新規runなし
 
 ### Merge commit
 
-確認担当がPR #3をmerge commit方式でマージし、GitHub実状態を最終報告に記録する。
+`c01be523eb78d0a4ce9d7e6c8cf13eeb7868b3a8`
 
 ### GitHub Pages result
 
