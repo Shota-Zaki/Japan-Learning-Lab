@@ -26,6 +26,20 @@ jobs:
         run: npm run build:pages
       - name: Audit three filter layouts
         run: npm run audit:fe-filter-layouts
+      - name: Verify complete Japanese unit labels
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+
+          const evidence = JSON.parse(await readFile("qa/jll-fe-003-browser/audit.json", "utf8"));
+          const labels = evidence.scenarios.flatMap((scenario) => scenario.metrics.unitLabels || []);
+          const unknownLabels = labels.filter((label) => label === "単元名未登録");
+          const uniqueLabels = new Set(labels);
+
+          if (labels.length === 0) throw new Error("Unit labels were not captured by the browser audit");
+          if (unknownLabels.length > 0) throw new Error(`${unknownLabels.length} learner-facing unit labels are unresolved`);
+          if (uniqueLabels.size < 10) throw new Error(`Only ${uniqueLabels.size} distinct unit labels were rendered`);
+          NODE
       - name: Upload browser evidence
         uses: actions/upload-artifact@v4
         with:
