@@ -14,7 +14,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### Status
 
-`needs_fix`
+`review_ready`
 
 ### Purpose
 
@@ -76,7 +76,7 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Base: `main`
 - Head: `work`
 - State: open / draft / unmerged
-- Review state: changes required
+- Review state: review ready
 
 ### Start HEAD
 
@@ -92,9 +92,17 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 アプリケーションコード、監査コード、テストの確認対象はこのHEADに固定する。以後の修正は原則として生成済み`docs/`と管理文書に限定する。
 
-### Confirmation result
+### Pages output synchronization HEAD
 
-`failed`
+`875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
+
+### Standard workflow restoration HEAD
+
+`6cc846a4f5b5af97f836f845b96c1a94b8225474`
+
+### Implementation fix result
+
+`passed / review_ready`
 
 #### Passed checks
 
@@ -129,54 +137,56 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Pull Request comments: 確認開始時点でなし
 - Unresolved review threads: 確認開始時点でなし
 
-### Blocking finding
+### Fix result
 
-#### Repositoryの`docs/`が固定HEADの最新Pages buildではない
+#### Repositoryの`docs/`を固定アプリケーションHEADへ同期
 
-確認時のRepository実状態:
+- `GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages`で生成
+- `docs/build-info.json` sourceRevision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Generated JavaScript: `docs/assets/index-BJI--2FR.js`
+- Generated stylesheet: `docs/assets/index-DSeV1n5v.css`
+- Stale JavaScript `docs/assets/index-YqsZizrf.js`: removed
+- Stale stylesheetは最新stylesheetへ置換
+- Pages output commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
+- アプリケーションコード、CSS、テスト、監査コード、問題データは変更していない
+- 一時同期workflowは標準workflowへ復元する
 
-- Fixed application HEAD: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
-- Current committed `docs/build-info.json` sourceRevision: `32a8260703fcb3deb51253c90bb8506fad1bd325`
-- `66a0357...`は`32a8260...`より46 commits先
-- Current committed assets: `index-YqsZizrf.js` / `index-D7VeqPfk.css`
-- CI Pages artifact sourceRevision: `7768a769c3a1f5b08f59ea3a034ce65e16d8e18c`（PR merge ref）
-- CI Pages artifact assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
+### Fix validation result
 
-CI内では最新Pages buildが成功しているが、その生成物はartifactへアップロードされただけでRepositoryの`docs/`へコミットされていない。固定HEAD以降の`work`差分にも`docs/`更新はない。
-
-Temporary Pages skip policyが除外するのはdeploymentと公開URLのrevision確認であり、`npm run build:pages`による成果物生成、Repositoryの`docs/`更新、artifact uploadは必須である。このため完了条件未達としてマージしない。
-
-### Required fix
-
-1. `work`の最新状態を取得し、アプリケーションコードを変更しない。
-2. `cd prototype`で依存関係を確認後、固定アプリケーションHEADを明示してPages buildを実行する。
-
-```bash
-GITHUB_SHA=66a03576b5b9ac2c86c35c63045f923137f08a0c npm run build:pages
-```
-
-3. Repository直下`docs/`の生成差分を確認し、`index.html`、`404.html`、`build-info.json`、新しいhash付きassetsを含む最新成果物をコミットする。
-4. 古いhash付きassetがbuildによって削除されていることを確認する。
-5. 同じ`GITHUB_SHA`でPages buildを再実行し、`docs/`が再現可能で追加差分を生まないことを確認する。
-6. テスト、型検査、Lint、通常build、Pages build、Chromium監査を再実行する。
-7. Standard workflowとbrowser workflowの新しいrun、artifact ID、digest、固定HEADを管理文書とPR本文へ記録する。
-8. Pull Request `#4`をopen / draft / unmergedのまま維持する。
+- One-shot synchronization workflow: `31145825406` / run `383` / success
+- Synchronization job: `92764918921` / success
+- Automated tests: 60 / 60 passed
+- TypeScript: success
+- ESLint: success
+- Normal build: success
+- Pages build: success
+- Chromium audit: 9 scenarios passed
+- Fixed revision assertion: success
+- Same fixed-revision Pages build executed twice: success
+- Reproducibility diff: no differences
+- Generated commit: `875ac26e5dd506e11a6ec0ff52a48c223251cdb9`
+- Standard workflow restored at: `6cc846a4f5b5af97f836f845b96c1a94b8225474`
+- Pull Request `#4`: open / draft / unmerged
+- Final standard workflow and browser workflowは、管理文書更新後のPR HEADで再実行する
 
 ### Merge commit
 
-未着手。Blocking問題があるためマージしない。
+未着手。実装担当はマージしない。確認担当の独立検証待ち。
 
 ### GitHub Pages result
 
-- Latest Pages build in CI: success
-- Pages artifact upload: success
-- Repository `docs/` synchronization: failed / stale output
-- Deploy job: skipped
+- Pages build: success
+- Repository `docs/` synchronization: success
+- Repository build revision: `66a03576b5b9ac2c86c35c63045f923137f08a0c`
+- Generated assets: `index-BJI--2FR.js` / `index-DSeV1n5v.css`
+- Reproducibility verification: success / no diff
+- Pages artifact upload: 最終standard workflowで再確認
+- Deploy job: temporary skip policyにより判定対象外
 - Deployment and public revision verification: temporary skip policyにより判定対象外
 
 ### Next task
 
-`JLL-FE-003`の`docs/`同期修正と再確認。合格後に`JLL-FE-004`へ進む。
+`JLL-FE-003`の独立確認。合格・merge・`work`同期後に`JLL-FE-004`へ進む。
 
 ---
 
