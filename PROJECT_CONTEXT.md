@@ -77,29 +77,41 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 
 ## 5. Current priority
 
-現在の優先タスクは`JLL-FE-004`であり、状態は`needs_fix`である。Draft PR #5は未mergeのまま維持する。確認入力HEADは`c2bde678c721ce3f889a9b8a380843e20068fdad`、Fixed implementation HEADは`5e6036980195108ed9f9429be53ebdba01e9ddcb`、PR CIで検証済みのアプリケーションsourceRevisionは`a1851e21ab0192c3577a03b67f4f79e0b99ce08f`である。確認管理更新後の最終Pages sourceRevisionは`b157d97799b8c992e14650d9fe14e375c25e8f24`で、アプリケーションassetは変更されていない。
+現在の優先タスクは`JLL-FE-004`であり、状態は`review_ready`である。Draft PR #5は未mergeのまま維持し、別チャットの確認担当がGitHub実状態から最新HEADを再固定して独立確認する。
 
 目的は次の4点をFE演習へ反映することである。
 
 1. 問題文と解説の文字サイズ・太さ・構造に明確な差を付ける
-2. 模擬試験の残り時間を画面右上へ固定し、スクロール中も常時表示する
+2. 模擬試験の残り時間をサイトヘッダー内の専用ステータス行へ固定し、スクロール中も常時表示する
 3. 2022年科目Aサンプルを通常演習の出題対象から除外する
 4. `2026年7月科目A免除制度修了試験`を`令和8年度 免除試験`と表示する
 
-確認担当の独立確認では、1・3・4と自動検証・Pages配信は合格したが、2にBlocking findingがある。固定タイマーは`.session-topbar > span > strong`を`position: fixed`でヘッダー右端へ置いている一方、グローバルヘッダー右端には「検索」「アカウント」の`.header-actions`が存在するため、375px / 768px / 1,280pxの対象幅で操作領域と座標が競合する。実装時にJLL-FE-004のレスポンシブ証拠として使われた`npm run audit:fe-filter-layouts`はJLL-FE-003の絞り込みレイアウト監査であり、固定タイマーの矩形重なりを検査していなかった。修正担当は固定タイマー専用領域をDOM / レイアウト上で確保し、JLL-FE-004専用browser evidenceで非重複を確認してから`review_ready`へ戻す。
+確認担当が検出したBlocking `B1`は修正担当が構造修正した。公開アプリのlive entry pointは`AppV5.jsx` → `PlatformShell.jsx` → `FeLearningApp.jsx` / `FeSessionView.jsx`であり、模擬試験タイマーは本文側のfixed overlayから`PlatformHeader`内の専用ステータス行へ移した。専用行はブランド・グローバルナビゲーションと別行で通常フローの高さを確保し、sticky site headerと一緒に常時表示する。通常演習では専用行自体を生成しない。Root / prototype `DESIGN.md`もこの方針へ更新済みである。
 
-JLL-FE-004確認時の主要証拠:
+旧確認ではlegacy `App.jsx`の`.header-actions`をlive headerとして扱っていたが、現在の公開経路は`AppV5.jsx`である。今後の確認は実entry pointを基準に行う。ただし旧タイマーに専用レイアウト領域がなく、将来のheader操作を含むUIと競合し得る設計問題は、今回の専用行への移動で構造的に解消した。
 
-- PR #5: Draft / mergeable / unresolved review threadなし
-- PR build workflow: `31159735333` / run `413` / build job `92807114332` / success
-- PR browser workflow: `31159735305` / run `64` / job `92807114034` / success。ただし対象はFE filter layout auditであり、固定タイマーの非重複証拠には使用しない
+JLL-FE-004修正後の主要証拠:
+
+- Blocking修正・専用browser audit固定HEAD: `4178cecde659c4501d04344ca115f3c70bd19663`
+- 修正後Pages evidence synchronization HEAD: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
+- PR #5: Draft / mergeable / `work` → `main`
+- PR build workflow: `31180417745` / run `451` / success
 - `npm run verify:fe`: success / tests 63 passed / TypeScript・ESLint・normal build・Pages build success
-- Review-input work Pages: `31159729019` / run `412` / success / sourceRevision `a1851e21ab0192c3577a03b67f4f79e0b99ce08f`
-- Final review-management work Pages: `31176033019` / run `418` / build `92858126749` / deploy `92858292374` / success
-- Current public/repository `build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
-- Pages evidence synchronization commit for run 418: `770c725031cbc079b5749bc19a464605f42cf1db`
-- Published assets remain `index-CCwVLhbI.js` / `index-eTi5h_EL.css`; review-management commits are management/evidence-only
-- Blocking: fixed timerとheader actionsの重なり
+- PR filter browser workflow: `31180417961` / run `83` / success
+- JLL-FE-004専用browser workflow: `31180417818` / run `7` / job `92872090509` / success
+- 専用browser evidence artifact: `8994534328` / `fe-mock-timer-evidence`
+- browser widths: 375px / 768px / 1,280px
+- 375px initial: timer `y=80–116`、problem heading `y≈311`以降、problem body `y≈353`以降、answers `y≈408`以降、session actions `y≈821`以降。全overlap `false`
+- 768px initial: timer `y=96–136`、problem heading `y≈343`以降。全overlap `false`
+- 1,280px initial: timer `y=107–147`、problem heading `y≈360`以降。全overlap `false`
+- 180pxスクロール後も各幅でタイマーY座標不変
+- brand / global navigation / optional header actions / problem heading / problem body / answers / session actionsとの重なりなし
+- page horizontal overflowなし
+- 通常topic演習ではmock timer / status row / legacy inline timerはいずれも0件
+- browser audit中のconsole warning/error、failed requestなし
+- `work` Pages: `31180413956` / run `450` / success / public smoke check success / sourceRevision `4178cecde659c4501d04344ca115f3c70bd19663`
+- public/repository `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- Published assets: `index-22-KQ0Ti.js` / `index-D0cQvWA9.css`
 - 保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は完了済み`JLL-FE-003`で既に反映済みのため追加タスク化不要
 
 `JLL-FE-003`は確認担当が独立検証し、Blockingなしで合格した。PR `#4`はmerge commit方式で`main`へマージ済みで、Final Pull Request HEADは`66ba0a45ba2cb963bb96fba144021073fb66e279`、merge commitは`90f33bbcb01792e22426123f90f454bf3a7e4134`である。固定アプリケーション・順序テストHEADは`8e9c0dfcf5ad23e60a40abb090180c526d0347d9`、監査・Pages source HEADは`afa550a41d2776543445a3cb727731f6fb902608`である。
@@ -142,22 +154,20 @@ FE問題数は次の区分を正確に使う。
 
 2026-08-07に一時適用したPagesスキップ方針は解除済みとする。
 
-JLL-FE-004確認管理更新後の最終正常状態:
+JLL-FE-004修正後の正常状態:
 
-- Workflow: `31176033019` / run `418` / success
-- Build job: `92858126749` / success
-- Deploy job: `92858292374` / success
+- Workflow: `31180413956` / run `450` / success
 - `Verify FE implementation`: success
 - `Verify public Pages resources and revision`: success
-- Published source Revision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
-- Public `build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
-- Repository `docs/build-info.json` sourceRevision: `b157d97799b8c992e14650d9fe14e375c25e8f24`
-- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31176033019`
-- Published script: `/Japan-Learning-Lab/assets/index-CCwVLhbI.js`
-- Published stylesheet: `/Japan-Learning-Lab/assets/index-eTi5h_EL.css`
-- Pages evidence synchronization commit: `770c725031cbc079b5749bc19a464605f42cf1db`
+- Published source Revision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- Public `build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- Repository `docs/build-info.json` sourceRevision: `4178cecde659c4501d04344ca115f3c70bd19663`
+- Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`, workflow run `31180413956` / run `450`
+- Published script: `/Japan-Learning-Lab/assets/index-22-KQ0Ti.js`
+- Published stylesheet: `/Japan-Learning-Lab/assets/index-D0cQvWA9.css`
+- Pages evidence synchronization commit: `2a25e02c1f8fd2c744a96feec41c335721d4bd93`
 
-JLL-FE-004はPages deployment自体には成功しているが、確認担当がUI配置のBlocking findingを検出したため未完了である。Pages successをタスク合格とみなさない。
+管理文書handoff更新は`work` pushを発生させるため、確認担当は開始時に最新Pages workflowと公開`build-info.json`を再取得し、管理文書更新後の状態まで独立照合する。Pages successだけでタスク合格とはせず、固定HEADのUI・CI・browser evidence・管理文書を合わせて判定する。
 
 Pages成功後の証拠同期処理で、存在しない任意QAファイルを明示的に`git add`していた不具合は`afa550a41d2776543445a3cb727731f6fb902608`で修正済み。以後は通常どおりPages build、deployment、公開Revision確認を完了条件へ含める。
 
