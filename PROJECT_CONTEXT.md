@@ -62,8 +62,9 @@
 - Merge method: merge commit
 - Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
 - `work`はmerge直後にmerge commitへforceなしでfast-forward同期済み
-- Post-merge handoff commit: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
-- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
+- Post-merge handoff / final Pages source: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
+- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
+- 以後の`[skip ci]`管理文書commitを含む最新`work` HEADはGitHub実状態を正本とする
 
 JLL-FE-LESSON-001で確定した方針:
 
@@ -130,24 +131,26 @@ JLL-FE-004で確定した方針も維持する。
 
 JLL-FE-LESSON-001 final post-merge publication:
 
-- Workflow: `31189901419` / run `492`
-- Build job: `92903779534` / success
-- Deploy job: `92903963014` / GitHub job conclusion `cancelled`
+- Intermediate workflow: `31189901419` / run `492`; Pages deploy・public revision確認成功後、後続pushのconcurrencyでjob全体はcancelled
+- Final workflow: `31190078701` / run `493` / success
+- Final build job: `92904398023` / success
+- Final deploy job: `92904601920` / success
 - `Deploy to GitHub Pages`: success
 - `Verify public Pages resources and revision`: success
 - Public smoke check: success
-- Published sourceRevision: `2c3700f57f195199d365e009b7b9248746366eab`
+- Published sourceRevision: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
 - Public / repository `build-info.json` sourceRevision一致
 - Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
 - Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Final Pages evidence synchronization HEAD: `83a36279fa862cb974b40b8642cbf612eab04872`
-- deploy job全体が`cancelled`となったのは、公開とpublic smoke check成功後にworkflow自身が成功証拠commit `83a36279...`を`work`へpushし、`concurrency.cancel-in-progress: true`で旧runがキャンセルされたため。証拠commit pushは成功しており、公開失敗ではない
+- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
 
 Pre-merge publication:
 
 - Workflow: `31188038465` / run `490` / success
 - Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
 - Public smoke check: success
+
+管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物の最終sourceRevisionは上記`1ed246c...`で、次タスク開始時のBranch HEADとは区別して扱う。
 
 ## 7. Technical stack
 
