@@ -1,0 +1,47 @@
+name: Diagnose FE unit values
+
+on:
+  push:
+    branches: [work]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: diagnose-fe-unit-values
+  cancel-in-progress: true
+
+jobs:
+  patch-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add runtime unit value evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('prototype/scripts/audit-fe-filter-layouts.mjs')
+          text = path.read_text(encoding='utf-8')
+          old = "      unitLabels: [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || '')\n"
+          new = "      unitLabels: [...cards[1].querySelectorAll('label strong')].map((label) => label.textContent?.trim() || ''),\n      unitValues: [...cards[1].querySelectorAll('label input')].map((input) => input.value || '')\n"
+          if 'unitValues:' not in text:
+              if old not in text:
+                  raise SystemExit('unit label metric anchor not found')
+              text = text.replace(old, new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prototype/scripts/audit-fe-filter-layouts.mjs
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "test: capture runtime FE unit values"
+          git fetch origin work
+          git rebase origin/work
+          git push origin HEAD:work
