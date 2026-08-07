@@ -2,7 +2,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { mergeQuestionBanks, validQuestion } from "../src/feQuestionBank.js";
+import {
+  mergeQuestionBanks,
+  normalizedFingerprint,
+  normalizedSourceFingerprint,
+  normalizeQuestion,
+  validQuestion,
+} from "../src/feQuestionBank.js";
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const prototypeRoot = path.resolve(scriptDir, "..");
@@ -24,10 +30,23 @@ function ensure(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function duplicateGroupCount(questions, fingerprintFor, emptyFingerprint = null) {
+  const counts = new Map();
+  for (const source of questions) {
+    const question = normalizeQuestion(source);
+    if (!validQuestion(question)) continue;
+    const fingerprint = fingerprintFor(question);
+    if (!fingerprint || fingerprint === emptyFingerprint) continue;
+    counts.set(fingerprint, (counts.get(fingerprint) || 0) + 1);
+  }
+  return [...counts.values()].filter((count) => count > 1).length;
+}
+
 ensure(primaryQuestions.length > 0, "Primary FE question bank is empty");
 ensure(supplementalQuestions.length === supplementalPayload.questionCount, "Supplemental FE question count metadata is inconsistent");
 ensure(supplementalQuestions.every(validQuestion), "Supplemental FE question bank contains an invalid question");
 ensure(merged.length >= primaryQuestions.length, "Canonical merge unexpectedly removed a primary FE question");
+ensure(merged.length <= primaryQuestions.length + supplementalQuestions.length, "Canonical merge unexpectedly added FE questions");
 ensure(merged.every(validQuestion), "Canonical FE question bank contains an invalid question");
 ensure(inventory.contentReadyCount === supplementalQuestions.length, "Source inventory content-ready count must match the supplemental repository bank");
 
@@ -39,6 +58,8 @@ const sourceOccurrenceCount = merged.reduce(
   0,
 );
 const repeatedOccurrenceCount = primaryQuestions.length + supplementalQuestions.length - merged.length;
+const primaryDuplicateContentGroups = duplicateGroupCount(primaryQuestions, normalizedFingerprint);
+const primaryDuplicateSourceGroups = duplicateGroupCount(primaryQuestions, normalizedSourceFingerprint, "||");
 
 console.log(JSON.stringify({
   primaryQuestionCount: primaryQuestions.length,
@@ -47,6 +68,8 @@ console.log(JSON.stringify({
   countsBySubject,
   repeatedOccurrenceCount,
   sourceOccurrenceCount,
+  primaryDuplicateContentGroups,
+  primaryDuplicateSourceGroups,
   stagedCandidateQuestionCount: inventory.candidateQuestionCount,
   stagedContentReadyCount: inventory.contentReadyCount,
   stagedPendingContentCount: inventory.candidateQuestionCount - inventory.contentReadyCount,
