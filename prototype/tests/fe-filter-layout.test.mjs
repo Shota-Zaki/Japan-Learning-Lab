@@ -59,6 +59,8 @@ test("all filter layouts preserve the subject selector, DOM order, and variable-
     assert.ok(currentIndex > previousIndex, `Filter group order is incorrect at ${marker}`);
     previousIndex = currentIndex;
   }
+  assert.doesNotMatch(setup, /title: "2\. 単元"/);
+  assert.doesNotMatch(setup, /title: "4\. 回答・復習状態"/);
 
   assert.match(audit, /document\.fonts/);
   assert.match(audit, /stableSamples\s*>=\s*requiredSamples/);
