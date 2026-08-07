@@ -40,11 +40,12 @@ FE演習について、次の4点をユーザー指定どおり修正する。
 - Previous audited application / Pages source HEAD: `afa550a41d2776543445a3cb727731f6fb902608`
 - Previous browser audit: `31155342511` / run `63` / success / 9 scenarios
 - Main/work synchronization base: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final post-merge Pages workflow: `31157149416` / run `405` / success
-- Final post-merge build job: `92799024993` / success
-- Final post-merge deploy job: `92799145662` / success
-- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Final Pages evidence synchronization HEAD: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- Final Pages verification source revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Final post-merge Pages workflow: `31157266500` / run `406` / success
+- Final post-merge build job: `92799385185` / success
+- Final post-merge deploy job: `92799508602` / success
+- Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Final Pages evidence synchronization HEAD: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 - Final public smoke check: success
 - JLL-FE-004 Start HEAD: 実装開始時に、この確認完了後の最新`work` HEADをGitHub実状態から固定する
 
