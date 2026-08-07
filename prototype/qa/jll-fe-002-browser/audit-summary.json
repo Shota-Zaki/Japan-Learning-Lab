@@ -1,0 +1,63 @@
+{
+  "status": "passed",
+  "taskId": "JLL-FE-002",
+  "applicationHead": "ca5212d91b3b9792a53d0fac4bc7f69648682798",
+  "pullRequestMergeRef": "c081acdffe746ae247a2b088a7c90204581cf73f",
+  "workflow": {
+    "name": "Audit FE filter layout variants",
+    "runId": 31137470033,
+    "runNumber": 3,
+    "conclusion": "success"
+  },
+  "artifact": {
+    "id": 8978513504,
+    "name": "fe-filter-layout-evidence",
+    "digest": "sha256:ff04460276151e4a2fc02d65296514d96e6bc3213504ca886b898129bb3b97b7",
+    "files": [
+      "audit.json",
+      "layout-1-1280.png",
+      "layout-2-1280.png",
+      "layout-3-1280.png",
+      "README.md"
+    ]
+  },
+  "browser": "/usr/bin/google-chrome",
+  "variants": ["1", "2", "3"],
+  "viewports": [375, 768, 1280],
+  "scenarioCount": 9,
+  "checks": {
+    "subjectSelectorIndependent": true,
+    "filterCardCount": 4,
+    "domOrderStable": true,
+    "pageHorizontalOverflow": false,
+    "filterCardVerticalScrollbars": false,
+    "filterCardContentClipping": false,
+    "clippedLabels": 0,
+    "keyboardCheckboxOperation": true,
+    "consoleWarningsOrErrors": 0,
+    "failedNetworkRequests": 0,
+    "threeLayoutsDistinctAt768": true,
+    "threeLayoutsDistinctAt1280": true,
+    "mobileReturnsToSingleColumn": true
+  },
+  "desktopGeometry": {
+    "layout1": {
+      "domainWidth": 392.88,
+      "unitWidth": 796.94,
+      "periodWidth": 695.92,
+      "reviewWidth": 493.89
+    },
+    "layout2": {
+      "unitFullWidth": 1201,
+      "domainWidth": 493.89,
+      "periodWidth": 695.92,
+      "reviewFullWidth": 1201
+    },
+    "layout3": {
+      "periodFullWidth": 1201,
+      "domainWidth": 392.88,
+      "unitWidth": 796.94,
+      "reviewFullWidth": 1201
+    }
+  }
+}

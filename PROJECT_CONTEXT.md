@@ -73,21 +73,34 @@ GitHub Pages用の公開成果物は`work` BranchのRepository直下`docs/`へ�
 9. 過去チャット
 10. 推測または一般的慣習
 
-進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの最新状態は、このファイルへ固定値として重複記録しない。`task-list.md`、`NEXT_WORK.md`、GitHub実状態を確認する。
+進行中タスク、HEAD、CI、Pull Request、GitHub Pagesの詳細な最新状態は、`task-list.md`、`NEXT_WORK.md`、GitHub実状態を確認する。
 
 ## 5. Current priority
 
-`JLL-FE-001`は確認担当の独立レビューに合格し、merge commit方式での`main`マージと`work`同期を行う完了工程にある。Pages依存項目を除く完了条件、自動検証、固定CI artifactによるブラウザ検証にBlocking問題はない。
+現在の優先タスクは`JLL-FE-002`である。
 
-次のタスクは`JLL-JAVA-001`である。FEタスクのmerge commitと`work`同期をGitHub実状態で確認した後、Java Learning Labの現在設計、既存実装、テスト、未完了範囲を再確認して実装を開始する。
+目的は、FE演習の既存要素、文言、選択肢、操作、絞り込みロジックを変更せず、絞り込み領域をモジュール不規則型Bento Gridへ変更し、3パターンを比較できる状態にすることである。
+
+確定条件:
+
+- **受験科目**は現在と同じ独立ブロックとして維持する
+- 受験科目をBento Gridへ含めない
+- 受験科目より下にある既存絞り込みブロックだけをBento Grid化する
+- 同じ形へ揃えず、カードごとに幅、高さ、列占有数、段組みを変える
+- 現行画面に存在する要素の追加、削除、名称変更を行わない
+- 画像生成時に仮置きされた要素や文言を実装へ持ち込まない
+- 通常画面へ新しいパターン切替UIを追加しない
+- PC、タブレット、スマートフォンで3パターンを検証する
+
+`JLL-JAVA-001`は削除せず`planned`として保持し、`JLL-FE-002`の確認、採用レイアウト確定、マージ後に再開する。
+
+`JLL-FE-001`は確認合格し、Pull Request #1をmerge commit方式で`main`へマージ済みである。
 
 FE問題数は次の区分を正確に使う。
 
 - 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
 - 補足問題バンク: 科目A 20問
 - 実行時統合・画面表示: 1,997問（科目A 1,830 / 科目B 167）
-
-最新状態、検証証拠、確認手順は`task-list.md`と`NEXT_WORK.md`を正本とする。GitHub Pages公開成功はJavaタスク開始の前提条件に含めない。
 
 ## 5.1 Temporary GitHub Pages skip policy
 
@@ -109,14 +122,14 @@ FE問題数は次の区分を正確に使う。
 - 自動テスト
 - 型検査
 - Lint
-- `npm run build:pages`によるローカルまたはCI上のPages成果物生成
+- `npm run build:pages`によるPages成果物生成
 - Pages artifact uploadまでの検証
 - ソースコード、生成物、固定HEAD、Pull Request差分の確認
 - Pages以外の完了条件に基づく実装、確認、マージ、次タスク開始
 
-自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用せず、build・テスト・型検査・Lint・Pages build・artifact uploadの結果だけを使用する。Pages deployの手動再実行は行わない。
+自動workflowがpushにより起動した場合も、Pages deployまたは公開確認の結果は判定に使用しない。Pages deployの手動再実行は行わない。
 
-解除条件は、GitHub Pagesのdeploymentが正常完了可能であることを実際に確認し、ユーザーまたはRepository管理文書で本ルールを解除した場合とする。解除後に延期した公開確認を別工程として実施する。
+解除条件は、GitHub Pagesのdeploymentが正常完了可能であることを実際に確認し、ユーザーまたはRepository管理文書で本ルールを解除した場合とする。
 
 ## 6. Technical stack
 
@@ -130,10 +143,9 @@ FE問題数は次の区分を正確に使う。
 - Type validation: TypeScript compiler 7による`tsc --noEmit`
 - Lint: ESLint 10
 - Test runner: Node.js built-in test runner
-- Hosting:
-  - GitHub Pages
-  - 静的成果物はRepository直下`docs/`
-  - 別ホスティング向けworkerとserver buildも保持
+- Hosting: GitHub Pages
+- Static artifact: Repository root `docs/`
+- Additional builds: worker and server build
 
 依存パッケージの正確なversionは`prototype/package.json`とlockfileを正本とする。
 
@@ -219,7 +231,9 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 - 同一条件群はOR、条件群間はAND
 - 各条件群の全選択・全解除
 - 選択中条件の上部表示と個別解除
-- コンパクトグリッド型の固定絞り込み表示
+- 項目名の全文表示
+- 条件群の内容量に応じた可変高さ
+- 条件群内スクロールの不使用
 - 科目Bの単一正答・複数正答
 - 問題本文、コード、表、リスト、注記、画像、解説の構造化表示
 - 通常演習
@@ -232,6 +246,8 @@ FE演習は、公式に出典を確認できる問題だけを使用する。
 - 通常演習と結果レビューで共通する詳細解説
 
 問題冊子や解答資料への外部リンクは、学習画面へ表示しない。
+
+現在の絞り込みレイアウト改善仕様は`JLL-FE-002`として`task-list.md`と`NEXT_WORK.md`を正本にする。
 
 ## 11. Source data policy
 
