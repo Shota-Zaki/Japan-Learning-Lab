@@ -417,9 +417,13 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
 
+### Final Pages verification source Revision
+
+`dc290e1ba9a0a8101fabf187ac52add2730851c4`
+
 ### Final Pages evidence synchronization HEAD
 
-`e547682bb6d05b2fd6c619185996148e3cad607f`
+`207fb822434735d36bc0d240e6c440f7b67c7eee`
 
 ### Validation result
 
@@ -447,9 +451,9 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 - Japanese unit-label data verification: passed
 - Console error/warning and failed request: none
 - Main Branch CI after merge: no new run/status because current workflow triggers `push` only for `work` and `pull_request` for `main`
-- Final post-merge Pages workflow: `31157149416` / run `405` / success
-- Final post-merge build job: `92799024993` / success
-- Final post-merge deploy job: `92799145662` / success
+- Final post-merge Pages workflow: `31157266500` / run `406` / success
+- Final post-merge build job: `92799385185` / success
+- Final post-merge deploy job: `92799508602` / success
 - Final `Verify FE implementation`: success
 - Final `Verify public Pages resources and revision`: success
 - Confirmation environment limitation: local cloneは実行環境の外向きDNS制約で不可。GitHub Actionsの固定PR merge refログ、artifact、GitHub差分を独立照合した
@@ -461,15 +465,15 @@ FE絞り込みの不要な余白を減らし、単元名を完全な日本語で
 
 ### GitHub Pages result
 
-- Final workflow: `31157149416` / run `405` / success
-- Final build job: `92799024993` / success
-- Final deploy job: `92799145662` / success
+- Final workflow: `31157266500` / run `406` / success
+- Final build job: `92799385185` / success
+- Final deploy job: `92799508602` / success
 - Public smoke check: success
-- Published source Revision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Public `build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
-- Repository `docs/build-info.json` sourceRevision: `f71decc77ef5d2a8f44ca8a08b1bbfdce5f1b366`
+- Published source Revision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Public `build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
+- Repository `docs/build-info.json` sourceRevision: `dc290e1ba9a0a8101fabf187ac52add2730851c4`
 - Repository `prototype/qa/pages-deployment.json`: `status: success`, `publicSmokeCheck: success`
-- Pages evidence synchronization commit: `e547682bb6d05b2fd6c619185996148e3cad607f`
+- Pages evidence synchronization commit: `207fb822434735d36bc0d240e6c440f7b67c7eee`
 - Pages temporary skip policy: removed
 - `work`は`main`同期後、確認用管理commitとPages証拠commitのみが追加された状態。アプリケーション差分はない
 
