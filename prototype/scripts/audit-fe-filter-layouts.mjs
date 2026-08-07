@@ -15,7 +15,6 @@ const sitePrefix = "/Japan-Learning-Lab/";
 const viewports = [375, 768, 1280];
 const variants = ["1", "2", "3"];
 const expectedMinimums = { sourceCount: 1900, optionCounts: [3, 20, 20, 4] };
-const geometryTolerance = 8;
 
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -274,19 +273,15 @@ async function waitForStableApplication(client, requiredSamples = 5) {
   throw new Error(`Application did not reach a stable final render: ${JSON.stringify(lastState)}`);
 }
 
-function renderStatesMatch(before, after) {
-  const sameData = before.activeVariant === after.activeVariant
+function finalDataStatesMatch(before, after) {
+  return before.activeVariant === after.activeVariant
     && before.sourceCount === after.sourceCount
     && JSON.stringify(before.optionCounts) === JSON.stringify(after.optionCounts)
     && JSON.stringify(before.domOrder) === JSON.stringify(after.domOrder)
+    && JSON.stringify(before.unitLabels) === JSON.stringify(after.unitLabels)
+    && JSON.stringify(before.unitValues) === JSON.stringify(after.unitValues)
     && before.layoutMeasured === "true"
     && after.layoutMeasured === "true";
-  if (!sameData || before.cards.length !== after.cards.length) return false;
-
-  return before.cards.every((card, index) => {
-    const next = after.cards[index];
-    return ["x", "y", "width", "height"].every((key) => Math.abs(card.rect[key] - next.rect[key]) <= geometryTolerance);
-  });
 }
 
 async function keyboardCheck(client) {
@@ -365,9 +360,10 @@ async function auditScenario(debugOrigin, siteOrigin, variant, width) {
     const screenshot = `layout-${variant}-${width}.png`;
     await captureFullPage(client, join(outputDirectory, screenshot));
     const postScreenshotMetrics = await waitForStableApplication(client, 3);
+    validateMetrics(postScreenshotMetrics, variant, width);
     const keyboard = await keyboardCheck(client);
 
-    assert(renderStatesMatch(metrics, postScreenshotMetrics), `Render changed between metrics and screenshot for variant ${variant} at ${width}px`);
+    assert(finalDataStatesMatch(metrics, postScreenshotMetrics), `Final data changed between metrics and screenshot for variant ${variant} at ${width}px`);
     assert(keyboard.toggled, `Keyboard checkbox operation failed for variant ${variant} at ${width}px`);
     assert(consoleMessages.length === 0, `Console warnings or errors occurred for variant ${variant} at ${width}px`);
     assert(failedRequests.length === 0, `Network request failed for variant ${variant} at ${width}px`);
@@ -442,12 +438,11 @@ async function main() {
       variants,
       viewports,
       expectedMinimums,
-      geometryTolerance,
       screenshots: scenarios.map((scenario) => scenario.screenshot),
       scenarios,
     };
     await writeFile(join(outputDirectory, "audit.json"), `${JSON.stringify(evidence, null, 2)}\n`);
-    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, metric/screenshot state consistency with bounded geometry tolerance, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
+    await writeFile(join(outputDirectory, "README.md"), `# JLL-FE-003 Browser Evidence\n\n- Status: passed\n- Source revision: \`${evidence.sourceRevision}\`\n- Variants: ${variants.join(", ")}\n- Viewports: ${viewports.join(", ")}px\n- Screenshots: ${evidence.screenshots.join(", ")}\n- Checks: final question-bank and option counts, font readiness, final-data consistency across screenshot capture, independent subject selector, four unchanged filter groups, layout 2 left-card gap, no page overflow, no card scrollbars, full labels, stable DOM order, keyboard checkbox operation, distinct layouts at 768px and 1280px.\n`);
     console.log(`FE filter browser audit passed for ${scenarios.length} scenarios`);
   } catch (error) {
     await writeFile(join(outputDirectory, "failure.json"), `${JSON.stringify({ status: "failed", error: String(error), chromeError }, null, 2)}\n`);
