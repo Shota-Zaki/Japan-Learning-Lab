@@ -33,6 +33,12 @@ function normalizeIdentityValue(value) {
   return serialized.normalize("NFKC").replace(/\s+/gu, "").toLowerCase();
 }
 
+function normalizedCorrectAnswers(question) {
+  return [...new Set(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : []))]
+    .map((answer) => String(answer))
+    .sort();
+}
+
 export function normalizeQuestion(question) {
   const correctAnswers = [...new Set(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : []))];
   const sourceUnitId = question.unitId || "unclassified";
@@ -66,30 +72,42 @@ export function validQuestion(question) {
   );
 }
 
-export function normalizedFingerprint(question) {
+export function normalizedSourceFingerprint(question) {
   return [
-    question.subject || "A",
     question.sourceCategory,
     question.periodId,
     question.sourceQuestionNumber,
+  ].map(normalizeIdentityValue).join("|");
+}
+
+export function normalizedFingerprint(question) {
+  return [
+    question.subject || "A",
     question.question,
     question.questionBlocks,
     ...(question.choices || []).flatMap((choice) => [choice.id, choice.text, choice.contentBlocks]),
-    ...(question.correctAnswers || (question.correctAnswer ? [question.correctAnswer] : [])),
+    ...normalizedCorrectAnswers(question),
   ].map(normalizeIdentityValue).join("|");
 }
 
 export function mergeQuestionBanks(primaryQuestions, supplementalQuestions) {
   const seenIds = new Set();
-  const seenFingerprints = new Set();
+  const seenSourceFingerprints = new Set();
+  const seenContentFingerprints = new Set();
   const merged = [];
-  for (const source of [...supplementalQuestions, ...primaryQuestions]) {
+  for (const source of [...primaryQuestions, ...supplementalQuestions]) {
     const question = normalizeQuestion(source);
     if (!validQuestion(question)) continue;
-    const fingerprint = normalizedFingerprint(question);
-    if (seenIds.has(question.id) || seenFingerprints.has(fingerprint)) continue;
+    const sourceFingerprint = normalizedSourceFingerprint(question);
+    const contentFingerprint = normalizedFingerprint(question);
+    if (
+      seenIds.has(question.id)
+      || (sourceFingerprint !== "||" && seenSourceFingerprints.has(sourceFingerprint))
+      || seenContentFingerprints.has(contentFingerprint)
+    ) continue;
     seenIds.add(question.id);
-    seenFingerprints.add(fingerprint);
+    if (sourceFingerprint !== "||") seenSourceFingerprints.add(sourceFingerprint);
+    seenContentFingerprints.add(contentFingerprint);
     merged.push(question);
   }
   return merged;
