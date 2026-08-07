@@ -24,13 +24,12 @@ jobs:
       - name: Install dependencies
         working-directory: prototype
         run: npm ci
-      - name: Run required verification
+      - name: Run full FE verification and browser audit
         working-directory: prototype
+        env:
+          FIXED_APPLICATION_SHA: 66a03576b5b9ac2c86c35c63045f923137f08a0c
         run: |
-          npm test
-          npm run typecheck
-          npm run lint
-          npm run build
+          GITHUB_SHA="$FIXED_APPLICATION_SHA" npm run verify:fe
           npm run audit:fe-filter-layouts
       - name: Build fixed Pages output twice
         working-directory: prototype
