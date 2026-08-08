@@ -6,7 +6,7 @@
 
 ## Current phase
 
-`in_progress` — 2009年6月・7月160問は設問単位review manifestへ構造化済み、公式正答160件を個別固定済み。content triageは160 / 160を分類し、未分類0問。106問は公式問題PDFのテキスト層で本文と4択の境界を安全に照合済み、39問はvisual-risk、残る非visual 15問は個別holdへ分類した。15問の内訳は数式・記号等のテキスト層表現が曖昧な9問、外部規格・基準等の参照確認が必要な6問。visual-riskは39 / 39 triage済みで、35問は図・表・レイアウト再構成が必要、4問はテキスト層で意味保持できる可能性が高い候補。PDF screenshot取得はtool cache missのため実画像確認済みとは扱わず、全160問`hold`、2009年Repository-ready 0問を維持する。
+`in_progress` — 2009年6月・7月160問は設問単位review manifestへ構造化済み、公式正答160件を個別固定済み。content triageは160 / 160分類済み。106問は公式PDFテキスト層で本文・4択境界を照合済み、39問はvisual-risk、15問はnonvisual hold。今回、external-reference hold 6問の参照対象・maintainer・参照カテゴリを設問単位で特定し、専用manifestと通常FE検証へ固定した。ただし2009年当時の版、第三者権利、再利用可否の最終確認は未完了のため6問ともholdを維持する。PDF screenshot取得は引き続きtool cache missで、formatting 9問およびvisual-risk 39問の実画像確認は未完了。2009年Repository-readyは0問を維持する。
 
 ## Next role
 
@@ -14,7 +14,7 @@
 
 ## Objective
 
-FE科目A問題バンクを、公式一次資料で設問・選択肢・正答・出典を追跡できる問題だけで拡充する。外部の延べ収録数は比較ベンチマークに限定し、同一問題の別開催回掲載をユニーク問題として水増ししない。
+FE科目A問題バンクを、公式一次資料で設問・選択肢・正答・出典を追跡できる問題だけで拡充する。同一問題の別開催回掲載はcanonical問題として重複させずsource occurrenceとして保持する。
 
 ## Repository state
 
@@ -25,49 +25,38 @@ FE科目A問題バンクを、公式一次資料で設問・選択肢・正答�
 - Task: `JLL-FE-QBANK-001`
 - Task status: `in_progress`
 - Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
-- Latest audited application/data implementation HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
-- Latest successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
+- Latest audited application/data implementation HEAD: `d086197f5cf8ac40dcabcefecf31a15a24857981`
 - Pull Request: `#7` / `work` → `main` / Draft / open
 - `main` baseline: `2c3700f57f195199d365e009b7b9248746366eab`
 - この管理文書更新後の最新`work` HEADはGitHub実状態を正本とする
 
-## Implemented in this phase
+## Implemented in latest phase
 
-1. `prototype/data/source/fe/question-extraction-content-review.json`
-   - 公式PDFテキスト層で本文・4択境界を安全に照合できた106問を記録（6月56問 / 7月50問）
-   - visual-risk問題と個別hold問題を除外
-   - 最終import判定は行わず、共通assertionは`visualRenderVerified=false` / `importDecision=hold`
-2. `prototype/data/source/fe/question-extraction-content-holds.json`
-   - schema: `fe-question-extraction-content-holds-v1`
-   - 非visualで最終content review未完了の15問を独立分類
-   - `text_layer_formula_or_symbol_formatting_ambiguous`: 9問
-   - `external_standard_or_framework_reference_requires_review`: 6問
+1. `prototype/data/source/fe/question-extraction-external-reference-review.json`
+   - external-reference hold 6問を設問単位で分類
+   - government standard: 3問
+   - official agency framework: 1問
+   - industry framework: 1問
+   - industrial standard: 1問
+   - current maintainer/source pageは発行・管理主体の確認証拠に限定し、2009年当時版の内容証明には使わない
+   - 全件`historicalEditionReview=required_before_import`
+   - 全件`thirdPartyMaterialReview=pending_review`
    - 全件`importDecision=hold`
-3. `prototype/data/source/fe/question-extraction-risk-hints.json`
-   - 監査中に従来heuristic hintの漏れ9問を補正
-   - 2009年6月18問 / 7月21問 / 合計39問
-4. `prototype/data/source/fe/question-extraction-visual-review.json`
-   - visual-risk 39 / 39をtriage
-   - visual/layout reconstruction required: 35問
-   - text-layer-sufficient candidate: 4問
-   - `visualRenderVerified=false`、`visualRenderVerificationStatus=screenshot_tool_cache_miss`を維持
-5. `prototype/data/source/fe/question-extraction-candidates.json`
-   - `contentHoldManifest`を追加
-   - `textLayerContentReviewedCount=106`
-   - `textLayerContentPendingCount=54`
-   - `nonVisualContentHoldCount=15`
-   - `contentTriageClassifiedCount=160`
-   - `contentTriageUnclassifiedCount=0`
-   - visual-risk / triage / reconstruction countを39 / 39 / 35へ同期
-   - 既存監査契約に合わせ`contentStatus=structured_pending_content_review`を維持
-   - 2009年Repository-ready 0問を維持
-6. `prototype/scripts/audit-fe-question-content-review.mjs`
-   - content review / nonvisual hold / visual-riskの3レーンが重複せず160問すべてを覆うことを検証
-   - 15 holdのreason code、PDF page、base reviewのhold維持を検証
-   - 106 review済み問題のbase最終フラグを勝手にtrue化しないことを検証
-   - content triageだけではimportを許可しないことを固定
-7. `prototype/package.json`
-   - `audit:fe-question-content-review`は`sync:fe`経由でnormal build / Pages build / `verify:fe`の通常経路から実行される
+2. `prototype/data/source/fe/question-extraction-candidates.json`
+   - `externalReferenceReviewManifest`を追加
+   - `externalReferenceReviewedCount=6`
+   - `externalReferenceHistoricalEditionPendingCount=6`
+   - source別3問ずつを同期
+3. `prototype/scripts/audit-fe-question-external-reference-review.mjs`
+   - content hold 6問とexternal-reference review 6問の1対1対応を検証
+   - question number / PDF page / reference category / HTTPS evidence / historical edition pending / third-party pending / hold維持を検証
+   - 参照特定だけでimportを許可しないことを固定
+4. `prototype/package.json`
+   - `audit:fe-question-external-reference-review`を追加
+   - `sync:fe`へ組み込み、normal build / Pages build / `verify:fe`の通常経路から必ず実行
+5. 実画像確認
+   - 2009年6月・7月公式PDFの対象ページ screenshot を再試行
+   - 全対象でtool cache missが再現したため、visual確認済みには変更していない
 
 ## Current measured counts
 
@@ -82,7 +71,9 @@ FE科目A問題バンクを、公式一次資料で設問・選択肢・正答�
 - 2009 text-layer content review pending: 54問
 - 2009 nonvisual content hold: 15問
   - formatting ambiguity: 9問
-  - external reference review required: 6問
+  - external-reference hold: 6問
+- external-reference identified/reviewed: 6 / 6
+- external-reference historical-edition final review pending: 6 / 6
 - 2009 visual-risk hints: 39問
 - visual-risk triaged: 39問
 - visual/layout reconstruction required: 35問
@@ -100,46 +91,30 @@ Runtime baselineは不変:
 
 ## Latest verification / CI / Pages
 
-Application/data HEAD `e670376a419280dde08d298037a5c3ad9701b174`:
+Application/data HEAD `d086197f5cf8ac40dcabcefecf31a15a24857981`:
 
-- PR Pages build / verify workflow: `31241587942` / run `543` / success
-- PR build job: `93063390999` / success
+- work-push Pages workflow: `31257143225` / run `551` / success
+- build job: `93102171045` / success
 - `npm ci`: success
 - `Verify FE implementation`: success
-- Tests: 73 / 73 passed
-- Typecheck: success
-- Lint: success
-- Normal build: success
-- Pages build: success
-- Filter layout workflow: `31241587939` / run `124` / success
-- Mock timer workflow: `31241587945` / run `48` / success
-- Lesson layout workflow: `31241587930` / run `25` / success
-- PR context deploy job: skipped（期待どおり）
-- work-push Pages workflow: `31241585687` / run `542` / success
-- Public smoke check: success
-- Published sourceRevision: `e670376a419280dde08d298037a5c3ad9701b174`
-- Public / repository `build-info.json` sourceRevision一致
-- Successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
-- GitHub Actions内部のNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
+- Pages deploy job: skipped for PR-context path as expected
+- FE mock timer workflow: `31257143229` / run `52` / success
+- FE filter layout / lesson layout workflows were still running when this management record was prepared; latest GitHub state must be rechecked before handoff
 
-`Verify FE implementation`内のcontent audit実測:
+External-reference audit expected result:
 
-- candidateQuestionCount: 160
-- reviewedQuestionCount: 106
-- pendingTextLayerContentReviewCount: 54
-- nonVisualContentHoldCount: 15
-- visualRiskQuestionCount: 39
-- contentTriageClassifiedCount: 160
-- contentTriageUnclassifiedCount: 0
-- formattingHoldCount: 9
-- externalReferenceHoldCount: 6
-- visualRenderVerifiedCount: 0
-- mayAuthorizeImport: false
+- reviewedReferenceQuestionCount: 6
+- governmentStandardReferenceCount: 3
+- officialAgencyFrameworkReferenceCount: 1
+- industryFrameworkReferenceCount: 1
+- industrialStandardReferenceCount: 1
+- historicalEditionPendingCount: 6
+- importAuthorizedCount: 0
 
 ## Next implementation sequence
 
-1. formatting ambiguity hold 9問は、公式PDF実画像で数式・記号・下線等の意味を安全に再構成できるまでholdを維持する。
-2. external reference hold 6問は、外部規格・基準・フレームワーク等への依存範囲と再利用可否を設問単位で確認する。
+1. external-reference 6問は、2009年当時の版・定義と設問の依存範囲を確認し、第三者権利・再利用可否を設問単位で確定する。参照主体の特定だけではhold解除しない。
+2. formatting ambiguity hold 9問は、公式PDF実画像で数式・記号・下線等の意味を安全に再構成できるまでholdを維持する。
 3. visual-risk 39問は実画像確認を行い、35問の図・表・レイアウトを意味保持して再構成できるか確認する。text-layer-sufficient候補4問もvisual render未確認のため最終確認する。
 4. content review済み106問から第三者著作物・外部資料依存を設問単位で確認する。
 5. 本文・4択・図表・第三者著作物reviewを通過した設問だけ、既存primaryとのsource/content fingerprint照合へ進める。
@@ -153,8 +128,9 @@ Application/data HEAD `e670376a419280dde08d298037a5c3ad9701b174`:
 
 - 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
 - OCR結果を人手照合なしで大量投入すること
-- content triage、heuristic risk hint、visual triage、text-layer content reviewのいずれか単独で採用可否を自動判定すること
-- PDF実画像未確認のvisual-risk問題やformatting hold問題を確認済みと扱うこと
+- content triage、visual triage、text-layer review、external-reference identificationのいずれか単独で採用可否を自動判定すること
+- PDF実画像未確認のvisual-risk / formatting hold問題を確認済みと扱うこと
+- current standard/framework pageだけで2009年当時版の意味を確定すること
 - 出典未確認・正答未確認・不完全問題を件数合わせで追加すること
 - placeholder解説で件数を増やすこと
 - primary 1,977問を互換性確認なく削除すること
@@ -188,6 +164,7 @@ npm ci
 npm run audit:fe-question-sources
 npm run audit:fe-question-extraction-candidates
 npm run audit:fe-question-content-review
+npm run audit:fe-question-external-reference-review
 npm run audit:fe-question-coverage
 npm test
 npm run typecheck
@@ -208,6 +185,7 @@ npm run verify:fe
 - Repository: `prototype/data/source/fe/question-extraction-visual-review.json`
 - Repository: `prototype/data/source/fe/question-extraction-content-review.json`
 - Repository: `prototype/data/source/fe/question-extraction-content-holds.json`
+- Repository: `prototype/data/source/fe/question-extraction-external-reference-review.json`
 
 ## Unresolved findings
 
@@ -215,8 +193,9 @@ npm run verify:fe
 - 2009年54問はfinal text-layer content review未完了
 - visual-risk 39問中35問は図・表・レイアウト再構成確認待ち
 - PDF実画像確認はscreenshot tool cache missのため未完了
-- nonvisual hold 15問はformatting ambiguity 9問 / external reference review 6問に分類済みだが未解消
-- 160問すべてthird-party material review、domain/unit、explanation quality、最終fingerprint照合が未完了
+- formatting ambiguity 9問は未解消
+- external-reference 6問は参照対象の特定完了、historical edition / third-party / reuse reviewは6問とも未完了
+- 160問すべてdomain/unit、explanation quality、最終fingerprint照合が未完了
 - 2009年Repository-readyは0問
 
 ## Latest user request
