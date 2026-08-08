@@ -21,6 +21,7 @@
         {"questionNumber": 69, "dependencyHints": ["figure"]},
         {"questionNumber": 71, "dependencyHints": ["table"]},
         {"questionNumber": 74, "dependencyHints": ["figure"]},
+        {"questionNumber": 75, "dependencyHints": ["figure"]},
         {"questionNumber": 77, "dependencyHints": ["table"]},
         {"questionNumber": 80, "dependencyHints": ["figure", "table"]}
       ]
