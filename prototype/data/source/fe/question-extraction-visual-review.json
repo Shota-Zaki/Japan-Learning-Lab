@@ -10,9 +10,9 @@
     "textLayerSufficiencyDoesNotAuthorizeImport": true
   },
   "summary": {
-    "visualRiskHintCount": 37,
-    "triagedQuestionCount": 37,
-    "requiresVisualOrLayoutReconstructionCount": 33,
+    "visualRiskHintCount": 38,
+    "triagedQuestionCount": 38,
+    "requiresVisualOrLayoutReconstructionCount": 34,
     "textLayerAppearsSufficientCount": 4
   },
   "sources": [
@@ -43,9 +43,9 @@
     },
     {
       "sourceId": "2009-07-exemption",
-      "visualRiskHintCount": 20,
-      "triagedQuestionCount": 20,
-      "requiresVisualOrLayoutReconstructionCount": 18,
+      "visualRiskHintCount": 21,
+      "triagedQuestionCount": 21,
+      "requiresVisualOrLayoutReconstructionCount": 19,
       "reviews": [
         {"questionNumber": 3, "pdfPage": 3, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "reference_table_required"},
         {"questionNumber": 4, "pdfPage": 4, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_choice_required"},
