@@ -47,35 +47,39 @@
 
 ## 4. Current priority
 
-現在の優先タスクは`JLL-FE-QBANK-001`で、状態は`in_progress`。Task Start HEADは`2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`、Draft PRは#7。2009年候補の本文・4択・図表、第三者著作物、分類、解説品質の個別監査が未完了のため、次の`実装`でも同タスクを継続する。
-
-`JLL-FE-LESSON-001`は確認担当の独立確認に合格し、完了済み。
+現在の優先タスクは`JLL-FE-QBANK-001`で、状態は`in_progress`。Task Start HEADは`2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`、Draft PRは#7。2009年候補160問のcontent triageは全件分類済みだが、実画像確認、第三者著作物・外部資料review、fingerprint照合、domain/unit、解説品質、最終import判定は未完了のため、次の`実装`でも同タスクを継続する。
 
 ### JLL-FE-QBANK-001 current state
 
-- Latest audited application/data implementation HEAD: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
-- Latest successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
+- Latest audited application/data implementation HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
+- Latest successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
 - PR #7: Draft / open / `work` → `main`
 - 2024〜2026 source inventory: 13ソース / 660候補 / 20 content-ready / 640 pending
 - 2009年6月・7月 official text-extractable candidate: 2ソース / 160候補 / 0 ready
 - 2009年160問は設問単位review manifestへ構造化済みで、公式正答160件を個別確認済み
+- content triage: 160 / 160 classified / 0 unclassified
 - official PDF text-layer content review: 106問（6月56問 / 7月50問）
-- text-layer content review pending: 54問
+- final text-layer content review pending: 54問
+- nonvisual content hold: 15問
+  - formatting ambiguity: 9問
+  - external reference review required: 6問
 - heuristic visual-risk hint: 39問
-- visual-risk triage: 39 / 39完了。35問は図・表・レイアウト再構成が必要、4問はテキスト層だけで意味を保持できる可能性が高い。ただしtriage単独では採用を許可しない
+- visual-risk triage: 39 / 39完了
+- visual/layout reconstruction required: 35問
+- text-layer-sufficient visual-risk candidate: 4問。ただしvisual render未確認のため採用可ではない
 - 監査中に従来visual-risk hintの漏れ9問を検出して補正した
-- PDF screenshot取得はtool cache missのため実画像確認未完了。visual review manifestでは`visualRenderVerified=false`を維持する
-- 54問の内訳はvisual-risk 39問と、visual-riskではないが数式・下線・テキスト抽出崩れまたは規格・基準等の外部資料参照を別監査すべき15問
-- Audited candidate universe: 820問 / 20 ready / 800 final pending review
-- 公式の過去問題利用条件を確認し、教育目的利用について許諾・使用料不要、著作権存続、出典明記、改変時明示が必要という条件をRepositoryへ記録した。第三者著作物は設問単位で別途確認する
+- PDF screenshot取得はtool cache missのため実画像確認未完了。`visualRenderVerified=false`を維持する
+- content triage 160 / 160分類済みはfinal content review完了を意味しない
+- content review済み106問もbase reviewの最終フラグを自動true化せず、全160問`hold`、Repository-ready 0問を維持する
+- `question-extraction-content-holds.json`で非visual 15問を理由別に固定
+- `audit-fe-question-content-review.mjs`で106 reviewed / 15 nonvisual hold / 39 visual-riskの3レーンが重複せず160問すべてを覆うことを検証する
 - Recent image-only official PDFsは無検証OCRで取り込まない
-- 2009年候補も、設問・4択・公式正答・図表/表・第三者著作物・domain/unit・解説品質を確認するまでruntimeへ入れない
-- text-layer content review済み106問もbase reviewの最終フラグを自動true化せず、全160問`hold`、Repository-ready 0問を維持する
+- 公式の過去問題利用条件はRepositoryへ記録済み。第三者著作物・外部資料依存は設問単位で別途確認する
 - Existing primary 1,977問は互換性baselineとして保持し、primary-primary重複を自動削除しない
 - New supplemental dataだけをsource/content fingerprintで照合する
 - unique一致は`sourceOccurrences`へ統合し、ambiguous一致は自動統合しない
 
-Latest measured runtime at `6833ea8b73503c151ecc34a28c19159ef1afaa2b`:
+Latest measured runtime at `e670376a419280dde08d298037a5c3ad9701b174`:
 
 - Primary: 1,977問（A 1,810 / B 167）
 - Supplemental source occurrences: 20件
@@ -87,85 +91,49 @@ Latest measured runtime at `6833ea8b73503c151ecc34a28c19159ef1afaa2b`:
 
 Latest CI for the audited application/data HEAD:
 
-- PR Pages build / verify: `31241278123` / run `539` / success
-- PR build job: `93062558874` / success
-- Filter layout: `31241278121` / run `122` / success
-- Mock timer layout: `31241278182` / run `46` / success
-- Lesson layout: `31241278139` / run `23` / success
-- work-push Pages build/deploy: `31241276543` / run `538` / success
+- PR Pages build / verify: `31241587942` / run `543` / success
+- PR build job: `93063390999` / success
+- Filter layout: `31241587939` / run `124` / success
+- Mock timer layout: `31241587945` / run `48` / success
+- Lesson layout: `31241587930` / run `25` / success
+- `npm ci`: success
+- `Verify FE implementation`: success
+- Tests: 73 / 73 passed
+- Typecheck / lint / normal build / Pages build: success
+- work-push Pages build/deploy: `31241585687` / run `542` / success
 - Public smoke check: success
-- Published sourceRevision: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
+- Published sourceRevision: `e670376a419280dde08d298037a5c3ad9701b174`
 - Public / repository `build-info.json` sourceRevision一致
 
-### JLL-FE-LESSON-001 final state
+### Completed FE work kept as baseline
 
-- Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
-- Final audited application / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
-- Independent confirmation pre-record work HEAD: `6c53a4da57d926cdc2abac62ef8d3a7b6932592b`
-- Confirmation record commit: `85943bd4095e88912f8ddae10ad4cc84686f7396`
-- Confirmation management PR HEAD: `dc8d93fece42082b18f187ff1b053949c6045cd5`
-- PR #6: merged
-- Merge method: merge commit
-- Merge commit: `2c3700f57f195199d365e009b7b9248746366eab`
-- `work`はmerge直後にmerge commitへforceなしでfast-forward同期済み
-- Post-merge handoff / final Pages source: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
-- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
-- 以後の`[skip ci]`管理文書commitを含む最新`work` HEADはGitHub実状態を正本とする
+`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`、`JLL-FE-LESSON-001`は確認合格し、merge commit方式で`main`へマージ済み。詳細な固定HEAD、CI、Pages証拠は`task-list.md`を正本とする。
 
 JLL-FE-LESSON-001で確定した方針:
 
 1. 最初のFEレッスンは科目B「代入と繰返しを追跡する」とし、擬似言語の代入、繰返し、変数追跡を1つの学習単位にまとめる
-2. 到達目標3件、学習順序4段階、本文、擬似言語例、変数追跡表、確認ポイント、4択確認問題を提供する
-3. レッスン概要・本文は`FeLessonApp`として演習・模試・履歴処理から分離し、既存の演習UIとフィルターを目的外に変更しない
-4. レッスン内容は`prototype/src/data/feLessons.js`へ構造化し、定義整合性を回帰テストで検証する
-5. 学習進捗やレッスン完了状態の永続保存は今回の範囲外とし、確認問題の回答だけを画面内状態として扱う
-6. Root / `prototype/`の既存`DESIGN.md`方針を維持する
-7. 375px / 768px / 1,280pxのレッスン専用browser auditで概要・本文・コード・表・確認問題・responsive layout・horizontal overflow・browser errorを検査する
-8. Pages buildの既存webfont除去仕様は維持し、Ubuntu CIのスクリーンショット確認だけ日本語fallback fontを導入する
+2. 到達目標、学習順序、本文、擬似言語例、変数追跡表、確認ポイント、4択確認問題を提供する
+3. レッスン概要・本文を演習・模試・履歴処理から分離し、既存の演習UIとフィルターを目的外に変更しない
+4. 学習進捗やレッスン完了状態の永続保存は範囲外
+5. 375px / 768px / 1,280pxのbrowser audit方針を維持する
 
-JLL-FE-LESSON-001 independent validation:
+JLL-FE-004で確定した方針:
 
-- PR review threads: 0
-- PR mergeable before merge: true
-- PR merge ref: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
-- Node.js: 22.23.1
-- Tests: 67 / 67 passed
-- TypeScript / ESLint / normal build / Pages build: success
-- PR Pages build workflow: `31188040484` / run `491` / success
-- Filter browser workflow: `31188040386` / run `102` / success
-- Mock timer browser workflow: `31188040635` / run `26` / success
-- Lesson browser workflow: `31188040404` / run `3` / success
-- Lesson browser artifact: `8997593877`
-- Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
-- 375px / 768px / 1,280pxの概要・本文6枚を確認担当が独立実画像確認
-- horizontal overflow、console error、runtime exception、failed requestなし
-- 開始ボタン48px、確認問題選択肢最小54px
-- 375px / 768pxは本文ナビを下段stack、1,280pxは右側配置
-- 日本語表示、文字切れ、重なりにBlocking findingなし
-- 公式問題データファイルはPR変更対象外
-- `.github/workflows/pages.yml`は`main` pushでは起動せず、PR (`main`) と`work` pushで検証する構成。standalone main push CIがないことを確認
-- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
-
-JLL-FE-004で確定した方針も維持する。
-
-1. 問題文は解説より明確に大きく・強く表示し、視覚階層を分離する
+1. 問題文と解説の視覚階層を分離する
 2. 模擬試験残時間はサイトヘッダー内の専用ステータス行へ表示する
-3. 残時間は設定durationを超えず、active mock切替時に即時更新し、その後1秒単位で減少する
-4. タイマーはスクロール中も可視で、通常topic演習には表示しない
-5. 2022年科目Aサンプルは通常topic演習から除外し、公式サンプルmock経路は維持する
-6. `2026-exemption-07`のlearner-facing表示は`令和8年度 免除試験`とし、元問題データは変更しない
-7. `JLL-FE-003`で確定した絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」、受験科目ブロック独立、完全日本語単元名を維持する
+3. タイマーはactive mock切替時に即時更新し、その後1秒単位で減少する
+4. 通常topic演習には模擬試験タイマーを表示しない
+5. 公式サンプルの通常topic演習への意図しない混在を防ぐ
+6. `JLL-FE-003`で確定した絞り込み順「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」、受験科目ブロック独立、完全日本語単元名を維持する
 
 ### 4.1 Work queue
 
-1. `JLL-FE-QBANK-001`: `in_progress`。次の`実装`で未完了54問をvisual-risk 39問と非visual-risk 15問へ分離して個別監査し、content review済み106問の第三者著作物・分類・解説品質・fingerprint照合も継続する
+1. `JLL-FE-QBANK-001`: `in_progress`。次の`実装`でformatting ambiguity hold 9問、external-reference hold 6問、visual-risk 39問の最終確認を進め、content review済み106問の第三者著作物・分類・解説品質・fingerprint照合も継続する
 2. `JLL-JAVA-001`: 上記FE優先タスク後まで延期
-
-`JLL-FE-001`、`JLL-FE-002`、`JLL-FE-003`、`JLL-FE-004`、`JLL-FE-LESSON-001`は確認合格し、merge commit方式で`main`へマージ済み。詳細は`task-list.md`を正本とする。
 
 ## 5. FE question-bank counts
 
-`JLL-FE-QBANK-001`の現行実測は次のとおり。
+`JLL-FE-QBANK-001`の現行実測:
 
 - 配信基本問題バンク: 1,977問（科目A 1,810 / 科目B 167）
 - 補足source occurrence: 科目A 20件
@@ -176,48 +144,33 @@ JLL-FE-004で確定した方針も維持する。
 - 2024〜2026 staging candidate: 660問
 - 2009 text-extractable candidate: 160問
 - 2009 official-answer verified: 160問
+- 2009 content triage: classified 160 / unclassified 0
 - 2009 text-layer content reviewed: 106問 / pending 54問
+- 2009 nonvisual hold: 15問（formatting ambiguity 9 / external reference review 6）
 - 2009 visual-risk hints: 39問 / triaged 39問 / visual or layout reconstruction required 35問 / text-layer-sufficient candidate 4問
 - 2009 Repository-ready: 0問
 - audited candidate universe: 820問 / ready 20問 / final pending review 800問
 
-外部サイトの2,960問相当はユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本はRepositoryに固定したprovenanceと公式一次資料とする。canonical問題とsource occurrenceは分離し、同一内容の再出題を単純に問題数へ加算しない。
-
-2009年候補については、公式過去問題利用条件をRepositoryのcandidate manifestに固定した。教育目的利用について許諾・使用料不要であっても著作権は存続し、出典明記と改変時の明示が必要である。第三者著作物や外部資料依存はこの一般条件で自動許可せず、設問単位で確認する。
+外部サイトの延べ収録数はユニーク問題数の目標値として扱わず、公式一次資料と正規化指紋を使って年度・開催回・公開区分別に実測する。第三者サイトの問題本文・選択肢・解説・画像は転載しない。Google Drive調査メモは調査ナビであり、採用データの正本はRepositoryに固定したprovenanceと公式一次資料とする。canonical問題とsource occurrenceは分離し、同一内容の再出題を単純に問題数へ加算しない。
 
 ## 6. GitHub Pages status
 
-Current JLL-FE-QBANK-001 validation:
+Current `JLL-FE-QBANK-001` validation:
 
-- Audited application/data HEAD: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
-- PR Pages build / verify workflow: `31241278123` / run `539` / success
-- PR build job: `93062558874` / success
+- Audited application/data HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
+- PR Pages build / verify workflow: `31241587942` / run `543` / success
+- PR build job: `93063390999` / success
 - PR-context deploy job: skipped as expected
-- Filter browser workflow: `31241278121` / run `122` / success
-- Mock timer browser workflow: `31241278182` / run `46` / success
-- Lesson browser workflow: `31241278139` / run `23` / success
-- work-push Pages workflow: `31241276543` / run `538` / success
+- Filter browser workflow: `31241587939` / run `124` / success
+- Mock timer browser workflow: `31241587945` / run `48` / success
+- Lesson browser workflow: `31241587930` / run `25` / success
+- work-push Pages workflow: `31241585687` / run `542` / success
 - Deploy to GitHub Pages: success
 - Verify public Pages resources and revision: success
 - Public smoke check: success
-- Published sourceRevision: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
+- Published sourceRevision: `e670376a419280dde08d298037a5c3ad9701b174`
 - Public / repository `build-info.json` sourceRevision一致
-- Latest successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
-
-JLL-FE-LESSON-001 final post-merge publication:
-
-- Intermediate workflow: `31189901419` / run `492`; Pages deploy・public revision確認成功後、後続pushのconcurrencyでjob全体はcancelled
-- Final workflow: `31190078701` / run `493` / success
-- Final build job: `92904398023` / success
-- Final deploy job: `92904601920` / success
-- `Deploy to GitHub Pages`: success
-- `Verify public Pages resources and revision`: success
-- Public smoke check: success
-- Published sourceRevision: `1ed246c1c1f89c968edfd4dc2dacf082a40aecd8`
-- Public / repository `build-info.json` sourceRevision一致
-- Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
-- Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Final Pages evidence synchronization HEAD: `07cd2d4aaeed66b6d48734ba470cc747713bd472`
+- Latest successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
 
 管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物sourceRevisionと最新Branch HEADは区別して扱う。
 
