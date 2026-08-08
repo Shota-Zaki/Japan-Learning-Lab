@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "fe-question-extraction-visual-review-v1",
+  "snapshotDate": "2026-08-08",
+  "reviewScope": "heuristic_visual_dependency_triage",
+  "policy": {
+    "officialQuestionPdfOnly": true,
+    "visualRenderVerified": false,
+    "visualRenderVerificationStatus": "screenshot_tool_cache_miss",
+    "mayAuthorizeImport": false,
+    "textLayerSufficiencyDoesNotAuthorizeImport": true
+  },
+  "summary": {
+    "visualRiskHintCount": 39,
+    "triagedQuestionCount": 39,
+    "requiresVisualOrLayoutReconstructionCount": 35,
+    "textLayerAppearsSufficientCount": 4
+  },
+  "sources": [
+    {
+      "sourceId": "2009-06-exemption",
+      "visualRiskHintCount": 18,
+      "triagedQuestionCount": 18,
+      "requiresVisualOrLayoutReconstructionCount": 16,
+      "reviews": [
+        {"questionNumber": 2, "pdfPage": 3, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_figure_reference"},
+        {"questionNumber": 4, "pdfPage": 4, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 6, "pdfPage": 5, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "flowchart_required"},
+        {"questionNumber": 9, "pdfPage": 6, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 16, "pdfPage": 9, "disposition": "figure_and_table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_figure_and_table_reference"},
+        {"questionNumber": 17, "pdfPage": 10, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 18, "pdfPage": 10, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 21, "pdfPage": 12, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "spreadsheet_layout_required"},
+        {"questionNumber": 25, "pdfPage": 13, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "diagram_choice_required"},
+        {"questionNumber": 28, "pdfPage": 14, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "answer_table_layout_required"},
+        {"questionNumber": 53, "pdfPage": 24, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_choice_required"},
+        {"questionNumber": 68, "pdfPage": 31, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "portfolio_matrix_figure_required"},
+        {"questionNumber": 69, "pdfPage": 32, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "process_chain_figure_required"},
+        {"questionNumber": 71, "pdfPage": 33, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 74, "pdfPage": 34, "disposition": "heuristic_false_positive", "requiresVisualOrLayoutReconstruction": false, "reasonCode": "question_and_choices_are_textual"},
+        {"questionNumber": 75, "pdfPage": 35, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "arrow_diagram_required"},
+        {"questionNumber": 77, "pdfPage": 36, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 80, "pdfPage": 37, "disposition": "heuristic_false_positive", "requiresVisualOrLayoutReconstruction": false, "reasonCode": "question_and_choices_are_textual"}
+      ]
+    },
+    {
+      "sourceId": "2009-07-exemption",
+      "visualRiskHintCount": 21,
+      "triagedQuestionCount": 21,
+      "requiresVisualOrLayoutReconstructionCount": 19,
+      "reviews": [
+        {"questionNumber": 3, "pdfPage": 3, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "reference_table_required"},
+        {"questionNumber": 4, "pdfPage": 4, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_choice_required"},
+        {"questionNumber": 13, "pdfPage": 7, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 16, "pdfPage": 8, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_required"},
+        {"questionNumber": 18, "pdfPage": 9, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "explicit_table_reference"},
+        {"questionNumber": 20, "pdfPage": 10, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "spreadsheet_layout_required"},
+        {"questionNumber": 24, "pdfPage": 11, "disposition": "figure_and_table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "circuit_and_choice_table_required"},
+        {"questionNumber": 25, "pdfPage": 12, "disposition": "visual_present_text_equivalent", "requiresVisualOrLayoutReconstruction": false, "reasonCode": "condition_text_defines_logic_semantics"},
+        {"questionNumber": 33, "pdfPage": 14, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "relation_table_layout_required"},
+        {"questionNumber": 35, "pdfPage": 15, "disposition": "formatting_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "underline_carries_primary_key_semantics"},
+        {"questionNumber": 36, "pdfPage": 16, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "lock_matrix_required"},
+        {"questionNumber": 48, "pdfPage": 20, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "flowchart_required"},
+        {"questionNumber": 49, "pdfPage": 21, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_required"},
+        {"questionNumber": 51, "pdfPage": 22, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "network_diagram_required"},
+        {"questionNumber": 53, "pdfPage": 23, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "process_stage_table_required"},
+        {"questionNumber": 54, "pdfPage": 23, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "histogram_required"},
+        {"questionNumber": 67, "pdfPage": 28, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "portfolio_matrix_figure_required"},
+        {"questionNumber": 69, "pdfPage": 29, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "transition_matrix_required"},
+        {"questionNumber": 75, "pdfPage": 31, "disposition": "figure_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "graph_choice_required"},
+        {"questionNumber": 77, "pdfPage": 32, "disposition": "table_required", "requiresVisualOrLayoutReconstruction": true, "reasonCode": "journal_table_required"},
+        {"questionNumber": 80, "pdfPage": 33, "disposition": "heuristic_false_positive", "requiresVisualOrLayoutReconstruction": false, "reasonCode": "question_and_choices_are_textual"}
+      ]
+    }
+  ]
+}

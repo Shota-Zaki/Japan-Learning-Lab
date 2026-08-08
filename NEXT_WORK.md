@@ -2,113 +2,210 @@
 
 ## Current Task ID
 
-`JLL-FE-LESSON-001`
+`JLL-FE-QBANK-001`
 
 ## Current phase
 
-`confirmation_passed / merge_pending`
+`in_progress` — 2009年6月・7月160問は設問単位review manifestへ構造化済み、公式正答160件を個別固定済み。content triageは160 / 160分類済み。106問は公式PDFテキスト層で本文・4択境界を照合済み、39問はvisual-risk、15問はnonvisual hold。今回、external-reference hold 6問の参照対象・maintainer・参照カテゴリを設問単位で特定し、専用manifestと通常FE検証へ固定した。ただし2009年当時の版、第三者権利、再利用可否の最終確認は未完了のため6問ともholdを維持する。PDF screenshot取得は引き続きtool cache missで、formatting 9問およびvisual-risk 39問の実画像確認は未完了。2009年Repository-readyは0問を維持する。
 
-## Current role
+## Next role
 
-確認担当。
+実装担当。
 
-## Confirmation result
+## Objective
 
-`pass`
+FE科目A問題バンクを、公式一次資料で設問・選択肢・正答・出典を追跡できる問題だけで拡充する。同一問題の別開催回掲載はcanonical問題として重複させずsource occurrenceとして保持する。
 
-Blocking findingなし。確認担当は固定実装HEAD、PR merge ref、後続差分、CI、browser artifact実画像、Pages deployログを独立照合済み。アプリコードは修正していない。
-
-## Fixed evidence
+## Repository state
 
 - Repository: `Shota-Zaki/Japan-Learning-Lab`
 - Base Branch: `main`
 - Permanent working Branch: `work`
-- Pull Request: `#6` / `work` → `main`
-- Start HEAD: `82b7c277347c4c6d9c1703a97e2e4c7f185b06df`
-- Final audited application / workflow source: `614827ca62be5b72885b7774dc4f621975a6482f`
-- Independent confirmation pre-record work HEAD: `6c53a4da57d926cdc2abac62ef8d3a7b6932592b`
-- PR merge ref independently verified: `c388e165344da10bddbe61f1bcd83b1e46a782a0`
-- Confirmation task-list record commit: `85943bd4095e88912f8ddae10ad4cc84686f7396`
-- Confirmation management HEAD: この`NEXT_WORK.md`更新後の最新`work` HEADをmerge直前に再取得して固定する
+- Application directory: `prototype/`
+- Task: `JLL-FE-QBANK-001`
+- Task status: `in_progress`
+- Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
+- Latest audited application/data implementation HEAD: `d086197f5cf8ac40dcabcefecf31a15a24857981`
+- Pull Request: `#7` / `work` → `main` / Draft / open
+- `main` baseline: `2c3700f57f195199d365e009b7b9248746366eab`
+- この管理文書更新後の最新`work` HEADはGitHub実状態を正本とする
 
-## Independent verification result
+## Implemented in latest phase
 
-- `614827ca62be5b72885b7774dc4f621975a6482f`以後、確認開始HEADまでアプリ実装変更なし。変更は管理文書・Pages証拠のみ
-- PR review threads: 0
-- Submitted reviews: 0
-- PR mergeable: true（確認開始時点）
-- Node.js: 22.23.1
-- `npm ci`: success（GitHub Actions固定PR merge refログ）
-- `npm run verify:fe`: success
-- Tests: 67 / 67 passed
-- TypeScript: success
-- ESLint: success
-- Normal build: success
-- Pages build: success
-- PR Pages workflow: `31188040484` / run `491` / success
-- Existing filter browser workflow: `31188040386` / run `102` / success
-- Existing mock timer browser workflow: `31188040635` / run `26` / success
-- FE lesson browser workflow: `31188040404` / run `3` / success
-- Browser artifact: `8997593877`
-- Artifact digest: `sha256:288341a6c3961aace6e7b11464dc5c306782f668d51472888ca5f983b30000fa`
-- 375px / 768px / 1,280pxの概要・本文6枚を独立実画像確認
-- horizontal overflowなし
-- 開始ボタン48px、確認問題選択肢最小54px
-- 375px / 768pxで本文ナビが下段stack、1,280pxで右側配置
-- code / table / 4 sections / 5 nav links / 4 choices確認
-- console error / runtime exception / failed requestなし
-- 日本語表示、文字切れ、横はみ出し、カード重なりにBlockingなし
-- routeはlessonとpractice / history / sessionで分離
-- 永続的なレッスン完了状態なし
-- 公式問題データファイルはPR変更対象外
-- Actions runtimeのNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
-- 確認環境の外向きDNS制約によりlocal cloneからの再実行は不可。CIログ・artifact・Repository差分・Pages公開HTTP smoke checkを独立照合
+1. `prototype/data/source/fe/question-extraction-external-reference-review.json`
+   - external-reference hold 6問を設問単位で分類
+   - government standard: 3問
+   - official agency framework: 1問
+   - industry framework: 1問
+   - industrial standard: 1問
+   - current maintainer/source pageは発行・管理主体の確認証拠に限定し、2009年当時版の内容証明には使わない
+   - 全件`historicalEditionReview=required_before_import`
+   - 全件`thirdPartyMaterialReview=pending_review`
+   - 全件`importDecision=hold`
+2. `prototype/data/source/fe/question-extraction-candidates.json`
+   - `externalReferenceReviewManifest`を追加
+   - `externalReferenceReviewedCount=6`
+   - `externalReferenceHistoricalEditionPendingCount=6`
+   - source別3問ずつを同期
+3. `prototype/scripts/audit-fe-question-external-reference-review.mjs`
+   - content hold 6問とexternal-reference review 6問の1対1対応を検証
+   - question number / PDF page / reference category / HTTPS evidence / historical edition pending / third-party pending / hold維持を検証
+   - 参照特定だけでimportを許可しないことを固定
+4. `prototype/package.json`
+   - `audit:fe-question-external-reference-review`を追加
+   - `sync:fe`へ組み込み、normal build / Pages build / `verify:fe`の通常経路から必ず実行
+5. 実画像確認
+   - 2009年6月・7月公式PDFの対象ページ screenshot を再試行
+   - 全対象でtool cache missが再現したため、visual確認済みには変更していない
 
-## Pre-merge Pages evidence
+## Current measured counts
 
-- Workflow: `31188038465` / run `490` / success
-- Build job: `92897489459` / success
-- Deploy job: `92897691974` / success
+- audited candidate universe: 820問
+- candidate universe Repository-ready: 20問
+- candidate universe final pending review: 800問
+- 2009 structured candidates: 160問
+- 2009 official-answer verified: 160問
+- 2009 content triage classified: 160問
+- 2009 content triage unclassified: 0問
+- 2009 text-layer content reviewed: 106問
+- 2009 text-layer content review pending: 54問
+- 2009 nonvisual content hold: 15問
+  - formatting ambiguity: 9問
+  - external-reference hold: 6問
+- external-reference identified/reviewed: 6 / 6
+- external-reference historical-edition final review pending: 6 / 6
+- 2009 visual-risk hints: 39問
+- visual-risk triaged: 39問
+- visual/layout reconstruction required: 35問
+- text-layer-sufficient visual-risk candidate: 4問
+- 2009 Repository-ready: 0問
+
+Runtime baselineは不変:
+
+- primary: 1,977問（A 1,810 / B 167）
+- supplemental occurrence: 20件
+- runtime canonical: 1,996問（A 1,829 / B 167）
+- runtime source occurrence: 1,997件
+- primary duplicate-content groups: 80
+- primary duplicate-source groups: 62
+
+## Latest verification / CI / Pages
+
+Application/data HEAD `d086197f5cf8ac40dcabcefecf31a15a24857981`:
+
+- work-push Pages workflow: `31257143225` / run `551` / success
+- build job: `93102171045` / success
+- `npm ci`: success
 - `Verify FE implementation`: success
-- `Verify public Pages resources and revision`: success
-- Public smoke check: success
-- Published sourceRevision: `614827ca62be5b72885b7774dc4f621975a6482f`
-- Public / repository `build-info.json` sourceRevision一致
-- Published script: `/Japan-Learning-Lab/assets/index-CVu1iGiK.js`
-- Published stylesheet: `/Japan-Learning-Lab/assets/index-lbWVvDdR.css`
-- Pages evidence synchronization HEAD: `6676ac2f0ed0539d3202db5dc9d500f2c6c301eb`
+- Pages deploy job: skipped for PR-context path as expected
+- FE mock timer workflow: `31257143229` / run `52` / success
+- FE filter layout / lesson layout workflows were still running when this management record was prepared; latest GitHub state must be rechecked before handoff
 
-## Immediate finalization procedure
+External-reference audit expected result:
 
-1. 最新`work` HEADを取得する
-2. `614827ca62be5b72885b7774dc4f621975a6482f`以後の差分が管理文書・Pages証拠のみであることを再確認する
-3. PR #6のheadが最新`work`と一致し、mergeableであることを確認する
-4. PR #6をReady for review化する
-5. expected head SHAを指定し、merge commit方式で`main`へmergeする
-6. merge commitを取得し、main側のCIを確認する
-7. `work`をmerge commitへforceなしでfast-forward同期する
-8. `work` pushで起動するPages build/deployを確認する
-9. 公開`build-info.json` revisionと公開リソースsmoke check成功を確認する
-10. `task-list.md`、`NEXT_WORK.md`、`PROJECT_CONTEXT.md`へmerge commit、最終Pages、次タスクを記録する
+- reviewedReferenceQuestionCount: 6
+- governmentStandardReferenceCount: 3
+- officialAgencyFrameworkReferenceCount: 1
+- industryFrameworkReferenceCount: 1
+- industrialStandardReferenceCount: 1
+- historicalEditionPendingCount: 6
+- importAuthorizedCount: 0
 
-## Change forbidden during finalization
+## Next implementation sequence
 
-- アプリコードを修正しない
-- squash / rebase / force pushを行わない
-- `work`を削除しない
-- `JLL-FE-QBANK-001`をmerge・Pages完了前に実装開始しない
-- Java Learning Labを先行しない
+1. external-reference 6問は、2009年当時の版・定義と設問の依存範囲を確認し、第三者権利・再利用可否を設問単位で確定する。参照主体の特定だけではhold解除しない。
+2. formatting ambiguity hold 9問は、公式PDF実画像で数式・記号・下線等の意味を安全に再構成できるまでholdを維持する。
+3. visual-risk 39問は実画像確認を行い、35問の図・表・レイアウトを意味保持して再構成できるか確認する。text-layer-sufficient候補4問もvisual render未確認のため最終確認する。
+4. content review済み106問から第三者著作物・外部資料依存を設問単位で確認する。
+5. 本文・4択・図表・第三者著作物reviewを通過した設問だけ、既存primaryとのsource/content fingerprint照合へ進める。
+6. ambiguous一致は自動統合しない。
+7. 採用候補だけdomain/unitを確認し、placeholderではない学習用解説を作成・検証する。
+8. ready条件をすべて満たした設問のみsupplemental source dataへ移す。
+9. `npm test`、typecheck、lint、normal build、Pages build、`verify:fe`を再実行する。
+10. Completion criteria達成後のみ`review_ready`へ更新する。実装担当はPRをReady for review化しない。
 
-## Next task after finalization
+## Change forbidden / out of scope
 
-`JLL-FE-QBANK-001`
+- 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
+- OCR結果を人手照合なしで大量投入すること
+- content triage、visual triage、text-layer review、external-reference identificationのいずれか単独で採用可否を自動判定すること
+- PDF実画像未確認のvisual-risk / formatting hold問題を確認済みと扱うこと
+- current standard/framework pageだけで2009年当時版の意味を確定すること
+- 出典未確認・正答未確認・不完全問題を件数合わせで追加すること
+- placeholder解説で件数を増やすこと
+- primary 1,977問を互換性確認なく削除すること
+- 科目B問題バンクの意図しない増減
+- 問題演習・絞り込み・模擬試験UIの目的外変更
+- FEレッスン本文変更
+- Java Learning Labの先行実装
+- `docs/`手編集
+- 実装担当による`main` merge、Ready for review化
+- squash / rebase / force push / `work`削除
 
-Google Drive調査メモは調査ナビとして参照するが、問題本文・選択肢・正答の正本は公式一次資料とする。2,960問は比較ベンチマークでありユニーク問題数の目標値にしない。`canonicalQuestion`と`sourceOccurrence`の分離を優先検討し、既存FEレッスン・演習UIは範囲外とする。
+## Completion criteria
 
-## Latest user memo
+- 年度・開催回・公開区分別の収録状況と欠落範囲をRepositoryへ記録
+- 追加問題の公式一次資料出典と正答を追跡可能にする
+- 同一問題の別開催回掲載はcanonical問題を重複させずsource occurrenceとして保持
+- 既存primaryを意図せず欠落・改変しない
+- 選択肢、正答、重複、図表、出典の自動検証成功
+- 外部の延べ収録規模との差を理由別に説明可能
+- 最終収録数を`PROJECT_CONTEXT.md`と`task-list.md`へ反映
+- `docs/`をbuildで生成
+- Draft PR、CI、Pages、固定HEADの証拠を管理文書へ記録
 
-保留メモ「分野 → 回答・復習状態 → 開催回・公開区分 → 単元」は`JLL-FE-003`で実装済みのため追加対応不要。
+## Required verification
 
-## Next user command
+`prototype/package.json`を正本として実行する。
 
-確認担当がこのままfinalizationを完了する。完了後の次コマンドは`実装`。
+```bash
+cd prototype
+npm ci
+npm run audit:fe-question-sources
+npm run audit:fe-question-extraction-candidates
+npm run audit:fe-question-content-review
+npm run audit:fe-question-external-reference-review
+npm run audit:fe-question-coverage
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm run build:pages
+npm run verify:fe
+```
+
+## Research reference
+
+- Google Drive: `JLL-FE-QBANK-001 科目A問題バンク拡充 調査メモ`
+- Google Drive: `JLL-FE-QBANK-001 科目A問題バンク ステージング統合版 2024-2026`
+- Repository: `prototype/data/source/fe/question-source-inventory.json`
+- Repository: `prototype/data/source/fe/question-extraction-candidates.json`
+- Repository: `prototype/data/source/fe/question-extraction-review.json`
+- Repository: `prototype/data/source/fe/question-extraction-risk-hints.json`
+- Repository: `prototype/data/source/fe/question-extraction-visual-review.json`
+- Repository: `prototype/data/source/fe/question-extraction-content-review.json`
+- Repository: `prototype/data/source/fe/question-extraction-content-holds.json`
+- Repository: `prototype/data/source/fe/question-extraction-external-reference-review.json`
+
+## Unresolved findings
+
+- content triageは160 / 160分類済みだが、final content reviewは未完了
+- 2009年54問はfinal text-layer content review未完了
+- visual-risk 39問中35問は図・表・レイアウト再構成確認待ち
+- PDF実画像確認はscreenshot tool cache missのため未完了
+- formatting ambiguity 9問は未解消
+- external-reference 6問は参照対象の特定完了、historical edition / third-party / reuse reviewは6問とも未完了
+- 160問すべてdomain/unit、explanation quality、最終fingerprint照合が未完了
+- 2009年Repository-readyは0問
+
+## Latest user request
+
+`実装`。現在タスク`JLL-FE-QBANK-001`を継続する。
+
+## Completion update targets
+
+- `task-list.md`
+- `NEXT_WORK.md`
+- 必要時`PROJECT_CONTEXT.md`
+- Draft PR #7 body
+- CI / Pages evidence

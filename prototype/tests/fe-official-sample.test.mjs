@@ -19,12 +19,16 @@ function isSafeImageSource(source) {
   return typeof source === "string" && source.trim() && !/^javascript:/iu.test(source);
 }
 
-test("runtime question bank merge preserves both subjects and the supplemental set", () => {
+test("runtime question bank merge preserves both subjects and folds repeated supplemental occurrences", () => {
   assert.equal(primaryBank.questions.length, 1977);
   assert.equal(supplementalBank.questions.length, 20);
-  assert.equal(bank.length, 1997);
-  assert.equal(bank.filter((question) => question.subject === "A").length, 1830);
+  assert.equal(bank.length, 1996);
+  assert.equal(bank.filter((question) => question.subject === "A").length, 1829);
   assert.equal(bank.filter((question) => question.subject === "B").length, 167);
+  assert.equal(
+    bank.reduce((sum, question) => sum + Math.max(1, question.sourceOccurrences?.length || 0), 0),
+    1997,
+  );
 });
 
 test("fingerprints distinguish subjects and questions that reuse source coordinates", () => {
@@ -43,7 +47,7 @@ test("fingerprints distinguish subjects and questions that reuse source coordina
   assert.equal(subjectA, normalizedFingerprint({ ...sharedSource, subject: "A", question: "shared question" }));
 });
 
-test("merge removes exact duplicates with different IDs without dropping distinct questions", () => {
+test("merge keeps the primary canonical record for an exact supplemental duplicate", () => {
   const common = {
     subject: "A",
     sourceCategory: "archive",
@@ -59,7 +63,7 @@ test("merge removes exact duplicates with different IDs without dropping distinc
   const distinct = { ...common, id: "distinct", question: "second question" };
 
   const merged = mergeQuestionBanks([first, distinct], [duplicate]);
-  assert.deepEqual(merged.map((question) => question.id), ["duplicate", "distinct"]);
+  assert.deepEqual(merged.map((question) => question.id), ["first", "distinct"]);
 });
 
 for (const [subject, expectedCount] of [["A", 60], ["B", 20]]) {

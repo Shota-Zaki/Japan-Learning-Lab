@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "fe-question-extraction-external-reference-review-v1",
+  "snapshotDate": "2026-08-08",
+  "reviewScope": "explicit_external_standard_or_framework_reference_identification",
+  "policy": {
+    "mayAuthorizeImport": false,
+    "referenceIdentificationDoesNotCompleteThirdPartyReview": true,
+    "referenceIdentificationDoesNotCompleteQuestionContentReview": true,
+    "historicalQuestionMeaningMustUseTheReferencedEditionOrContemporaneousDefinition": true,
+    "currentReferencePagesAreEvidenceOfPublisherOrMaintainerOnly": true
+  },
+  "summary": {
+    "reviewedReferenceQuestionCount": 6,
+    "governmentStandardReferenceCount": 3,
+    "officialAgencyFrameworkReferenceCount": 1,
+    "industryFrameworkReferenceCount": 1,
+    "industrialStandardReferenceCount": 1,
+    "importAuthorizedCount": 0
+  },
+  "sources": [
+    {
+      "sourceId": "2009-06-exemption",
+      "reviewedReferenceQuestionCount": 3,
+      "reviews": [
+        {
+          "questionNumber": 59,
+          "pdfPage": 27,
+          "referenceLabel": "システム監査基準",
+          "referenceCategory": "government_standard",
+          "referenceMaintainer": "経済産業省",
+          "evidenceUrl": "https://www.meti.go.jp/policy/netsecurity/sys-kansa/",
+          "evidenceStatus": "maintainer_and_standard_family_verified",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        },
+        {
+          "questionNumber": 66,
+          "pdfPage": 30,
+          "referenceLabel": "共通フレーム2007",
+          "referenceCategory": "official_agency_framework",
+          "referenceMaintainer": "情報処理推進機構",
+          "evidenceUrl": "https://www.ipa.go.jp/archive/files/000004517.pdf",
+          "evidenceStatus": "official_agency_material_confirms_framework_and_edition_context",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        },
+        {
+          "questionNumber": 79,
+          "pdfPage": 37,
+          "referenceLabel": "JIS X 7011 (EDIFACT)",
+          "referenceCategory": "industrial_standard",
+          "referenceMaintainer": "日本産業標準調査会系JIS",
+          "evidenceUrl": "https://www.jisc.go.jp/",
+          "evidenceStatus": "standard_identifier_requires_edition_specific_confirmation",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        }
+      ]
+    },
+    {
+      "sourceId": "2009-07-exemption",
+      "reviewedReferenceQuestionCount": 3,
+      "reviews": [
+        {
+          "questionNumber": 55,
+          "pdfPage": 24,
+          "referenceLabel": "ITIL",
+          "referenceCategory": "industry_framework",
+          "referenceMaintainer": "PeopleCert / ITIL rights holder ecosystem",
+          "evidenceUrl": "https://www.peoplecert.org/help-and-support/faq-itil",
+          "evidenceStatus": "current_official_framework_maintainer_verified_historical_v3_context_still_required",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        },
+        {
+          "questionNumber": 59,
+          "pdfPage": 25,
+          "referenceLabel": "システム監査基準",
+          "referenceCategory": "government_standard",
+          "referenceMaintainer": "経済産業省",
+          "evidenceUrl": "https://www.meti.go.jp/policy/netsecurity/sys-kansa/",
+          "evidenceStatus": "maintainer_and_standard_family_verified",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        },
+        {
+          "questionNumber": 64,
+          "pdfPage": 26,
+          "referenceLabel": "システム管理基準",
+          "referenceCategory": "government_standard",
+          "referenceMaintainer": "経済産業省",
+          "evidenceUrl": "https://www.meti.go.jp/policy/netsecurity/sys-kansa/",
+          "evidenceStatus": "maintainer_and_standard_family_verified",
+          "historicalEditionReview": "required_before_import",
+          "thirdPartyMaterialReview": "pending_review",
+          "importDecision": "hold"
+        }
+      ]
+    }
+  ]
+}
