@@ -10,9 +10,9 @@
   "contentReviewManifest": "data/source/fe/question-extraction-content-review.json",
   "textLayerContentReviewedCount": 20,
   "textLayerContentPendingCount": 140,
-  "visualRiskHintCount": 30,
-  "visualRiskTriagedCount": 30,
-  "visualReconstructionRequiredCount": 26,
+  "visualRiskHintCount": 38,
+  "visualRiskTriagedCount": 38,
+  "visualReconstructionRequiredCount": 34,
   "officialReusePolicy": {
     "verified": true,
     "termsUrl": "https://www.ipa.go.jp/shiken/faq.html",
@@ -53,9 +53,9 @@
       "textLayerContentReviewedCount": 10,
       "textLayerContentPendingCount": 70,
       "repositoryReadyCount": 0,
-      "visualRiskHintCount": 13,
-      "visualRiskTriagedCount": 13,
-      "visualReconstructionRequiredCount": 11,
+      "visualRiskHintCount": 17,
+      "visualRiskTriagedCount": 17,
+      "visualReconstructionRequiredCount": 15,
       "thirdPartyMaterialReview": "required_before_import"
     },
     {
@@ -76,9 +76,9 @@
       "textLayerContentReviewedCount": 10,
       "textLayerContentPendingCount": 70,
       "repositoryReadyCount": 0,
-      "visualRiskHintCount": 17,
-      "visualRiskTriagedCount": 17,
-      "visualReconstructionRequiredCount": 15,
+      "visualRiskHintCount": 21,
+      "visualRiskTriagedCount": 21,
+      "visualReconstructionRequiredCount": 19,
       "thirdPartyMaterialReview": "required_before_import"
     }
   ]
