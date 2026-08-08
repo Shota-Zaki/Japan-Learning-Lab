@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "fe-question-extraction-content-holds-v1",
+  "snapshotDate": "2026-08-08",
+  "reviewScope": "non_visual_text_layer_hold_classification",
+  "policy": {
+    "officialQuestionPdfOnly": true,
+    "mayAuthorizeImport": false,
+    "holdsRemainPendingFinalContentReview": true,
+    "externalReferenceRequiresSeparateReview": true,
+    "formattingAmbiguityRequiresSaferReconstruction": true
+  },
+  "summary": {
+    "holdQuestionCount": 15,
+    "textLayerFormattingAmbiguityCount": 9,
+    "externalReferenceReviewRequiredCount": 6
+  },
+  "sources": [
+    {
+      "sourceId": "2009-06-exemption",
+      "holdQuestionCount": 6,
+      "holds": [
+        {"questionNumber": 1, "pdfPage": 3, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 3, "pdfPage": 4, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 5, "pdfPage": 5, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 59, "pdfPage": 27, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"},
+        {"questionNumber": 66, "pdfPage": 30, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"},
+        {"questionNumber": 79, "pdfPage": 37, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"}
+      ]
+    },
+    {
+      "sourceId": "2009-07-exemption",
+      "holdQuestionCount": 9,
+      "holds": [
+        {"questionNumber": 1, "pdfPage": 3, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 2, "pdfPage": 3, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 5, "pdfPage": 4, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 21, "pdfPage": 10, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 47, "pdfPage": 19, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 52, "pdfPage": 22, "reasonCode": "text_layer_formula_or_symbol_formatting_ambiguous", "importDecision": "hold"},
+        {"questionNumber": 55, "pdfPage": 24, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"},
+        {"questionNumber": 59, "pdfPage": 25, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"},
+        {"questionNumber": 64, "pdfPage": 26, "reasonCode": "external_standard_or_framework_reference_requires_review", "importDecision": "hold"}
+      ]
+    }
+  ]
+}
