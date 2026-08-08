@@ -30,6 +30,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - 2009年6月・7月の各80問をtext-extractable candidateとして別管理し、採用前監査条件を固定
 - 2009年160問を設問単位review manifestへ構造化し、公式正答を個別固定
 - 公式PDFテキスト層で本文・4択境界を安全に確認できる問題をcontent-review manifestへ段階記録
+- 残る問題をvisual-riskとnonvisual holdへ分類し、全160問のcontent triageレーンを確定
 - heuristic visual-risk hintを保守的に補正・triageし、図・表・レイアウト再構成必要範囲を分離
 - 公式の過去問題利用条件をRepositoryへ記録し、第三者著作物は設問単位で別途review
 - source inventory / extraction candidate / content review / canonical coverage監査を通常build経路へ組み込む
@@ -40,24 +41,29 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 ### Implemented / current findings
 
 - Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
-- Latest audited application/data implementation HEAD: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
-- Latest successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
+- Latest audited application/data implementation HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
+- Latest successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
 - Source inventory: 13ソース / 候補660問 / Repository content-ready 20問 / pending 640問
 - Text-extractable candidate: 2009年6月・7月 / 2ソース / 160問 / Repository-ready 0問
 - 2009年160問は問1〜80を各開催回で構造化し、公式正答160件を個別確認済み
+- content triageは160 / 160分類済み、未分類0問
 - 公式問題PDFテキスト層で本文・4択境界を安全に照合できた106問をcontent-review manifestへ記録（6月56問 / 7月50問）
 - text-layer content review pending: 54問
 - visual-risk hint: 39問。監査中に従来hintの漏れ9問を検出して補正
 - visual-risk triage: 39 / 39完了。35問は図・表・レイアウト再構成が必要、4問はテキスト層だけで意味を保持できる可能性が高い候補
-- PDF screenshot取得はtool cache missで実画像確認未完了のため、visual triageだけで採用可にはしない。`visualRenderVerified=false`を維持
-- text-layer content reviewだけでbase reviewの`questionTextVerified` / `fourChoicesVerified`を最終true化せず、全160問`hold`を維持
-- 54問の内訳はvisual-risk 39問と、visual-riskではないが数式・下線・テキスト抽出崩れまたは規格・基準等の外部資料参照を別監査すべき15問（6月6問 / 7月9問）
+- nonvisual content hold: 15問（6月6問 / 7月9問）
+  - 数式・記号等のテキスト層表現が曖昧: 9問
+  - 外部規格・基準等の参照確認が必要: 6問
+- `question-extraction-content-holds.json`で15問の理由とPDF pageを固定し、全件`hold`
+- PDF screenshot取得はtool cache missで実画像確認未完了のため、visual triageやformatting holdだけで採用可にはしない。`visualRenderVerified=false`を維持
+- content triageは160 / 160完了しているが、final content review完了を意味しない
+- content review済み106問もbase reviewの`questionTextVerified` / `fourChoicesVerified`を最終true化せず、全160問`hold`を維持
+- `audit-fe-question-content-review.mjs`で106 reviewed / 15 nonvisual hold / 39 visual-riskが重複せず全160問を覆い、未分類0問であることを自動検証
 - Audited candidate universe: 820問 / ready 20問 / final pending review 800問
 - 公式の過去問題利用条件を確認し、教育目的利用について許諾・使用料不要、著作権存続、出典明記、改変時明示が必要という条件をcandidate manifestへ固定
 - 第三者著作物・外部資料依存は一般利用条件で自動許可せず設問単位で確認する
 - `audit-fe-question-source-inventory.mjs`でID、URL、件数、公式PDF、ready件数、第三者著作物確認フラグを検証
 - `audit-fe-question-extraction-candidates.mjs`でOCR禁止、公式host、text layer、問1〜80連番、公式正答160件、全件hold、visual-risk / triage整合、reuse policy metadataを検証
-- `audit-fe-question-content-review.mjs`で106問のtext-layer review、visual-risk除外、base review hold維持を検証
 - `feQuestionBank.js`でcontent fingerprintとsource occurrence fingerprintを分離
 - 既存primary 1,977問は互換性baselineとして一切削除しない
 - supplementalだけをprimaryへ照合し、unique一致は`sourceOccurrences`へ統合、ambiguous一致は自動統合しない
@@ -75,8 +81,8 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 - 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
 - OCR結果の無検証大量投入
-- heuristic visual-risk hint、visual triage、text-layer content reviewのいずれか単独で採用可否を決定すること
-- PDF実画像未確認のvisual-risk問題を図表確認済みと扱うこと
+- content triage、heuristic visual-risk hint、visual triage、text-layer content reviewのいずれか単独で採用可否を決定すること
+- PDF実画像未確認のvisual-risk / formatting hold問題を確認済みと扱うこと
 - placeholder解説で件数を増やすこと
 - primary 1,977問を互換性確認なく削除すること
 - 科目B問題バンクの意図しない増減
@@ -114,6 +120,7 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - Repository heuristic risk hints: `prototype/data/source/fe/question-extraction-risk-hints.json`
 - Repository visual triage: `prototype/data/source/fe/question-extraction-visual-review.json`
 - Repository text-layer content review: `prototype/data/source/fe/question-extraction-content-review.json`
+- Repository nonvisual content holds: `prototype/data/source/fe/question-extraction-content-holds.json`
 
 ### Branch
 
@@ -133,9 +140,9 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### Current HEAD
 
-- Latest audited application/data implementation HEAD: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
-- Successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
-- NEXT_WORK management update: `4ff77afa5d63f15dbfd07ebc972ee31c2d02a6a3`
+- Latest audited application/data implementation HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
+- Successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
+- NEXT_WORK management update: `a3c90e098fa468b5f80e1c574dc79184b734c50e`
 - この管理文書更新commit以後の最新`work` HEADはGitHub実状態を正本とする
 
 ### Validation result
@@ -145,21 +152,27 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 - Source inventory audit: 13 sources / 660 candidates / 20 ready / 640 pending
 - Extraction candidate audit: 2 sources / 160 candidates / 0 ready / OCR disabled
 - 2009 official-answer verified: 160 / 160
+- Content triage: 160 classified / 0 unclassified
 - Text-layer content review: 106 reviewed / 54 pending
+- Nonvisual content hold: 15 / formatting ambiguity 9 / external-reference review 6
 - Visual-risk hint: 39 / triaged 39 / visual-or-layout reconstruction required 35 / text-layer-sufficient candidate 4
 - Coverage audit: primary 1,977 / supplemental occurrence 20 / canonical 1,996 / source occurrence 1,997
 - Coverage audit: A 1,829 / B 167 / primary duplicate-content groups 80 / duplicate-source groups 62
 - Candidate universe: 820 / ready 20 / final pending review 800
 - Draft PR #7維持
-- Implementation HEAD `6833ea8b73503c151ecc34a28c19159ef1afaa2b`のPR workflowsは全4件success
-- PR Pages build / verify workflow: `31241278123` / run `539` / success
-- PR build job: `93062558874` / success
-- Filter layout workflow: `31241278121` / run `122` / success
-- Mock timer workflow: `31241278182` / run `46` / success
-- Lesson layout workflow: `31241278139` / run `23` / success
-- work-push Pages workflow: `31241276543` / run `538` / success
-- `npm ci` / `Verify FE implementation`成功。`sync:fe`経由の各監査、normal build、tests、typecheck、lint、Pages buildを含む`verify:fe`成功
+- Implementation HEAD `e670376a419280dde08d298037a5c3ad9701b174`のPR workflowsは全4件success
+- PR Pages build / verify workflow: `31241587942` / run `543` / success
+- PR build job: `93063390999` / success
+- Filter layout workflow: `31241587939` / run `124` / success
+- Mock timer workflow: `31241587945` / run `48` / success
+- Lesson layout workflow: `31241587930` / run `25` / success
+- work-push Pages workflow: `31241585687` / run `542` / success
+- `npm ci` / `Verify FE implementation`成功
+- Tests: 73 / 73 passed
+- Typecheck / lint / normal build / Pages build: success
+- `sync:fe`経由でsource inventory / extraction candidate / content-review partition / coverage audit成功
 - Public smoke check: success
+- GitHub Actions内部のNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
 
 ### Merge commit
 
@@ -167,15 +180,15 @@ FE科目A問題バンクを公式一次資料ベースで拡充する
 
 ### GitHub Pages result
 
-- Published sourceRevision: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
+- Published sourceRevision: `e670376a419280dde08d298037a5c3ad9701b174`
 - Public / repository `build-info.json` sourceRevision一致
-- work-push Pages workflow: `31241276543` / run `538` / success
-- Successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
+- work-push Pages workflow: `31241585687` / run `542` / success
+- Successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
 - 管理文書の`[skip ci]`commitは公開sourceRevisionより先行してよい。公開アプリ成果物sourceRevisionと最新Branch HEADは区別する
 
 ### Next task
 
-`JLL-FE-QBANK-001`を継続。未完了54問をvisual-risk 39問と非visual-risk 15問へ分けて個別監査する。visual/layout reconstruction required 35問は実画像確認・安全な再構成確認までholdを維持し、非visual-risk 15問は数式・下線・テキスト抽出崩れまたは外部規格・基準参照を確認する。content review済み106問も第三者著作物・分類・解説品質・fingerprint照合完了までruntimeへ投入しない。完了後の既定次タスクは`JLL-JAVA-001`。
+`JLL-FE-QBANK-001`を継続。content triageは160 / 160分類済み。次はformatting ambiguity hold 9問の安全な数式・記号等の再構成確認、external-reference hold 6問の外部規格・基準等への依存確認、visual-risk 39問の実画像確認を進める。35問は図・表・レイアウト再構成確認待ち、text-layer-sufficient候補4問もvisual render未確認のためholdを維持する。content review済み106問も第三者著作物・分類・解説品質・fingerprint照合完了までruntimeへ投入しない。完了後の既定次タスクは`JLL-JAVA-001`。
 
 ---
 
