@@ -6,7 +6,7 @@
 
 ## Current phase
 
-`in_progress` — 2009年6月・7月160問は設問単位review manifestへ構造化済みで、公式正答160件を個別固定済み。今回、公式問題PDFのテキスト層だけで本文と4択の境界を安全に照合できた非visual-risk 106問（6月56問 / 7月50問）をcontent-review manifestへ記録した。監査中に従来のvisual-risk hint漏れ9問も検出して補正し、visual-riskは39問、triage済み39問、図・表・レイアウト再構成必要35問となった。PDF screenshot取得はtool cache missのため実画像確認済みとは扱わず、全160問`hold`、2009年Repository-ready 0問を維持する。
+`in_progress` — 2009年6月・7月160問は設問単位review manifestへ構造化済み、公式正答160件を個別固定済み。content triageは160 / 160を分類し、未分類0問。106問は公式問題PDFのテキスト層で本文と4択の境界を安全に照合済み、39問はvisual-risk、残る非visual 15問は個別holdへ分類した。15問の内訳は数式・記号等のテキスト層表現が曖昧な9問、外部規格・基準等の参照確認が必要な6問。visual-riskは39 / 39 triage済みで、35問は図・表・レイアウト再構成が必要、4問はテキスト層で意味保持できる可能性が高い候補。PDF screenshot取得はtool cache missのため実画像確認済みとは扱わず、全160問`hold`、2009年Repository-ready 0問を維持する。
 
 ## Next role
 
@@ -25,8 +25,8 @@ FE科目A問題バンクを、公式一次資料で設問・選択肢・正答�
 - Task: `JLL-FE-QBANK-001`
 - Task status: `in_progress`
 - Task Start HEAD: `2dfb8e2034644bd9f595b44167eb5ec04b76ff1b`
-- Latest audited application/data implementation HEAD: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
-- Latest successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
+- Latest audited application/data implementation HEAD: `e670376a419280dde08d298037a5c3ad9701b174`
+- Latest successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
 - Pull Request: `#7` / `work` → `main` / Draft / open
 - `main` baseline: `2c3700f57f195199d365e009b7b9248746366eab`
 - この管理文書更新後の最新`work` HEADはGitHub実状態を正本とする
@@ -34,54 +34,40 @@ FE科目A問題バンクを、公式一次資料で設問・選択肢・正答�
 ## Implemented in this phase
 
 1. `prototype/data/source/fe/question-extraction-content-review.json`
-   - schema: `fe-question-extraction-content-review-v2`
-   - review scope: official PDF text-layer question / four-choice cross-check
-   - 106問を記録（2009年6月56問、7月50問）
-   - 各記録はquestion textと4択のテキスト層境界が明確なものだけを採用
-   - 106 / 106でchoice boundaryを`unambiguous`として扱う共通assertionを固定
-   - テキスト層上で明示的な外部資料参照を検出した問題はこのbatchへ入れない
-   - visual-risk対象はこのbatchから除外
-   - `visualRenderVerified=false`、`importDecision=hold`を共通assertionとして維持
-2. `prototype/data/source/fe/question-extraction-risk-hints.json`
-   - 監査中に従来のheuristic hint漏れ9問を補正
-   - 2009年6月: 18問
-   - 2009年7月: 21問
-   - 合計39問
-3. `prototype/data/source/fe/question-extraction-visual-review.json`
-   - visual-risk 39 / 39をテキスト層上の明示参照でtriage
+   - 公式PDFテキスト層で本文・4択境界を安全に照合できた106問を記録（6月56問 / 7月50問）
+   - visual-risk問題と個別hold問題を除外
+   - 最終import判定は行わず、共通assertionは`visualRenderVerified=false` / `importDecision=hold`
+2. `prototype/data/source/fe/question-extraction-content-holds.json`
+   - schema: `fe-question-extraction-content-holds-v1`
+   - 非visualで最終content review未完了の15問を独立分類
+   - `text_layer_formula_or_symbol_formatting_ambiguous`: 9問
+   - `external_standard_or_framework_reference_requires_review`: 6問
+   - 全件`importDecision=hold`
+3. `prototype/data/source/fe/question-extraction-risk-hints.json`
+   - 監査中に従来heuristic hintの漏れ9問を補正
+   - 2009年6月18問 / 7月21問 / 合計39問
+4. `prototype/data/source/fe/question-extraction-visual-review.json`
+   - visual-risk 39 / 39をtriage
    - visual/layout reconstruction required: 35問
    - text-layer-sufficient candidate: 4問
    - `visualRenderVerified=false`、`visualRenderVerificationStatus=screenshot_tool_cache_miss`を維持
-   - triage単独ではimportを許可しない
-4. `prototype/data/source/fe/question-extraction-candidates.json`
-   - `contentReviewManifest`参照を維持
+5. `prototype/data/source/fe/question-extraction-candidates.json`
+   - `contentHoldManifest`を追加
    - `textLayerContentReviewedCount=106`
    - `textLayerContentPendingCount=54`
+   - `nonVisualContentHoldCount=15`
+   - `contentTriageClassifiedCount=160`
+   - `contentTriageUnclassifiedCount=0`
    - visual-risk / triage / reconstruction countを39 / 39 / 35へ同期
+   - 既存監査契約に合わせ`contentStatus=structured_pending_content_review`を維持
    - 2009年Repository-ready 0問を維持
-5. `prototype/scripts/audit-fe-question-content-review.mjs`
-   - v2 content-review schema / policy / common assertionsを検証
-   - visual-risk問題がtext-layer-only reviewへ混入しないことを検証
-   - base review manifestの最終フラグを勝手にtrue化せず、全件hold / visual pending / third-party pendingのまま維持することを検証
-6. `prototype/package.json`
-   - `audit:fe-question-content-review`を`sync:fe`へ組み込んだ状態を維持
-   - normal build / Pages build / `verify:fe`の通常経路でcontent-review整合を毎回検証
-
-## Existing implementation kept intact
-
-- 2024〜2026 source inventory: 13ソース / 660候補 / 20 content-ready / 640 pending
-- 2009 structured candidates: 160問
-- 2009 official-answer verified: 160 / 160
-- 2009 Repository-ready: 0問
-- primary: 1,977問（A 1,810 / B 167）
-- supplemental occurrence: 20件
-- runtime canonical: 1,996問（A 1,829 / B 167）
-- runtime source occurrence: 1,997件
-- primary duplicate-content groups: 80
-- primary duplicate-source groups: 62
-- canonical content fingerprint / source occurrence fingerprintを分離
-- primary 1,977問は互換性baselineとして削除しない
-- unique一致のみ`sourceOccurrences`へ統合し、ambiguous一致は自動統合しない
+6. `prototype/scripts/audit-fe-question-content-review.mjs`
+   - content review / nonvisual hold / visual-riskの3レーンが重複せず160問すべてを覆うことを検証
+   - 15 holdのreason code、PDF page、base reviewのhold維持を検証
+   - 106 review済み問題のbase最終フラグを勝手にtrue化しないことを検証
+   - content triageだけではimportを許可しないことを固定
+7. `prototype/package.json`
+   - `audit:fe-question-content-review`は`sync:fe`経由でnormal build / Pages build / `verify:fe`の通常経路から実行される
 
 ## Current measured counts
 
@@ -90,44 +76,72 @@ FE科目A問題バンクを、公式一次資料で設問・選択肢・正答�
 - candidate universe final pending review: 800問
 - 2009 structured candidates: 160問
 - 2009 official-answer verified: 160問
+- 2009 content triage classified: 160問
+- 2009 content triage unclassified: 0問
 - 2009 text-layer content reviewed: 106問
 - 2009 text-layer content review pending: 54問
-- 2009 Repository-ready: 0問
-- heuristic visual-risk hints: 39問
+- 2009 nonvisual content hold: 15問
+  - formatting ambiguity: 9問
+  - external reference review required: 6問
+- 2009 visual-risk hints: 39問
 - visual-risk triaged: 39問
 - visual/layout reconstruction required: 35問
 - text-layer-sufficient visual-risk candidate: 4問
+- 2009 Repository-ready: 0問
 
-54問の内訳は、visual-risk 39問と、visual-riskではないが数式・下線・表現崩れまたは規格・基準等の外部資料参照を別監査すべき15問。15問は2009年6月6問 / 7月9問。
+Runtime baselineは不変:
+
+- primary: 1,977問（A 1,810 / B 167）
+- supplemental occurrence: 20件
+- runtime canonical: 1,996問（A 1,829 / B 167）
+- runtime source occurrence: 1,997件
+- primary duplicate-content groups: 80
+- primary duplicate-source groups: 62
 
 ## Latest verification / CI / Pages
 
-Application/data HEAD `6833ea8b73503c151ecc34a28c19159ef1afaa2b`:
+Application/data HEAD `e670376a419280dde08d298037a5c3ad9701b174`:
 
-- PR Pages build / verify workflow: `31241278123` / run `539` / success
-- PR build job: `93062558874` / success
+- PR Pages build / verify workflow: `31241587942` / run `543` / success
+- PR build job: `93063390999` / success
 - `npm ci`: success
 - `Verify FE implementation`: success
-- Filter layout workflow: `31241278121` / run `122` / success
-- Mock timer workflow: `31241278182` / run `46` / success
-- Lesson layout workflow: `31241278139` / run `23` / success
+- Tests: 73 / 73 passed
+- Typecheck: success
+- Lint: success
+- Normal build: success
+- Pages build: success
+- Filter layout workflow: `31241587939` / run `124` / success
+- Mock timer workflow: `31241587945` / run `48` / success
+- Lesson layout workflow: `31241587930` / run `25` / success
 - PR context deploy job: skipped（期待どおり）
-- work-push Pages workflow: `31241276543` / run `538` / success
+- work-push Pages workflow: `31241585687` / run `542` / success
 - Public smoke check: success
-- Published sourceRevision: `6833ea8b73503c151ecc34a28c19159ef1afaa2b`
+- Published sourceRevision: `e670376a419280dde08d298037a5c3ad9701b174`
 - Public / repository `build-info.json` sourceRevision一致
-- Successful Pages evidence synchronization HEAD: `6377bf9bb45db1c5d30558b63a30ea76d8df556b`
+- Successful Pages evidence synchronization HEAD: `c04c65f2d5f0b0a3287c77fa1ca19c624e8ce174`
+- GitHub Actions内部のNode.js 20 deprecated warningはproject Node.js 22検証とは別でNon-blocking
 
-`Verify FE implementation`成功により、`sync:fe`経由のsource inventory audit、extraction candidate audit、content-review audit、coverage audit、normal build、tests、typecheck、lint、Pages buildまで成功している。
+`Verify FE implementation`内のcontent audit実測:
+
+- candidateQuestionCount: 160
+- reviewedQuestionCount: 106
+- pendingTextLayerContentReviewCount: 54
+- nonVisualContentHoldCount: 15
+- visualRiskQuestionCount: 39
+- contentTriageClassifiedCount: 160
+- contentTriageUnclassifiedCount: 0
+- formattingHoldCount: 9
+- externalReferenceHoldCount: 6
+- visualRenderVerifiedCount: 0
+- mayAuthorizeImport: false
 
 ## Next implementation sequence
 
-1. text-layer content review未完了54問を、次の2群へ分けて継続する。
-   - visual-risk 39問: 実画像確認と安全な図・表・レイアウト再構成確認が必要
-   - 非visual-risk 15問: 数式・下線・テキスト抽出崩れ、または規格・基準等の外部資料参照を個別監査
-2. visual-risk 39問のうちtext-layer-sufficient候補4問も、visual render未確認のため別経路で最終確認する。
-3. visual/layout reconstruction required 35問は、実画像ベースの意味保持確認まで`figureOrTableDependency=pending_review`を維持する。
-4. content review済み106問から第三者著作物・商標・外部資料依存を設問単位で確認する。
+1. formatting ambiguity hold 9問は、公式PDF実画像で数式・記号・下線等の意味を安全に再構成できるまでholdを維持する。
+2. external reference hold 6問は、外部規格・基準・フレームワーク等への依存範囲と再利用可否を設問単位で確認する。
+3. visual-risk 39問は実画像確認を行い、35問の図・表・レイアウトを意味保持して再構成できるか確認する。text-layer-sufficient候補4問もvisual render未確認のため最終確認する。
+4. content review済み106問から第三者著作物・外部資料依存を設問単位で確認する。
 5. 本文・4択・図表・第三者著作物reviewを通過した設問だけ、既存primaryとのsource/content fingerprint照合へ進める。
 6. ambiguous一致は自動統合しない。
 7. 採用候補だけdomain/unitを確認し、placeholderではない学習用解説を作成・検証する。
@@ -139,8 +153,8 @@ Application/data HEAD `6833ea8b73503c151ecc34a28c19159ef1afaa2b`:
 
 - 第三者サイトからの問題文、選択肢、解説、画像の転載・スクレイピング再配布
 - OCR結果を人手照合なしで大量投入すること
-- heuristic risk hint、visual triage、text-layer content reviewのいずれか単独で採用可否を自動判定すること
-- PDF実画像未確認のvisual-risk問題を「図表確認済み」と扱うこと
+- content triage、heuristic risk hint、visual triage、text-layer content reviewのいずれか単独で採用可否を自動判定すること
+- PDF実画像未確認のvisual-risk問題やformatting hold問題を確認済みと扱うこと
 - 出典未確認・正答未確認・不完全問題を件数合わせで追加すること
 - placeholder解説で件数を増やすこと
 - primary 1,977問を互換性確認なく削除すること
@@ -193,13 +207,15 @@ npm run verify:fe
 - Repository: `prototype/data/source/fe/question-extraction-risk-hints.json`
 - Repository: `prototype/data/source/fe/question-extraction-visual-review.json`
 - Repository: `prototype/data/source/fe/question-extraction-content-review.json`
+- Repository: `prototype/data/source/fe/question-extraction-content-holds.json`
 
 ## Unresolved findings
 
-- 2009年54問のtext-layer content reviewが未完了
+- content triageは160 / 160分類済みだが、final content reviewは未完了
+- 2009年54問はfinal text-layer content review未完了
 - visual-risk 39問中35問は図・表・レイアウト再構成確認待ち
 - PDF実画像確認はscreenshot tool cache missのため未完了
-- 非visual-risk 15問は数式・下線・テキスト抽出崩れまたは外部規格・基準参照の個別監査が必要
+- nonvisual hold 15問はformatting ambiguity 9問 / external reference review 6問に分類済みだが未解消
 - 160問すべてthird-party material review、domain/unit、explanation quality、最終fingerprint照合が未完了
 - 2009年Repository-readyは0問
 
